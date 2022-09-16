@@ -1,0 +1,476 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="referer" content="never" />
+    <meta name="renderer" content="webkit">
+    <title>aaPanel Linux panel</title>
+    <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+    <link href="/static/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/static/css/site.css?version=6.8.9&repair=o1Gwx0DgIvVDRRNk" rel="stylesheet" />
+    <link href="/static/codemirror/lib/codemirror.css?20191127=6.8.9" rel="stylesheet" />
+    <!--[if lte IE 9]>
+    <script src="/static/js/requestAnimationFrame.js"></script>
+    <![endif]-->
+    <style>
+        .top-tips {
+            height: 50px;
+            width: 100%;
+            color: red;
+            position: fixed;
+            top: 0;
+            z-index: 999;
+            background-color: white;
+            text-align: center;
+            line-height: 50px;
+            font-size: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            font-weight: bold;
+            display: none;
+        }
+
+        .contextmenu {
+            position: absolute;
+            width: 120px;
+            background: #FFFFFF;
+            border-radius: 5px;
+            overflow: hidden;
+            z-index: 99999999;
+        }
+
+        .contextmenu li {
+            border-left: 3px solid transparent;
+            transition: ease 0.3s;
+        }
+
+        .contextmenu li:hover {
+            background: #707070;
+            border-left: 3px solid #333;
+        }
+
+        .contextmenu li a {
+            display: block;
+            padding: 5px 10px;
+            color: #000000;
+            text-decoration: none;
+            transition: ease 0.3s;
+            cursor: default;
+        }
+
+        .contextmenu li:hover a {
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+<div class="bt-warp bge6">
+    <div class="top-tips">The current version of IE browser is too low, some functions cannot be displayed, please change to other browsers!</div>
+    <a style="display:none;" id="panel_debug" data="False" data-pyversion="3"></a>
+    <a style="display:none;" id="request_token_head" token="jydJNVMkEj83FTR9sQNJGwfrbuds0jfIlxalhR7fVDBAKgpK"></a>
+    <div id="container" class="container-fluid">
+        <div class="sidebar-scroll">
+            <div class="sidebar-auto">
+                <div id="task" class="task cw" onclick="messagebox()">0</div>
+                <h3 class="mypcip"><span class="f14 cw">81.71.127.42</span></h3>
+                <ul class="menu">
+
+
+                    <li id="memuA" class="current"> <a class="menu_home" href="/">Home</a></li>
+
+
+
+                    <li id="memuAsite"> <a class="menu_web" href="/site">Website</a></li>
+
+
+
+                    <li id="memuAftp"> <a class="menu_ftp" href="/ftp">FTP</a></li>
+
+
+
+                    <li id="memuAdatabase"> <a class="menu_data" href="/database">Databases</a></li>
+
+
+
+                    <li id="memuAcontrol"> <a class="menu_control" href="/control">Monitor</a></li>
+
+
+
+                    <li id="memuAfirewall"> <a class="menu_firewall" href="/firewall">Security</a></li>
+
+
+
+                    <li id="memuAfiles"> <a class="menu_folder" href="/files">Files</a></li>
+
+
+
+                    <li id="memuAxterm"> <a class="menu_xterm" href="/xterm">Terminal</a></li>
+
+
+
+                    <li id="memuAcrontab"> <a class="menu_day" href="/crontab">Cron</a></li>
+
+
+
+                    <li id="memuAsoft"> <a class="menu_soft" href="/soft">App Store</a></li>
+
+
+
+                    <li id="memuAconfig"> <a class="menu_set" href="/config">Settings</a></li>
+
+
+
+                    <li id="dologin"> <a class="menu_exit" href="/login?dologin=True">Log out</a></li>
+
+
+                </ul>
+                <div id="newbtpc"></div>
+                <div class="btpc-plus" onclick="bindBTPanel(0,'b')">+</div>
+            </div>
+        </div>
+        <button style="display: none;" id="bt_copys" class="bt_copy" data-clipboard-text=""></button>
+        <a style="display: none;" id="defaultPath">/www/wwwroot</a>
+        <div class="main-content">
+            <div class="index-pos-box bgw">
+                <div class="position f12 c6 pull-left" style="background:none;padding-left:15px">
+            <span class="bind-user c4">
+                <a href="javascript:bt.pub.bind_btname();" class="btlink">Account</a>
+            </span>
+
+                    <!--<span class="bind-weixin c4"><a href="javascript:bt.weixin.open_wxapp();" class="btlink">WeChat</a></span>-->
+                    <span class="ico-system">System:</span><span id="info" style="margin-left:10px;"> Loading: </span>&#12288;&#12288;Time of running <span id="running"> Loading</span>
+                </div>
+                <span class="pull-right f12 c6" style="line-height:52px; margin-right:15px">
+            <!--<span class="btpro-gray" onclick="bt.soft.updata_pro()" title="点击升级到专业版">免费版</span>--> <span id="btversion" style="margin-right:10px">6.8.9</span>
+            <span id="toUpdate"><a class="btlink" href="javascript:index.check_update();">Update</a></span>
+            <span style="margin:0 10px"><a class="btlink" href="javascript:index.re_panel();">Fix</a></span>
+            <span style="margin-right:10px"><a class="btlink" href="javascript:index.re_server();">Restart</a></span>
+        </span>
+            </div>
+            <div class="container-fluid" style="padding-bottom: 66px;padding-left: 15px;">
+                <div class="danger-tips">
+                    <div class="important-title" id="messageError" style="display: none; margin-top:15px"></div>
+                </div>
+                <div class="conter-box server bgw mtb15">
+                    <div class="title c6 f16 plr15">
+                        <h3 class="c6 f16 pull-left">Status</h3>
+                    </div>
+                    <div class="server-circle">
+                        <ul class="row" id="systemInfoList">
+                            <li class="col-xs-6 col-sm-3 col-md-3 col-lg-2 mtb20 circle-box text-center loadbox">
+                                <h3 class="c9 f15">Load status<a href="https://forum.aapanel.com/d/1265-what-does-the-data-in-load-status-represent" target="_blank" class="bt-ico-ask" style="cursor: pointer;">?</a></h3>
+                                <div class="cicle">
+                                    <div class="bar bar-left">
+                                        <div class="bar-left-an bar-an"></div>
+                                    </div>
+                                    <div class="bar bar-right">
+                                        <div class="bar-right-an bar-an"></div>
+                                    </div>
+                                    <div class="occupy"><span>0</span>%</div>
+                                </div>
+                                <h4 class="c9 f15">Loading: </h4>
+                            </li>
+                            <li class="col-xs-6 col-sm-3 col-md-3 col-lg-2 mtb20 circle-box text-center cpubox">
+                                <h3 class="c9 f15">CPU usage</h3>
+                                <div class="cicle">
+                                    <div class="bar bar-left">
+                                        <div class="bar-left-an bar-an"></div>
+                                    </div>
+                                    <div class="bar bar-right">
+                                        <div class="bar-right-an bar-an"></div>
+                                    </div>
+                                    <div class="occupy"><span>0</span>%</div>
+                                </div>
+                                <h4 class="c9 f15">Loading: </h4>
+                            </li>
+                            <li class="col-xs-6 col-sm-3 col-md-3 col-lg-2 mtb20 circle-box text-center membox">
+                                <h3 class="c9 f15">Memory usage</h3>
+                                <div class="cicle mem-release">
+                                    <div class="bar bar-left">
+                                        <div class="bar-left-an bar-an"></div>
+                                    </div>
+                                    <div class="bar bar-right">
+                                        <div class="bar-right-an bar-an"></div>
+                                    </div>
+                                    <div class="occupy"><span>0</span>%</div>
+                                    <div class="mem-re-min"></div>
+                                    <div class="mem-re-con" title="$data['lan']['P3']"></div>
+                                </div>
+                                <h4 class="c9 f15">Loading: </h4>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="system-info bgw clearfix mtb15">
+                    <div class="title c6 f16 plr15">
+                        Overview
+                    </div>
+                    <div class="system-info-con mtb20">
+                        <ul class="clearfix text-center">
+                            <li class="sys-li-box ccol-xs-4 col-sm-4 col-md-4 col-lg-3">
+                                <p class="name f15 c9">Site</p>
+                                <div class="val"><a class="btlink" href="/site">5</a></div>
+                            </li>
+                            <li class="sys-li-box ccol-xs-4 col-sm-4 col-md-4 col-lg-3">
+                                <p class="name f15 c9">FTP</p>
+                                <div class="val"><a class="btlink" href="/ftp">0</a></div>
+                            </li>
+                            <li class="sys-li-box ccol-xs-4 col-sm-4 col-md-4 col-lg-3">
+                                <p class="name f15 c9">DB</p>
+                                <div class="val"><a class="btlink" href="/database">0</a></div>
+                            </li>
+                            <li class="sys-li-box ccol-xs-4 col-sm-4 col-md-4 col-lg-3">
+                                <p class="name f15 c9">Security</p>
+                                <div class="val"><a class="btlink warning_num" href="javascript:;" onclick="index.reader_warning_view()">0</a></div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-sm-12 col-md-6 pull-left pd0">
+                    <div class="pr8">
+                        <div class="bgw">
+                            <div class="title c6 f16 plr15">Software</div>
+                            <div class="setting-con" style="padding:0; height:442px; margin-right: -4px; overflow: hidden;">
+                                <div class="container-fluid soft-man">
+                                    <input name="list1SortOrder" type="hidden" value="" />
+                                    <div id="indexsoft" class="row"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-sm-12 col-md-6 pull-left pd0">
+                    <div class="pl7">
+                        <div class="bgw" style="height:491px">
+                            <div class="title c6 f16 plr15">Traffic<span class="pull-right"><select class="bt-input-text" name="network-io" style="font-size: 12px;"></select></span></div>
+                            <div class="bw-info">
+                                <div class="col-sm-6 col-md-3"><p class="c9"><span class="ico-up"></span>Upstream</p><a id="upSpeed">Loading: </a></div>
+                                <div class="col-sm-6 col-md-3"><p class="c9"><span class="ico-down"></span>Downstream</p><a id="downSpeed">Loading: </a></div>
+                                <div class="col-sm-6 col-md-3"><p class="c9">Total sent</p><a id="upAll">Loading: </a></div>
+                                <div class="col-sm-6 col-md-3"><p class="c9">Total received</p><a id="downAll">Loading: </a></div>
+                            </div>
+                            <div id="NetImg" style="width:100%;height:370px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="footer bgw">aaPanelLinux panel &copy;2014-2022 aaPanel (bt.cn)
+            <!--<a style="margin-left:20px;color:#20a53a;" href="http://www.bt.cn/bbs" target="_blank">求助|建议请上宝塔论坛</a>-->
+            <a style="margin-left:20px;color:#20a53a;" href="http://forum.aapanel.com" target="_blank">For Support|Suggestions, please visit the aaPanel Forum</a>
+            <a style="margin-left:20px;color:#20a53a;" href="https://doc.aapanel.com/web/#/3?page_id=117" target="_blank">Documentation</a>
+        </div>
+    </div>
+    <script src="/static/js/jquery-1.10.2.min.js"></script>
+    <script src="/static/layer/layer.js?version=6.8.9"></script>
+    <script src="/static/language/English/lan.js?version=6.8.9&repair=o1Gwx0DgIvVDRRNk"></script>
+    <script src="/static/js/clipboard.min.js" defer></script>
+    <script src="/static/laydate/laydate.js" defer></script>
+    <script src="/static/js/jquery.qrcode.min.js" defer></script>
+    <!-- 以下文件未来将被剔除 -->
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/public.js?version=6.8.9&repair=o1Gwx0DgIvVDRRNk"></script>
+    <script src="/static/js/public_backup.js?version=6.8.9&repair=o1Gwx0DgIvVDRRNk"></script>
+    <script src="/static/codemirror/lib/codemirror.js" defer></script>
+    <!-- End -->
+    <script type="text/javascript" src="/static/js/tools.min.js?version=6.8.9&repair=o1Gwx0DgIvVDRRNk"></script>
+
+
+    <script type="text/javascript" src="/static/js/jquery.dragsort-0.5.2.min.js"></script>
+    <script type="text/javascript" src="/static/js/echarts.min.js"></script>
+    <script type="text/javascript" src="/static/js/index.js?f2=6.8.9"></script>
+    <script type="text/javascript" src="/static/js/soft.js?version_20191219=6.8.9"></script>
+    <script type="text/javascript" src="/static/ace/ace.js?date=6.8.9"></script>
+    <script type="text/javascript">
+        $(".btpro").click(function(){
+            layer.confirm(lan.index.change_free, { icon: 3, btn: [lan.index.ubind], closeBtn: 2, title: lan.index.confirm_cancel }, function () {
+                $.post('/ssl?action=DelToken', {}, function (rdata) {
+                    layer.msg(rdata.msg);
+                    setTimeout(function () {
+                        window.location.reload();
+                    },2000);
+                });
+            });
+        });
+        bt.set_cookie('serverType', "nginx");
+    </script>
+
+
+    <script type="text/javascript">
+        if (navigator.appName == "Microsoft Internet Explorer" && parseInt(navigator.appVersion.split(";")[1].replace(/[ ]/g, "").replace("MSIE", "")) < 9) {
+            $(".main-content").css("margin-top", "50px");
+            $('.top-tips').show();
+        }
+        function IEVersion() {
+            // 取得浏览器的userAgent字符串
+            var userAgent = navigator.userAgent;
+            // 判断是否为小于IE11的浏览器
+            var isLessIE11 = userAgent.indexOf('compatible') > -1 && userAgent.indexOf('MSIE') > -1;
+            // 判断是否为IE的Edge浏览器
+            var isEdge = userAgent.indexOf('Edge') > -1 && !isLessIE11;
+            // 判断是否为IE11浏览器
+            var isIE11 = userAgent.indexOf('Trident') > -1 && userAgent.indexOf('rv:11.0') > -1;
+            if (isLessIE11) {
+                var IEReg = new RegExp('MSIE (\\d+\\.\\d+);');
+                // 正则表达式匹配浏览器的userAgent字符串中MSIE后的数字部分，，这一步不可省略！！！
+                IEReg.test(userAgent);
+                // 取正则表达式中第一个小括号里匹配到的值
+                var IEVersionNum = parseFloat(RegExp['$1']);
+                if (IEVersionNum === 7) {// IE7
+                    return 7
+                } else if (IEVersionNum === 8) {// IE8
+                    return 8
+                } else if (IEVersionNum === 9) {// IE9
+                    return 9
+                } else if (IEVersionNum === 10) { // IE10
+
+                    return 10
+                } else {// IE版本<7
+                    return 6
+                }
+            } else if (isEdge) { // edge
+
+                return 'edge'
+            } else if (isIE11) {// IE11
+                return 11
+            } else {// 不是ie浏览器
+                return -1
+            }
+        }
+        if(IEVersion() != -1 && IEVersion() < 9){
+            $(".main-content").css("margin-top", "50px");
+            $('.top-tips').show();
+        }
+        $("#setBox").click(function() {
+            if ($(this).prop("checked")) {
+                $("input[name=id]").prop("checked", true);
+            } else {
+                $("input[name=id]").prop("checked", false);
+            }
+        });
+        setCookie('order', 'id desc');
+        var is_files_html = false;
+        var task_open = 0;
+        var task_close = false;
+        if ($(".current").attr("id") == 'memuAfiles') {
+            is_files_html = true;
+        }
+
+        function task_stat(my_init) {
+            if (!my_init) {
+                my_init = 0;
+                if (task_open) return;
+            }
+            if (task_close) return;
+            $.post('/task?action=get_task_lists', {
+                status: -3
+            }, function(task_list) {
+                if (task_list.length == 0) {
+                    if (my_init && is_files_html) GetFiles(getCookie('Path'));
+                    if (task_open) {
+                        layer.close(task_open);
+                        task_open = false;
+                    }
+                    return;
+                }
+
+                console.log(task_list.length)
+                var msg_body = '';
+                var is_add = false;
+                for (var i = 0; i < task_list.length; i++) {
+                    if (task_list[i]['status'] == -1) {
+                        if (!task_open || !$(".message-list").attr("class")) {
+                            show_task();
+                        }
+
+                        if (task_list[i]['type'] == '1') {
+                            msg_body += '<div class="mw-con">\
+		                                <ul class="waiting-down-list">\
+			                                <li>\
+				                                <div class="down-filse-name"><span class="fname" style="width:80%;" title="Downloading: ' + task_list[i].shell + '">Downloading: ' + task_list[i].shell + '</span><span style="position: absolute;left: 84%;top: 25px;color: #999;">' + task_list[i].log.pre + '%</span><span class="btlink" onclick="remove_task(' + task_list[i].id + ')" style="position: absolute;top: 25px;right: 20px;">Cancel</span></div>\
+				                                <div class="down-progress"><div class="done-progress" style="width:' + task_list[i].log.pre + '%"></div></div>\
+				                                <div class="down-info"><span class="total-size"> ' + task_list[i].log.used + '/' + ToSize(task_list[i].log.total) + '</span><span class="speed-size">' + (task_list[i].log.speed == 0 ? 'On connection..' : task_list[i].log.speed) + '/s</span><span style="margin-left: 20px;">Estimate: ' + task_list[i].log.time + '</span></div>\
+			                                </li>\
+	                                        </ul>\
+	                                    </div>'
+                        } else {
+                            msg_body += '<div class="mw-title"><span style="max-width: 88%;display: block;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">' + task_list[i].name + ': ' + task_list[i].shell + '</span><span class="btlink" onclick="remove_task(' + task_list[i].id + ')"  style="position: absolute;top: 10px;right: 15px;">Cancel</span></div>\
+	                                    <div class="mw-con codebg">\
+		                                    <code>' + task_list[i].log + '</code>\
+	                                    </div>'
+
+                        }
+
+                    } else {
+                        if (!is_add) {
+                            msg_body += '<div class="mw-title">Waiting to execute task</div><div class="mw-con"><ul class="waiting-list">';
+                            is_add = true;
+                        }
+                        msg_body += '<li><span class="wt-list-name" style="width: 90%;">' + task_list[i].name + ': ' + task_list[i].shell + '</span><span class="mw-cancel" onclick="remove_task(' + task_list[i].id + ')">X</span></li>';
+                    }
+                }
+                if (task_open) {
+                    if (is_add) {
+                        msg_body += '</ul></div>';
+                    }
+                    $(".message-list").html(msg_body);
+                }
+
+
+                if (my_init > 3) {
+                    if (is_files_html) GetFiles(getCookie('Path'));
+                    my_init = 1;
+                }
+                my_init += 1
+                setTimeout(function() {
+                    task_stat(my_init);
+                }, 1000);
+            });
+        }
+
+        function show_task() {
+            task_open = layer.open({
+                type: 1,
+                title: "Real time task queue",
+                area: '500px',
+                closeBtn: 2,
+                shadeClose: false,
+                shade: false,
+                offset: 'auto',
+                content: '<div style="margin: 10px;" class="message-list"></div>',
+                cancel: function() {
+                    task_close = true;
+                }
+            });
+        }
+
+        function remove_task(id) {
+            loadT = layer.msg('Canceling task...', {
+                time: 0,
+                icon: 16,
+                shade: [0.3, '#000']
+            });
+            $.post('/task?action=remove_task', {
+                id: id
+            }, function(rdata) {
+                layer.close(loadT)
+                layer.msg(rdata.msg);
+            });
+        }
+        loadScript([
+            '/static/laydate/laydate.js',
+            '/static/js/jquery.qrcode.min.js',
+            '/static/js/clipboard.min.js'
+        ], function(e) {
+
+        });
+        task_stat();
+    </script>
+</body>
+
+</html>
