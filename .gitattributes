@@ -1,0 +1,2 @@
+*.sh linguist-language=Go
+*.js linguist-language=Go
