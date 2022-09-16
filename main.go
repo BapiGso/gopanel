@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"database/sql"
 	"embed"
-	"flag"
 	"fmt"
 	"github.com/gorilla/sessions"
 	_ "github.com/jmoiron/sqlx"
@@ -24,7 +23,7 @@ import (
 )
 
 var db *sql.DB
-var panelpath string
+var loginpath string
 
 //go:embed template
 var tempfile embed.FS
@@ -58,7 +57,8 @@ func randompath() {
 	for i := range b {
 		b[i] = letterBytes[rand.Int63()%int64(len(letterBytes))]
 	}
-	panelpath = "/" + string(b)
+	//loginpath = "/" + string(b)
+	loginpath = "/" + "123"
 }
 
 type TemplateRenderer struct {
@@ -72,13 +72,13 @@ func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c 
 func IsLogin(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		//登录页面不用这个中间件
-		if c.Path() == panelpath {
-			return next(c)
-		}
+		//if c.Path() == loginpath || c.Path() == "/" {
+		//	return next(c)
+		//}
 		//后台页面没有cookie的全部跳去登录
 		sess, _ := session.Get("session", c)
 		if sess.Values["isLogin"] != true {
-			return c.Redirect(http.StatusFound, panelpath)
+			return c.Redirect(http.StatusFound, "/")
 		}
 		return next(c)
 	}
@@ -86,10 +86,9 @@ func IsLogin(next echo.HandlerFunc) echo.HandlerFunc {
 
 // todo auto tls
 func main() {
-	go http.ListenAndServe(":8080", nil)
-	flag.Parse()
+	//go http.ListenAndServe(":8080", nil)
+	//flag.Parse()
 	e := echo.New()
-
 	e.Renderer = &TemplateRenderer{
 		templates: template.Must(template.ParseFS(tempfile, "template/*.template")),
 	}
@@ -109,17 +108,18 @@ func main() {
 	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
 		Level: 3,
 	}))
-	e.Use(session.Middleware(sessions.NewCookieStore([]byte("secret"))))
 	e.Static("/assets", "./assets")
-	e.GET("/", LoginGet)
+	e.Use(session.Middleware(sessions.NewCookieStore([]byte("secret"))))
 
-	g := e.Group(panelpath)
-
+	e.GET("/", Warning)
+	e.GET(loginpath, LoginGet)
+	e.POST(loginpath, LoginPost)
+	g := e.Group("/admin")
 	g.Use(IsLogin)
-	g.GET("", LoginGet)
-	g.POST("", LoginPost)
+	g.GET("/home", Home)
+
 	//e.Start(*bind)
-	go fmt.Println("panel path is:", panelpath)
+	go fmt.Println("panel path is:", loginpath)
 	e.Logger.Fatal(e.Start(":8848"))
 }
 

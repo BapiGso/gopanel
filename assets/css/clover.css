@@ -179,14 +179,16 @@ input:focus::placeholder {
 }
 
 /* 按钮盒子 */
-.btn-box {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
+/*input[type="submit"],*/
+/*.btn-box {*/
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    justify-content: center;*/
+/*    align-items: center;*/
+/*}*/
 
 /* 按钮 */
+input[type="submit"],
 button {
     width: 100px;
     height: 30px;
@@ -199,6 +201,7 @@ button {
     /* border: 1px solid #e6a49d; */
 }
 
+input[type="submit"]:hover,
 button:hover {
     cursor: pointer;
 }

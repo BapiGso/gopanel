@@ -26,12 +26,16 @@ func queryLogin() *loginSql {
 	return data
 }
 
+func Warning(c echo.Context) error {
+	return c.Render(http.StatusOK, "warning.template", nil)
+}
+
 func LoginGet(c echo.Context) error {
-	sess, _ := session.Get("smoesession", c)
+	sess, _ := session.Get("session", c)
 	if sess.Values["isLogin"] == true {
 		return c.Redirect(302, "/home")
 	}
-	return c.Render(http.StatusOK, "nologin.template", nil)
+	return c.Render(http.StatusOK, "login.template", nil)
 }
 
 // todo 防爆破
@@ -42,7 +46,7 @@ func LoginPost(c echo.Context) error {
 	if err := c.Bind(req); err != nil {
 		return c.String(200, "表单提交错误")
 	}
-	sess, _ := session.Get("panelsession", c)
+	sess, _ := session.Get("session", c)
 	//TODO 发邮件提醒和防爆破
 	data := queryLogin()
 	if data.Username == req.Username && data.Password == hash(req.Password+data.Salt) {
@@ -51,7 +55,7 @@ func LoginPost(c echo.Context) error {
 		sess.Values["isLogin"] = false
 	}
 	sess.Save(c.Request(), c.Response())
-	return c.Redirect(302, "/admin")
+	return c.Redirect(302, loginpath)
 }
 
 func hash(passwd string) string {

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <title>login</title>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,43 +32,13 @@
                 <img src="/assets/img/胡桃.jpg" alt="">
             </div>
             <!-- 输入框盒子 -->
-            <div class="input-box">
+            <form  class="input-box" action="" method="post">
                 <!-- 输入框 -->
-                <input type="text" placeholder="用户名">
-                <input type="password" placeholder="密码">
-            </div>
-            <!-- 按钮盒子 -->
-            <div class="btn-box">
-                <button>登录</button>
-                <!-- 绑定点击事件 -->
-                <button onclick="mySlide()">注册</button>
-            </div>
-        </div>
-        <!-- 注册盒子 -->
-        <div class="register-box">
-            <!-- 标题 -->
-            <h1 class="title">
-                Sign up
-            </h1>
-            <!-- 图片盒子 -->
-            <div class="img-box">
-                <!-- 图片 -->
-                <img src="/assets/img/可莉.png" alt="">
-            </div>
-            <!-- 输入框盒子 -->
-            <div class="input-box">
-                <!-- 输入框 -->
-                <input type="text" placeholder="用户名">
-                <input type="password" placeholder="密码">
-                <input type="password" placeholder="确认密码">
-            </div>
-            <!-- 按钮盒子 -->
-            <div class="btn-box">
-                <button>注册</button>
-                <!-- 绑定点击事件 -->
-                <button onclick="mySlide()">登录</button>
-            </div>
-        </div>
+                <input type="text" placeholder="用户名" name="user">
+                <input type="password" placeholder="密码" name="pwd">
+                <input type="submit" value="登录">
+            </form >
+
     </div>
     <script>
         // 控制切换状态
