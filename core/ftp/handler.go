@@ -1,4 +1,4 @@
-package docker
+package ftp
 
 import (
 	"github.com/labstack/echo/v4"

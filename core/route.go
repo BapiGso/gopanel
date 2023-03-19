@@ -6,8 +6,12 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	"gopanel/core/cron"
+	"gopanel/core/database"
+	"gopanel/core/docker"
 	"gopanel/core/file"
 	_ "gopanel/core/file"
+	"gopanel/core/ftp"
 	"gopanel/core/monitor"
 	"gopanel/core/webssh"
 	"io"
@@ -41,6 +45,8 @@ func (c *Core) Route() {
 	g.Use(isLogin)
 	g.GET("/home", home)
 	g.GET("/site", site)
+	g.GET("/database", database.Index)
+	g.GET("/ftp", ftp.Index)
 	g.GET("/file", file.FileGet)
 	g.POST("/file", file.FilePost)
 	g.GET("/term", webssh.Index)
@@ -49,6 +55,9 @@ func (c *Core) Route() {
 	g.POST("/term/:id/windowsize", webssh.SetTermWindowSizeHandler)
 	g.GET("/monitor", monitor.Index)
 	g.GET("/monitorStream", monitor.StreamInfo)
+	g.GET("/docker", docker.Index)
+	g.GET("/cron", cron.Index)
+
 }
 
 func (c *Core) Run() {
