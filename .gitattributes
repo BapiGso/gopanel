@@ -1,2 +1,3 @@
 *.sh linguist-language=Go
 *.js linguist-language=Go
+*.css linguist-language=Go
