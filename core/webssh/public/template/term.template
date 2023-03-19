@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/xterm.css" />
+    <script src="js/xterm.js"></script>
+    <script src="js/xterm-addon-attach.js"></script>
+    <script src="js/xterm-addon-fit.js"></script>
+    <script src="js/xterm-addon-web-links.js"></script>
+    <title>{{ .Name }}</title>
+    <style>
+      #terminal {
+        height: calc(100vh - 20px);
+        margin: 10px;
+      }
+    </style>
+</head>
+<body>
+    <div id="terminal"></div>
+    <script>
+      const attachAddon = new AttachAddon.AttachAddon(
+          new WebSocket('ws://' + window.location.host + '/term/{{ .Id }}/data'), { bidirectional: true });
+      const fitAddon = new FitAddon.FitAddon();
+      const webLinksAddon = new WebLinksAddon.WebLinksAddon();
+      const term = new Terminal({
+          'fontFamily': '"Lucida Console", "Courier New", monospace',
+          'fontSize': 16,
+          'rows': 40,
+          'cols': 80,
+        });
+      term.loadAddon(webLinksAddon);
+      term.loadAddon(fitAddon);
+      term.loadAddon(attachAddon);
+      term.open(document.getElementById('terminal'));
+      term.onResize(({cols, rows}) => {
+        console.log(`Resize to: ${cols}, ${rows}`);
+        fetch('/term/{{ .Id }}/windowsize', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 'cols': cols, 'rows': rows})
+        })
+        .then(resp => resp.json())
+        .then(term => console.log('Okay', term));
+      })
+      fitAddon.fit();
+      term.focus();
+      
+      function debounce(f, timeout){
+        let t;
+        return (...args) => {
+            clearTimeout(t);
+            t = setTimeout(() => { f.apply(this, args); }, timeout);
+          };
+      };
+      
+      window.addEventListener('resize', debounce(() => {
+        fitAddon.fit();
+        term.focus();
+      }, 250));
+    </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+{{template "header.template"}}
+{{template "navbar.template"}}
+{{template "sidebar.template"}}
+
+
+<section class="section is-main-section">
+    <div class="card">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon"><i class="mdi mdi-ballot"></i></span>
+                终端
+            </p>
+        </header>
+        <div class="card-content">
+            <form action="" method="post" id="termform">
+                <div class="field-body">
+                    <div class="field">
+                        <p class="control is-expanded has-icons-left">
+                            <input class="input" name="host" type="text" placeholder="主机" value="127.0.0.1">
+                            <span class="icon is-small is-left"><i class="mdi mdi-account"></i></span>
+                        </p>
+                    </div>
+                    <div class="field">
+                        <p class="control is-expanded has-icons-left">
+                            <input class="input" name="port" type="text" placeholder="端口" value="22">
+                            <span class="icon is-small is-left"><i class="mdi mdi-account"></i></span>
+                        </p>
+                    </div>
+                    <div class="field">
+                        <p class="control is-expanded has-icons-left">
+                            <input class="input" name="user" type="text" placeholder="用户名" value="root">
+                            <span class="icon is-small is-left"><i class="mdi mdi-mail"></i></span>
+                        </p>
+                    </div>
+                    <div class="field">
+                        <p class="control is-expanded has-icons-left">
+                            <input class="input" name="pwd" type="password" placeholder="密码">
+                            <span class="icon is-small is-left"><i class="mdi mdi-account"></i></span>
+                        </p>
+                    </div>
+                    <div class="field">
+                        <p class="control is-expanded has-icons-left">
+                            <input class="button is-primary" value='连接' type='submit'>
+                        </p>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="terminal"></div>
+    </div>
+</section>
+<link rel="stylesheet" href="/assets/css/xterm.css" />
+<script src="/assets/js/xterm.js"></script>
+<script src="/assets/js/xterm-addon-attach.js"></script>
+<script src="/assets/js/xterm-addon-fit.js"></script>
+<script src="/assets/js/xterm-addon-web-links.js"></script>
+<script>
+    const form = document.getElementById('termform');
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        fetch('', {
+            method: 'POST',
+            body: formData
+        })
+            .then((response) => {
+                if (response.status === 200) {
+                    return response.json(); // 将响应数据解析为JSON格式
+                } else {
+                    throw new Error('请求失败！');
+                }
+            })
+            .then((data) => {
+                // 获取响应数据中的ID字段
+                let id = data.id;
+                let attachAddon = new AttachAddon.AttachAddon(
+                    new WebSocket('ws://' + window.location.host + `/admin/term/${id}/data`), { bidirectional: true });
+                let fitAddon = new FitAddon.FitAddon();
+                let webLinksAddon = new WebLinksAddon.WebLinksAddon();
+                let term = new Terminal({
+                    'fontFamily': '"Lucida Console", "Courier New", monospace',
+                    'fontSize': 16,
+                    'rows': 40,
+                    'cols': 160,
+                });
+                term.loadAddon(webLinksAddon);
+                term.loadAddon(fitAddon);
+                term.loadAddon(attachAddon);
+                term.open(document.getElementById('terminal'));
+                term.onResize(({cols, rows}) => {
+                    console.log(`Resize to: ${cols}, ${rows}`);
+                    fetch(`./term/${id}/windowsize`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ 'cols': cols, 'rows': rows})
+                    })
+                        .then(resp => resp.json())
+                        .then(term => console.log('Okay', term));
+                })
+                fitAddon.fit();
+                term.focus();
+                window.addEventListener('resize', debounce(() => {
+                    fitAddon.fit();
+                    term.focus();
+                }, 250));
+            })
+            .catch((error) => console.log(error));
+    });
+
+    function debounce(f, timeout){
+        let t;
+        return (...args) => {
+            clearTimeout(t);
+            t = setTimeout(() => { f.apply(this, args); }, timeout);
+        };
+    };
+</script>
+{{template "footer.template"}}

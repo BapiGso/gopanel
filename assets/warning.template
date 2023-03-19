@@ -1,0 +1,64 @@
+<html lang="zh">
+<head>
+    <title>访问已被拦截</title>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
+    <!-- Fonts -->
+    <link href="//fonts.gstatic.com" rel="dns-prefetch">
+    <style>
+        body{
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: row;
+            margin: 0;
+        }
+
+        .left-rec{
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .left-rec .text{
+            width: 70%;
+        }
+
+        .right-sec{
+            width: 50%;
+            background-image: url(/assets/img/right-rec.jpg);
+            background-size: 100% 100%;
+        }
+
+        .sub-footer{
+            display: flex;
+            flex-direction: row;
+        }
+    </style>
+</head>
+<div class="left-rec">
+    <div class="text">
+        <h1>很抱歉，您的访问已被拦截</h1>
+        <h1>正在使用安全服务来保护自己免受在线攻击 </h1>
+        <h1>请使用正确的路径登录面板</h1>
+        <br>
+        <br>
+        <h3>新安装的机器会随机分配一个 8 位的安全入口。也可以在面板设置中进行修改。如果没有记录或者不记得了，可以使用下面的方法解决错误</h3>
+        <br><br>
+        <h3>解决方法:</h3>
+        <h4>1.查看安全入口：./gopanel -q path</h4>
+        <h4>2.关闭安全入口：rm -f /www/panel/data/admin_path.pl</h4>
+        <br>
+        <br>
+        <h3>注意：【关闭安全入口】会使您的面板登录地址直接暴露在互联网上，非常危险。请小心。</h3>
+            <div class="sub-footer">
+                <h4>事件ID: ::RAY_ID::         </h4>
+                <h4>你的IP: ::CLIENT_IP::      </h4>
+            </div>
+    </div>
+</div>
+<div class="right-sec"></div>
+</body>
+</html>

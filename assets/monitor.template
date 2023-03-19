@@ -1,0 +1,5 @@
+{{template "header.template"}}
+{{template "navbar.template"}}
+{{template "sidebar.template"}}
+
+{{template "footer.template"}}

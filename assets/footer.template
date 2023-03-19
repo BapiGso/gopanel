@@ -1,0 +1,23 @@
+<footer class="footer">
+    <div class="container-fluid">
+        <div class="level">
+            <div class="level-left">
+                <div class="level-item">
+                    © 2022, Gopanel
+                </div>
+                <div class="level-item">
+                    <a href="https://github.com/BapiGso/gopanel" style="height: 20px">
+                        <img src="https://img.shields.io/github/last-commit/BapiGso/gopanel">
+                    </a>
+                </div>
+            </div>
+            <div class="level-right">
+                <div class="level-item">
+                    <div class="logo">
+                        <a href="https://smoe.cc"></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>

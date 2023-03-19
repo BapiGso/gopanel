@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/xterm.css" />
+    <script src="/js/xterm.js"></script>
+    <script src="/js/xterm-addon-attach.js"></script>
+    <script src="/js/xterm-addon-fit.js"></script>
+    <script src="/js/xterm-addon-web-links.js"></script>
+    <title>WebTerm</title>
+    <style>
+        #form {
+            height: 40px;
+            margin: 10px;
+        }
+        #terminal {
+            height: calc(100vh - 70px);
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <form id="form" action="/term">
+        <label for="host">Host:</label>
+        <input type="text" id="host" name="host" required>
+        <label for="port">Port:</label>
+        <input type="text" id="port" name="port" value="22">
+        <label for="user">User:</label>
+        <input type="text" id="user" name="user" required>
+        <label for="pwd">Password:</label>
+        <input type="text" id="pwd" name="pwd" required>
+        <input type="submit" value="Connect">
+    </form>
+    <div id="terminal">
+    </div>
+    <script>
+        var term, termFitAddon;
+
+        function debounce(f, timeout){
+            let t;
+            return (...args) => {
+                clearTimeout(t);
+                t = setTimeout(() => { f.apply(this, args); }, timeout);
+            };
+        };
+        
+        window.addEventListener('resize', debounce(() => {
+            if (term != null) {
+                termFitAddon.fit();
+                term.focus();
+            }
+        }, 250));
+
+        function createTermial(term_id) {
+            if (term != null) {
+                term.dispose();
+                term = null;
+            }
+            console.log(`New term: ${term_id}`);
+            term = new Terminal({
+                    'fontFamily': '"Lucida Console", "Courier New", monospace',
+                    'fontSize': 16,
+                    'rows': 40,
+                    'cols': 80,
+                });
+            termFitAddon = new FitAddon.FitAddon();
+            term.loadAddon(termFitAddon);
+            term.loadAddon(new WebLinksAddon.WebLinksAddon());
+            term.loadAddon(new AttachAddon.AttachAddon(
+                new WebSocket(`ws://${window.location.host}/term/${term_id}/data`), { bidirectional: true }));
+            term.open(document.getElementById('terminal'));
+            term.onResize(({cols, rows}) => {
+                resizeTermial(term_id, cols, rows);
+            });
+            termFitAddon.fit();
+            term.focus();
+        };
+
+        function resizeTermial(term_id, cols, rows) {
+            console.log(`Resize to: ${cols}, ${rows}`);
+            fetch(`/term/${term_id}/windowsize`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        'cols': cols,
+                        'rows': rows})
+                }).then(resp => {
+                    if (!resp.ok) {
+                        return resp.json()
+                            .then(err => { throw new Error(err.cause)});
+                    }
+                    return resp.json();
+                }).then(term => {
+                    console.log('Okay', term);
+                }).catch(err => {
+                    console.error('Error', err);
+                });
+        };
+
+        const form = document.getElementById('form');
+        
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const host = document.getElementById('host').value;
+            const port = +document.getElementById('port').value || 22;
+            const user = document.getElementById('user').value;
+            const pwd = document.getElementById('pwd').value;
+
+            if (host == "") {
+                alert("Host is empty!");
+                return;
+            }
+
+            if (user == "" || pwd == "") {
+                alert("User or password is empty!");
+                return;
+            }
+
+            fetch('/term', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    'host': host,
+                    'port': port,
+                    'user': user,
+                    'pwd': pwd})
+            }).then(resp => {
+                if (!resp.ok) {
+                    return resp.json()
+                        .then(err => { throw new Error(err.cause)});
+                }
+                return resp.json();
+            }).then(term => {
+                console.log('Okay', term);
+                document.getElementById('terminal').innerHTML = '';
+                createTermial(term.id);
+            }).catch(err => {
+                console.error('Error', err);
+                document.getElementById('terminal').innerHTML = `
+                    <p class="error">Connection error: ${err}</p>
+                    `;
+            });
+        });
+    </script>
+</body>
+</html>

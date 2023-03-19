@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSSH</title>
+    <style>
+        table, td, th {
+            border: 1px solid black;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        td {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <p>Create a new term:</p>
+        <form id="form" action="/term" target="_blank">
+            <label for="host">Host:</label>
+            <input type="text" id="host" name="host" required>
+            <label for="port">Port:</label>
+            <input type="text" id="port" name="port" value="22">
+            <label for="user">User:</label>
+            <input type="text" id="user" name="user" required>
+            <label for="pwd">Password:</label>
+            <input type="text" id="pwd" name="pwd" required>
+            <input type="submit" value="Connect">
+        </form>
+    </div>
+    <div>
+        <p>List activated terms:</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Host:Port</th>
+                    <th>User</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Since</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .}}
+                    <tr>
+                        <td>{{ .Id }}</td>
+                        <td>{{ .Host }}:{{ .Port }}</td>
+                        <td>{{ .User }}</td>
+                        <td>{{ .Type }}</td>
+                        <td>{{ .Rows }}x{{ .Cols }}</td>
+                        <td>{{ .Since.Format "2006-01-02T15:04:05Z07:00" }}</td>
+                    </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+    <script>
+        const form = document.getElementById('form');
+        form.addEventListener('submit', () => {
+            setTimeout(() => { window.location.reload(); }, 200);
+        });
+    </script>
+</body>
+</html>
