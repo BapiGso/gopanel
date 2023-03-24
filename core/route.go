@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
@@ -13,6 +14,7 @@ import (
 	_ "gopanel/core/file"
 	"gopanel/core/ftp"
 	"gopanel/core/monitor"
+	"gopanel/core/store"
 	"gopanel/core/webssh"
 	"io"
 	"net/http"
@@ -57,11 +59,12 @@ func (c *Core) Route() {
 	g.GET("/monitorStream", monitor.StreamInfo)
 	g.GET("/docker", docker.Index)
 	g.GET("/cron", cron.Index)
+	g.GET("/store", store.Index)
 
 }
 
 func (c *Core) Run() {
-	//log.Print(banner)
+	fmt.Printf(banner, "")
 	c.E.Logger.Fatal(c.E.Start(":8848"))
 }
 
