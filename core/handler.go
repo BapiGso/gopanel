@@ -3,9 +3,9 @@ package core
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"github.com/BapiGso/gopanel/core/monitor"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
-	"gopanel/core/monitor"
 	"net/http"
 )
 

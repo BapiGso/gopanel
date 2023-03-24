@@ -1,6 +1,11 @@
-module gopanel
+module "github.com/BapiGso/gopanel"
 
 go 1.19
+
+replace (
+	github.com/BapiGso/gopanel/core => ./core
+	github.com/BapiGso/gopanel/assets => ./assets
+)
 
 require (
 	github.com/go-co-op/gocron v1.19.0

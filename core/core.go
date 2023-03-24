@@ -2,10 +2,10 @@ package core
 
 import (
 	"embed"
+	"github.com/BapiGso/gopanel/assets"
 	"github.com/go-co-op/gocron"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
-	"gopanel/assets"
 	"text/template"
 	"time"
 )
