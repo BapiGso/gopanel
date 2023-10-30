@@ -2,49 +2,50 @@ package core
 
 import (
 	"fmt"
-	"github.com/BapiGso/gopanel/core/cron"
-	"github.com/BapiGso/gopanel/core/database"
-	"github.com/BapiGso/gopanel/core/docker"
-	"github.com/BapiGso/gopanel/core/file"
-	_ "github.com/BapiGso/gopanel/core/file"
-	"github.com/BapiGso/gopanel/core/ftp"
-	"github.com/BapiGso/gopanel/core/monitor"
-	"github.com/BapiGso/gopanel/core/store"
-	"github.com/BapiGso/gopanel/core/webssh"
-	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/labstack/gommon/log"
-	"io"
 	"net/http"
+	"panel/core/cron"
+	"panel/core/database"
+	"panel/core/docker"
+	"panel/core/file"
+	"panel/core/ftp"
+	"panel/core/monitor"
+	"panel/core/store"
+	"panel/core/unit"
+	"panel/core/webssh"
 	"text/template"
 )
 
-func (t *TemplateRender) Render(w io.Writer, name string, data interface{}, _ echo.Context) error {
-	return t.Template.ExecuteTemplate(w, name, data)
-}
-
 func (c *Core) Route() {
-	c.E.HideBanner = true
-	c.E.Renderer = &TemplateRender{
-		Template: template.Must(template.ParseFS(c.AssetsFS, "*.template")),
+	c.e.Validator = &unit.Validator{}
+	c.e.Renderer = &unit.TemplateRender{
+		Template: template.Must(template.ParseFS(c.assetsFS, "*.template")),
 	}
-	c.E.Logger.SetLevel(log.ERROR)
 
-	c.E.Use(middleware.Logger())
-	c.E.Use(middleware.Recover())
-	c.E.Use(middleware.GzipWithConfig(middleware.GzipConfig{Level: 3}))
-	c.E.StaticFS("/assets", c.AssetsFS)
-	c.E.Use(session.Middleware(sessions.NewCookieStore([]byte("secret"))))
-	c.E.GET("/", warning)
-	c.E.GET("/:anywhere", warning)
-	//c.E.GET(QueryPath(c.Db), loginGet)
-	//c.E.POST(QueryPath(c.Db), loginPost)
-	c.E.GET("/login", loginGet)
-	c.E.POST("login", loginPost)
-	g := c.E.Group("/admin")
-	g.Use(isLogin)
+	c.e.Use(middleware.Logger())
+	c.e.Use(middleware.Recover())
+	c.e.Use(middleware.GzipWithConfig(middleware.GzipConfig{Level: 3}))
+	//将配置文件暴露到content中
+	c.e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(ec echo.Context) error {
+			ec.Set("conf", c.Conf)
+			return next(ec)
+		}
+	})
+
+	c.e.GET("/test", func(c echo.Context) error {
+		return c.Render(200, "header.template", nil)
+	})
+	c.e.GET("/", warning)
+	c.e.Any("/:anywhere", warning)
+	g := c.e.Group("/admin")
+	g.Use(echojwt.WithConfig(echojwt.Config{
+		SigningKey:  c.Conf.JWTKey,
+		TokenLookup: "cookie:gopanel_token",
+	}))
 	g.GET("/home", home)
 	g.GET("/site", site)
 	g.GET("/database", database.Index)
@@ -60,12 +61,12 @@ func (c *Core) Route() {
 	g.GET("/docker", docker.Index)
 	g.GET("/cron", cron.Index)
 	g.GET("/store", store.Index)
-
+	c.e.StaticFS("/assets", c.assetsFS)
 }
 
 func (c *Core) Run() {
 	fmt.Printf(banner, "")
-	c.E.Logger.Fatal(c.E.Start(":8848"))
+	c.e.Logger.Fatal(c.e.Start(":8848"))
 }
 
 func isLogin(next echo.HandlerFunc) echo.HandlerFunc {

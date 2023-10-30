@@ -2,9 +2,9 @@ package main
 
 import (
 	_ "github.com/jmoiron/sqlx"
-	"gopanel/core"
 	_ "modernc.org/sqlite"
 	_ "net/http/pprof"
+	"panel/core"
 )
 
 func main() {

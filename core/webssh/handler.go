@@ -14,64 +14,22 @@ func Index(c echo.Context) error {
 	return c.Render(http.StatusOK, "term.template", termStore.All())
 }
 
-type newTermReq struct {
-	Host     string `query:"host" form:"host" json:"host"`
-	Port     int    `query:"port" form:"port" json:"port"`
-	Username string `query:"user" form:"user" json:"user"`
-	Password string `query:"pwd" form:"pwd" json:"pwd"`
-	Rows     int    `query:"rows" form:"rows" json:"rows"`
-	Cols     int    `query:"cols" form:"cols" json:"cols"`
-}
-
-func newTermHandler(c echo.Context) error {
-	req := new(newTermReq)
-
-	if err := c.Bind(req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
-	}
-
-	if req.Host == "" {
-		return echo.NewHTTPError(http.StatusBadRequest,
-			"Host not provided")
-	}
-
-	if req.Username == "" || req.Password == "" {
-		return echo.NewHTTPError(http.StatusBadRequest,
-			"User or password not provided")
-	}
-
-	term, err := termStore.New(TermOption{
-		Host:     req.Host,
-		Port:     req.Port,
-		Username: req.Username,
-		Password: req.Password,
-	})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
-	}
-
-	c.Logger().Infof("Created term: %s", term)
-
-	return c.Render(http.StatusOK, "term.template", term)
-}
-
-type termErr struct {
-	Cause string `json:"cause"`
-}
-
 func CreateTermHandler(c echo.Context) error {
-	req := new(newTermReq)
+	req := &struct {
+		Host     string `query:"host" form:"host" json:"host"`
+		Port     int    `query:"port" form:"port" json:"port"`
+		Username string `query:"user" form:"user" json:"user"`
+		Password string `query:"pwd"  form:"pwd" json:"pwd"`
+		Rows     int    `query:"rows" form:"rows" json:"rows"`
+		Cols     int    `query:"cols" form:"cols" json:"cols"`
+	}{}
 
 	if err := c.Bind(req); err != nil {
-		return c.JSON(http.StatusBadRequest, termErr{err.Error()})
+		return err
 	}
 
-	if req.Host == "" {
-		return c.JSON(http.StatusBadRequest, termErr{"Host not provided"})
-	}
-
-	if req.Username == "" || req.Password == "" {
-		return c.JSON(http.StatusBadRequest, termErr{"User or password not provided"})
+	if req.Host == "" || req.Username == "" || req.Password == "" {
+		return c.JSON(http.StatusBadRequest, "host or user or password not provided")
 	}
 
 	term, err := termStore.New(TermOption{
@@ -81,39 +39,38 @@ func CreateTermHandler(c echo.Context) error {
 		Password: req.Password,
 	})
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, termErr{err.Error()})
+		return err
 	}
+	c.SetCookie(&http.Cookie{
+		Name:  term.Name(),
+		Value: term.Id})
 
-	c.Logger().Infof("Created term: %s", term)
-
-	return c.JSON(http.StatusOK, term)
-}
-
-type setTermWindowSizeReq struct {
-	Rows int `query:"rows" form:"rows" json:"rows"`
-	Cols int `query:"cols" form:"cols" json:"cols"`
+	return c.NoContent(200)
 }
 
 func SetTermWindowSizeHandler(c echo.Context) error {
-	req := new(setTermWindowSizeReq)
+	req := &struct {
+		Rows int `query:"rows" form:"rows" json:"rows"`
+		Cols int `query:"cols" form:"cols" json:"cols"`
+	}{}
 
 	if err := c.Bind(req); err != nil {
-		return c.JSON(http.StatusBadRequest, termErr{err.Error()})
+		return err
 	}
 
 	if req.Rows == 0 || req.Cols == 0 {
-		return c.JSON(http.StatusBadRequest, termErr{"Rows or cols can't be zero"})
+		return c.JSON(http.StatusBadRequest, "Rows or cols can't be zero")
 	}
 
 	term, err := termStore.Get(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, termErr{err.Error()})
+		return err
 	}
 	defer termStore.Put(term.Id)
 
 	err = term.SetWindowSize(req.Rows, req.Cols)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, termErr{err.Error()})
+		return err
 	}
 
 	return c.JSON(http.StatusOK, term)
@@ -124,7 +81,7 @@ const TermBufferSize = 8192
 func LinkTermDataHandler(c echo.Context) error {
 	term, err := termStore.Lookup(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, termErr{err.Error()})
+		return err
 	}
 
 	websocket.Handler(func(ws *websocket.Conn) {

@@ -28,7 +28,7 @@ func (c *Core) First() {
 	_, err := os.Stat("./panel.db")
 	if os.IsNotExist(err) {
 		fmt.Println("看起来您是第一次使用面板，正在初始化数据库。。。")
-		c.Db, err = sqlx.Connect("sqlite", "panel.db")
+		c.db, err = sqlx.Connect("sqlite", "panel.db")
 		if err != nil {
 			log.Fatalf("创建数据库失败，请检查读写权限%v\n", err)
 		}
@@ -39,14 +39,14 @@ func (c *Core) First() {
 			log.Print(congratulation, conf.path, conf.usr, conf.pwd)
 		}
 	}
-	c.Db, err = sqlx.Connect("sqlite", "panel.db")
+	c.db, err = sqlx.Connect("sqlite", "panel.db")
 	return
 }
 
 // 初始化数据库结构
 func (c *Core) initDb() error {
-	sqlTable, err := c.AssetsFS.ReadFile("panel.sql")
-	_, err = c.Db.Exec(string(sqlTable))
+	sqlTable, err := c.assetsFS.ReadFile("panel.sql")
+	_, err = c.db.Exec(string(sqlTable))
 	return err
 }
 
@@ -58,7 +58,7 @@ func (c *Core) registerUsr() (*registerUsr, error) {
 		usr:  string(randStr()),
 		pwd:  string(randStr()),
 	}
-	_, err := c.Db.NamedExec("INSERT INTO conf (port, path, usr, pwd) VALUES (:port, :path, :usr, :pwd)", &data)
+	_, err := c.db.NamedExec("INSERT INTO conf (port, path, usr, pwd) VALUES (:port, :path, :usr, :pwd)", &data)
 	return data, err
 }
 

@@ -2,28 +2,31 @@ package core
 
 import (
 	"embed"
-	"github.com/BapiGso/gopanel/assets"
+	"fmt"
 	"github.com/go-co-op/gocron"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
-	"text/template"
+	"panel/assets"
+	"panel/core/unit"
 	"time"
 )
 
-type (
-	Core struct {
-		CommandLineArgs BindFlag          //命令行参数
-		Db              *sqlx.DB          //数据库
-		AssetsFS        *embed.FS         //主题所在文件夹
-		E               *echo.Echo        //后台框架
-		S               *gocron.Scheduler //任务计划
-		// 邮件提醒
-	}
+type Core struct {
+	Conf            *conf             //存储配置文件
+	CommandLineArgs BindFlag          //命令行参数
+	db              *sqlx.DB          //数据库
+	assetsFS        *embed.FS         //主题所在文件夹
+	e               *echo.Echo        //后台框架
+	s               *gocron.Scheduler //任务计划
+	// 邮件提醒
+}
 
-	TemplateRender struct {
-		Template *template.Template //渲染模板
-	}
-)
+type conf struct {
+	LoginPath string
+	JWTKey    []byte
+	User      []byte
+	PassWord  []byte
+}
 
 const (
 	banner = `
@@ -41,8 +44,15 @@ ____________________________________O/_______
 
 func New() (c *Core) {
 	c = &Core{}
-	c.AssetsFS = &assets.Assets
-	c.E = echo.New()
-	c.S = gocron.NewScheduler(time.UTC)
+	c.Conf = &conf{
+		LoginPath: unit.RandStr(10),
+		JWTKey:    []byte(unit.RandStr(12)),
+		User:      []byte(unit.RandStr(8)),
+		PassWord:  []byte(unit.RandStr(8)),
+	}
+	fmt.Println(c.Conf)
+	c.assetsFS = &assets.Assets
+	c.e = echo.New()
+	c.s = gocron.NewScheduler(time.UTC)
 	return c
 }

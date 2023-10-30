@@ -1,9 +1,8 @@
 package core
 
 import (
-	"crypto/sha1"
-	"encoding/hex"
-	"github.com/BapiGso/gopanel/core/monitor"
+	"panel/core/monitor"
+
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -53,14 +52,4 @@ func home(c echo.Context) error {
 
 func site(c echo.Context) error {
 	return c.Render(200, "site.template", nil)
-}
-
-func hash(passwd string) string {
-	h := sha1.New() // md5加密类似md5.New()
-	//写入要处理的字节。如果是一个字符串，需要使用[]byte(s) 来强制转换成字节数组。
-	h.Write([]byte(passwd))
-	bs := h.Sum(nil)
-	h.Reset()
-	passwdhash := hex.EncodeToString(bs) //转16进制
-	return passwdhash
 }
