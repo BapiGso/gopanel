@@ -1,0 +1,38 @@
+{{template "header.template"}}
+<section>
+    <form>
+        <h3>panel setting</h3>
+        <label>
+            panel port
+            <input type="text">
+        </label>
+        <label>
+            panel path
+            <input type="text">
+        </label>
+        <label>
+            panel username
+            <input type="text">
+        </label>
+        <label>
+            panel password
+            <input type="text">
+        </label>
+        <button type="submit">save</button>
+    </form>
+
+    <form>
+        <h3>server setting</h3>
+        <label>
+            ssh port
+        </label>
+    </form>
+</section>
+<script>
+    document.addEventListener('alpine:init', () => {
+            Alpine.data('panel', () => ({
+                })
+            )
+        }
+    )
+</script>

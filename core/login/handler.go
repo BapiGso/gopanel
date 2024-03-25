@@ -1,24 +1,55 @@
 package login
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/labstack/echo/v4"
+	"github.com/spf13/viper"
+	"net/http"
+	"time"
+)
+
+// JWTKey 生成一个随机[]byte
+// var JWTKey = []byte(strconv.Itoa(rand.Int()))
+var JWTKey = []byte("123")
+
+func Warning(err error, c echo.Context) {
+	_ = c.Render(http.StatusTeapot, "warning.template", err)
+}
 
 func Login(c echo.Context) error {
-	req := &struct {
-		Path     string
-		User     string
-		PassWord string
-	}{}
-	if err := c.Bind(req); err != nil {
-		return err
-	}
 	switch c.Request().Method {
 	case "GET":
-		if req.Path != c.Get("conf").(string) {
-			return c.Render(400, "warning.template", nil)
+		user, ok := c.Get("user").(*jwt.Token)
+		if ok && user.Valid {
+			return c.Redirect(302, "/admin/monitor")
 		}
 		return c.Render(200, "login.template", nil)
 	case "POST":
-
+		req := &struct {
+			Username string `form:"username" validate:"required,min=1,max=200"`
+			Password string `form:"password" validate:"required,min=8,max=200"`
+		}{}
+		if err := c.Bind(req); err != nil {
+			return err
+		}
+		if err := c.Validate(req); err != nil {
+			return err
+		}
+		if req.Username == viper.GetString("username") && req.Password == viper.GetString("password") {
+			token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, &jwt.RegisteredClaims{
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)), //过期日期设置7天
+			}).SignedString(JWTKey)
+			if err != nil {
+				return err
+			}
+			c.SetCookie(&http.Cookie{
+				Name:     "panel_token",
+				Value:    token,
+				HttpOnly: true,
+			})
+			return c.Redirect(302, "/admin/monitor")
+		}
+		return echo.ErrUnauthorized
 	}
-	return c.NoContent(400)
+	return echo.ErrMethodNotAllowed
 }

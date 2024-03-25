@@ -1,0 +1,49 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+td, th {
+    padding: 0.1em;
+}
+
+p{
+    margin-bottom: 0.6em;
+}
+
+body {
+    max-width: 100vw;
+    max-height: 100vh;
+    display: flex;
+    overflow: hidden;
+    &>aside{
+        width: 20%;
+        display: flex;
+        flex-direction: column;
+    }
+    &>section {
+        width: 80%;
+        overflow-y: auto;
+        &>#hardwareInfo{
+            height: 200px;
+            display: flex;
+        }
+    }
+    &>#editorParent{
+        height: 100%;
+        width: 100%;
+        position: fixed;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        &>#editor{
+            & .ace_print-margin{
+                visibility: hidden!important;
+            }
+            height: 80%;
+            width: 80%;
+        }
+    }
+}
+

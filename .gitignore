@@ -1,2 +1,4 @@
-/panel.db
+/config.json
+/caddy
 ./.idea
+/websiteConfig

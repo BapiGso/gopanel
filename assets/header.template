@@ -2,45 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Gopanel Dashboard</title>
+    <title>GoPanel Dashboard</title>
     <link rel="stylesheet" href="/assets/css/sakura.css">
-    <style>
-        *{
-            padding: 0;
-            margin:0;
-        }
-        body{
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-        }
-        aside{
-            display: flex;
-            flex-direction: column;
-        }
-        section{
-            display: flex;
-            flex-direction: column;
-        }
-    </style>
+    <link rel="stylesheet" href="/assets/css/index.css">
+    <link rel="icon" type="image/jpg" href="/assets/img/favicon.jpg" />
+    <script type="text/javascript" src="/assets/js/alpine.min.js" defer></script>
 </head>
-<body>
-<aside>
-    <a href="/home">home</a>
-    <a href="/website">website</a>
-    <a href="/ftp">ftp</a>
-    <a href="/file">file</a>
-    <a href="/monitor">monitor</a>
-    <a href="/term">term</a>
-    <a href="/security">security</a>
-</aside>
-<section>
-    <header>
+<body x-data="panel">
+    <aside>
+        <p><b>Go panel</b></p>
+        <a href="/admin/monitor">monitor</a>
+        <a href="/admin/website">website</a>
+        <a href="/admin/cron">cron</a>
+        <a href="/admin/file">file</a>
+        <a href="/admin/term">term</a>
+        <a href="/admin/security">security</a>
+    </aside>
 
-    </header>
-    <article>
 
-    </article>
-</section>
-</body>
-</html>

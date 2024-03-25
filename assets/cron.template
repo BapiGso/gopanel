@@ -1,0 +1,26 @@
+{{template "header.template"}}
+<section>
+    <p>
+        <button>Creat cron</button>
+        <button>start</button>
+        <button>ban</button>
+        <button>Delete cron</button>
+    </p>
+    <table>
+        <thead>
+        <tr>
+            <th>name</th>
+            <th>status</th>
+            <th>frequency</th>
+            <th>last run</th>
+            <th>action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{range .}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td>{{.Name}}</td>
+        {{end}}
+    </table>
+</section>

@@ -1,58 +1,58 @@
 package core
 
 import (
+	"crypto/rand"
 	"embed"
-	"fmt"
+	"encoding/hex"
 	"github.com/go-co-op/gocron"
-	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
+	"github.com/spf13/viper"
+	"log"
 	"panel/assets"
-	"panel/core/unit"
 	"time"
 )
 
 type Core struct {
-	Conf            *conf             //存储配置文件
-	CommandLineArgs BindFlag          //命令行参数
-	db              *sqlx.DB          //数据库
-	assetsFS        *embed.FS         //主题所在文件夹
-	e               *echo.Echo        //后台框架
-	s               *gocron.Scheduler //任务计划
+	assetsFS *embed.FS         //主题所在文件夹
+	e        *echo.Echo        //后台框架
+	s        *gocron.Scheduler //任务计划
 	// 邮件提醒
 }
 
-type conf struct {
-	LoginPath string
-	JWTKey    []byte
-	User      []byte
-	PassWord  []byte
-}
-
-const (
-	banner = `
- ______     ______     ______   ______     __   __     ______     __        
-/\  ___\   /\  __ \   /\  == \ /\  __ \   /\ "-.\ \   /\  ___\   /\ \       
-\ \ \__ \  \ \ \/\ \  \ \  _-/ \ \  __ \  \ \ \-.  \  \ \  __\   \ \ \____  
- \ \_____\  \ \_____\  \ \_\    \ \_\ \_\  \ \_\\"\_\  \ \_____\  \ \_____\ 
-  \/_____/   \/_____/   \/_/     \/_/\/_/   \/_/ \/_/   \/_____/   \/_____/
-
-____________________________________O/_______
-                                    O\
-%s
-`
-)
-
 func New() (c *Core) {
-	c = &Core{}
-	c.Conf = &conf{
-		LoginPath: unit.RandStr(10),
-		JWTKey:    []byte(unit.RandStr(12)),
-		User:      []byte(unit.RandStr(8)),
-		PassWord:  []byte(unit.RandStr(8)),
+	viper.SetConfigName("config") // name of config file (without extension)
+	viper.SetConfigType("json")   // REQUIRED if the config file does not have the extension in the name
+	viper.AddConfigPath(".")      // optionally look for config in the working directory
+
+	if err := viper.ReadInConfig(); err != nil { // Handle errors reading the config file
+		log.Println("Unable to locate the configuration file. Creating new one.")
+		// function to generate random string
+		generateRandomString := func(n int) string {
+			bytes := make([]byte, n)
+			_, _ = rand.Read(bytes)
+			return hex.EncodeToString(bytes)
+		}
+		// generate random strings
+		randomPath := generateRandomString(4)
+		randomUser := generateRandomString(6)
+		randomPassword := generateRandomString(6)
+
+		// set config
+		viper.Set("port", ":8080")
+		viper.Set("path", randomPath)
+		viper.Set("username", randomUser)
+		viper.Set("password", randomPassword)
+
+		// save the config file
+		if err = viper.WriteConfigAs("config.json"); err != nil {
+			log.Fatalln("Unable to create configuration file.", err)
+		}
+
 	}
-	fmt.Println(c.Conf)
+	c = &Core{}
 	c.assetsFS = &assets.Assets
 	c.e = echo.New()
+	c.e.HideBanner = true
 	c.s = gocron.NewScheduler(time.UTC)
 	return c
 }

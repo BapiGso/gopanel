@@ -1,5 +1,70 @@
 {{template "header.template"}}
-{{template "navbar.template"}}
-{{template "sidebar.template"}}
-
-{{template "footer.template"}}
+<section>
+    <h3>System Monitor</h3>
+    <table>
+        <thead>
+        <tr>
+            <th x-ref="cpuUsage" style="height: 200px"></th>
+            <th x-ref="memUsage" style="height: 200px"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><b>platform</b></td>
+            <td x-text="data?.HostInfo.platform"></td>
+        </tr>
+        <tr>
+            <td><b>kernelArch</b></td>
+            <td x-text="data?.HostInfo.kernelArch"></td>
+        </tr>
+        <tr>
+            <td><b>uptime</b></td>
+            <td x-text="`${Math.floor(data?.HostInfo.uptime /24/60/60)}Days ${Math.floor(data?.HostInfo.uptime/60/60%24)}Hours`"></td>
+        </tr>
+        <tr>
+            <td><b>cpu</b></td>
+            <template x-for="item in data?.CPU" :key="item.physicalId">
+                <li x-text="`${item.modelName} ${item.cores}cores`"></li>
+            </template>
+        </tr>
+        <tr>
+            <td><b>total</b></td>
+            <td x-text="`${Math.floor(data?.Memory.total/1024/1024)}MB`"></td>
+        </tr>
+        <tr>
+            <td><b>disk</b></td>
+            <template x-for="item in data?.Diskpart" :key="item.name">
+                <li x-text="`${item.name}`"></li>
+            </template>
+        </tr>
+        <tr>
+            <td><b>network Unit: GB</b></td>
+            <template x-for="item in data?.Network" :key="item.name">
+                <li x-text="`Revc:${(item.bytesRecv/Math.pow(2, 30)).toFixed(2)} Sent:${(item.bytesSent/Math.pow(2, 30)).toFixed(2)} ${item.name}`"></li>
+            </template>
+        </tr>
+        </tbody>
+    </table>
+</section>
+<script type="text/javascript" src="/assets/js/raphael-2.1.4.min.js"></script>
+<script type="text/javascript" src="/assets/js/justgage.js"></script>
+<script>
+    document.addEventListener('alpine:init', () => {
+            Alpine.data('panel', () => ({
+                init(){
+                    let cpu=new JustGage({parentNode:this.$refs.cpuUsage, value: 0, max: 100, title: "CPU usage"});
+                    let memory=new JustGage({parentNode:this.$refs.memUsage, value: 0, max: 100, title: "MEM usage"});
+                    const eventSource = new EventSource('/admin/monitor/Stream');
+                    eventSource.onmessage=(event) => {
+                        const data = JSON.parse(event.data);
+                        cpu.refresh(data.CPUUsage)
+                        memory.refresh(data.Memory.usedPercent)
+                        this.data=data;
+                    };
+                },
+                data:null,
+            })
+            )
+        }
+    )
+</script>

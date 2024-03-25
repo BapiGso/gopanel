@@ -1,0 +1,40 @@
+{{template "header.template"}}
+
+<section>
+    <h3>website manage</h3>
+    <p>
+        <button>Add site</button>
+        <button>Start Caddy</button>
+        <button>Stop Caddy</button>
+        <button>Restart Caddy</button>
+    </p>
+    <table>
+        <thead>
+        <tr>
+            <th>name</th>
+            <th>status</th>
+            <th>root</th>
+            <th>backup</th>
+            <th>config</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{range .caddyFile}}
+        <tr>
+            <td>
+                {{.}}
+            </td>
+        </tr>
+        {{end}}
+        </tbody>
+    </table>
+</section>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+            Alpine.data('panel', () => ({
+                })
+            )
+        }
+    )
+</script>

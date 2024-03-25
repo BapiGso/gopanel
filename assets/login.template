@@ -34,35 +34,11 @@
             <!-- 输入框盒子 -->
             <form  class="input-box" action="" method="post">
                 <!-- 输入框 -->
-                <input type="text" placeholder="用户名" name="user">
-                <input type="password" placeholder="密码" name="pwd">
+                <input type="text"     placeholder="用户名" name="username">
+                <input type="password" placeholder="密码"  name="password">
                 <input type="submit" value="登录">
             </form >
         </div>
     </div>
-    <script>
-        // 控制切换状态
-        let flag=true
-        // 切换函数
-        const mySlide = ()=>{
-            // 获取注册盒子和登录盒子的dom元素
-            const register_box=document.querySelector('.register-box')
-            const login_box=document.querySelector('.login-box')
-
-            if(flag){
-                // 注册盒子显示
-                register_box.style.display="block"
-                // 登录盒子隐藏
-                login_box.style.display="none"
-            }else {
-                //注册盒子隐藏
-                register_box.style.display="none"
-                // 登录盒子显示
-                login_box.style.display="block"
-            }
-            // 每次点击都改变状态
-            flag=!flag
-        }
-    </script>
 </body>
 </html>
