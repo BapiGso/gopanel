@@ -15,6 +15,7 @@
         <a href="/admin/website">website</a>
         <a href="/admin/cron">cron</a>
         <a href="/admin/file">file</a>
+        <a href="/admin/webdav">webdav</a>
         <a href="/admin/term">term</a>
         <a href="/admin/security">security</a>
     </aside>

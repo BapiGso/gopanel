@@ -1,31 +1,35 @@
 {{template "header.template"}}
 <section>
-    <form>
-        <h3>panel setting</h3>
-        <label>
-            panel port
-            <input type="text">
-        </label>
-        <label>
-            panel path
-            <input type="text">
-        </label>
-        <label>
-            panel username
-            <input type="text">
-        </label>
-        <label>
-            panel password
-            <input type="text">
-        </label>
-        <button type="submit">save</button>
-    </form>
-
-    <form>
-        <h3>server setting</h3>
-        <label>
-            ssh port
-        </label>
+    <form action="/admin/security" method="post">
+        <table>
+            <thead>
+            <tr>
+                <th>GoPanel Config</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Port</td>
+                <td><input type="text" name="port" value="{{call .getPanelConfig "port"}}" required></td>
+            </tr>
+            <tr>
+                <td>Path</td>
+                <td><input type="text" name="path" value="{{call .getPanelConfig "path"}}" required></td>
+            </tr>
+            <tr>
+                <td>Username</td>
+                <td><input type="text" name="username" value="{{call .getPanelConfig "username"}}" required></td>
+            </tr>
+            <tr>
+                <td>Password</td>
+                <td><input type="text" name="password" value="{{call .getPanelConfig "password"}}" required></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><button type="submit">Save</button></td>
+            </tr>
+            </tbody>
+        </table>
     </form>
 </section>
 <script>

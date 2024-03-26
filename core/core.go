@@ -33,15 +33,13 @@ func New() (c *Core) {
 			return hex.EncodeToString(bytes)
 		}
 		// generate random strings
-		randomPath := generateRandomString(4)
-		randomUser := generateRandomString(6)
-		randomPassword := generateRandomString(6)
-
-		// set config
 		viper.Set("port", ":8080")
-		viper.Set("path", randomPath)
-		viper.Set("username", randomUser)
-		viper.Set("password", randomPassword)
+		viper.Set("path", generateRandomString(4))
+		viper.Set("username", generateRandomString(6))
+		viper.Set("password", generateRandomString(6))
+		viper.Set("webdav.enable", false)
+		viper.Set("webdav.username", generateRandomString(6))
+		viper.Set("webdav.password", generateRandomString(6))
 
 		// save the config file
 		if err = viper.WriteConfigAs("config.json"); err != nil {

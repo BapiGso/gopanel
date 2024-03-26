@@ -12,13 +12,12 @@ import (
 	"panel/core/database"
 	"panel/core/docker"
 	"panel/core/file"
-	"panel/core/security"
-	"strings"
-
 	"panel/core/login"
 	"panel/core/monitor"
+	"panel/core/security"
 	"panel/core/term"
 	"panel/core/unit"
+	"panel/core/webdav"
 	"panel/core/website"
 	"text/template"
 )
@@ -26,11 +25,7 @@ import (
 func (c *Core) Route() {
 	c.e.Validator = &unit.Validator{}
 	c.e.Renderer = &unit.TemplateRender{
-		Template: template.Must(template.ParseFS(c.assetsFS, "*.template")).Funcs(template.FuncMap{
-			"escapeBackticks": func(s string) string {
-				return strings.ReplaceAll(s, "`", "\\`")
-			},
-		}),
+		Template: template.Must(template.ParseFS(c.assetsFS, "*.template")),
 	}
 	c.e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogMethod: true,
@@ -54,6 +49,8 @@ func (c *Core) Route() {
 	}
 
 	c.e.Any(viper.GetString("path"), login.Login, middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(3))) //限制频率
+	c.e.Any("/webdav", webdav.FileSystem())
+	c.e.Any("/webdav/*", webdav.FileSystem())
 	// 后台路由
 	admin := c.e.Group("/admin")
 	admin.Use(echojwt.WithConfig(echojwt.Config{
@@ -69,6 +66,7 @@ func (c *Core) Route() {
 	admin.GET("/database", database.Index)
 	admin.GET("/file", file.Index)
 	admin.GET("/file/download", file.Download)
+	admin.Any("/webdav", webdav.Index)
 	admin.GET("/term", term.Index)
 	admin.POST("/term", term.CreateTermHandler)
 	admin.GET("/term/:id/data", term.LinkTermDataHandler)
@@ -81,4 +79,8 @@ func (c *Core) Route() {
 	c.e.StaticFS("/assets", c.assetsFS)
 
 	c.e.Start(viper.GetString("port"))
+}
+
+func Index(c echo.Context) error {
+	return c.Render(http.StatusOK, "index.template", nil)
 }

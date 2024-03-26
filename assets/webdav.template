@@ -1,0 +1,48 @@
+{{template "header.template"}}
+<section>
+    <h5>Windows explorer natively supports webdav (only https), execute the following command to support http</h5>
+    <code>
+        reg add "HKLM\SYSTEM\CurrentControlSet\Services\WebClient\Parameters" /v BasicAuthLevel /t REG_DWORD /d 2 /f
+        Restart-Service -Name "WebClient"
+    </code>
+    <form action="/admin/webdav" method="post">
+        <table>
+            <thead>
+            <tr>
+                <th>Webdav Config</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Address</td>
+                <td x-text="`${location.origin}/webdav`"></td>
+            </tr>
+            <tr>
+                <td>Enable</td>
+                <td>
+                    <input type="checkbox" name="enable" {{if (call .getPanelConfig "webdav.enable")}}checked{{end}}>
+                </td>
+            </tr>
+            <tr>
+                <td>Username</td>
+                <td><input type="text" name="username" value="{{call .getPanelConfig "webdav.username"}}" required></td>
+            </tr>
+            <tr>
+                <td>Password</td>
+                <td><input type="text" name="password" value="{{call .getPanelConfig "webdav.password"}}" required></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><button type="submit">Save</button></td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
+</section>
+<script>
+
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('panel', () => ({
+        }))
+    })
+</script>

@@ -2,9 +2,9 @@ package term
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"golang.org/x/crypto/ssh"
 	"io"
+	"strconv"
 	"time"
 )
 
@@ -82,8 +82,7 @@ func (t *TermLink) NewTerm(rows, cols int) (*Term, error) {
 
 	// 返回Term实例
 	return &Term{
-		Id:     uuid.New().String(), // 使用xid库生成唯一id作为实例id
-		Type:   "xterm",             // 终端类型为xterm
+		Id:     strconv.FormatInt(time.Now().UnixNano(), 10), // 使用xid库生成唯一id作为实例id
 		Rows:   rows,
 		Cols:   cols,
 		Stdin:  stdin,
@@ -106,7 +105,6 @@ type TermOption struct {
 type Term struct {
 	s      *ssh.Session   // ssh会话实例
 	Id     string         `json:"id"`   // 终端实例id
-	Type   string         `json:"type"` // 终端类型
 	Rows   int            `json:"rows"` // 终端窗口行数
 	Cols   int            `json:"cols"` // 终端窗口列数
 	Stdin  io.WriteCloser `json:"-"`    // 写入到远程终端的标准输入

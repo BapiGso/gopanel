@@ -17,15 +17,7 @@
         <button @click="backHistory">🔙Back</button>
         <input type="text" x-bind="inputHistory">
     </p>
-    <p>
-        <input type="file">
-        <button>download</button>
-        <button>compress</button>
-        <button>copy</button>
-        <button>move</button>
-        <button>paste</button>
-        <button>delete</button>
-    </p>
+    <p>For complex file management, please use the <button @click="location.href='/admin/webdav'">webdav</button> function</p>
     <table>
         <thead>
         <tr>
@@ -41,38 +33,31 @@
         </thead>
         <tbody>
         {{range .}}
-        <tr>
-            <td>
-                <input type="checkbox" x-init="$watch('checkAll', val => $el.checked=val)">
-            </td>
-            <td>
-                {{if .IsDir}}
-                    📁<a @click="changeDirectory($el.innerText)">{{.Name}}</a>
-                {{else}}
-                    📄{{.Name}}
-                {{end}}
-            </td>
-            <td>{{.Mode.Perm}}</td>
-            <td x-text="formatBytes(`{{.Size}}`)"></td>
-            <td>{{.ModTime.Format "2006-01-02 15:04:05"}}</td>
-            <td @focus="$el.style.color='black'" @blur="$el.style.color='transparent'" style="color: transparent">
-                {{if .IsDir}}
-                    | <a @click.prevent="changeDirectory(`{{.Name}}`)">Open</a>
-                {{else}}
-                    | <a @click.prevent="newEditor(`{{.Name}}`)">Edit</a>
-                    | <a @click="">Download</a>
-                {{end}}
-                | <a>Rename</a>
-                | <a>PMSN</a>
-                <select>
-                    <option>More</option>
-                    <option>Copy</option>
-                    <option>Cut</option>
-                    <option>Delete</option>
-                    <option>Compress</option>
-                </select>
-            </td>
-        </tr>
+            <tr>
+                <td>
+                    <input type="checkbox" x-init="$watch('checkAll', val => $el.checked=val)">
+                </td>
+                <td>
+                    {{if .IsDir}}
+                        📁<a @click="changeDirectory($el.innerText)">{{.Name}}</a>
+                    {{else}}
+                        📄{{.Name}}
+                    {{end}}
+                </td>
+                <td>{{.Mode.Perm}}</td>
+                <td x-text="formatBytes(`{{.Size}}`)"></td>
+                <td>{{.ModTime.Format "2006-01-02 15:04:05"}}</td>
+                <td @focus="$el.style.color='black'" @blur="$el.style.color='transparent'" style="color: transparent">
+                    {{if .IsDir}}
+                        | <a @click.prevent="changeDirectory(`{{.Name}}`)">Open</a>
+                    {{else}}
+                        | <a @click.prevent="newEditor(`{{.Name}}`)">Edit</a>
+                        | <a @click="">Download</a>
+                    {{end}}
+                    | <a>Rename</a>
+                    | <a>PMSN</a>
+                </td>
+            </tr>
         {{end}}
         </tbody>
     </table>
@@ -81,7 +66,7 @@
 <script>
     document.addEventListener('alpine:init', () => {
             Alpine.data('panel', () => ({
-                formatBytes(bytes, decimals = 2) {
+                    formatBytes(bytes, decimals = 2) {
                         if (bytes === '0') return '0';
                         const k = 1024;
                         const dm = decimals < 0 ? 0 : decimals;
@@ -89,57 +74,57 @@
                         const i = Math.floor(Math.log(bytes) / Math.log(k));
                         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
                     },
-                checkAll: false,
-                getDirectoryValue: function() {
-                    let directoryValue;
-                    document.cookie.split(";").forEach((cookie) => {
-                        let val = cookie.split('=')
-                        if (val[0]==='dirHistory') {
-                            directoryValue = val[1];
-                        }
-                    });
-                    return directoryValue;
-                },
-                inputHistory: {
-                    'x-ref':'inputHistory',
-                    'x-init'(){
-                        this.$refs.inputHistory.style='width:inherit'
-                        this.$refs.inputHistory.value = `${this.getDirectoryValue()}`
-                    },
-                    //失焦事件
-                    '@blur'(){
-                        document.cookie = `dirHistory=${this.$refs.inputHistory.value}`
-                        location.reload()
-                    }
-                },
-                changeDirectory: function(name) {
-                        document.cookie = `dirHistory=${this.getDirectoryValue()}/${name}`
-                    location.reload()
-                },
-                homeHistory: function() {
-                    document.cookie = `dirHistory=/`
-                    location.reload()
-                },
-                backHistory: function() {
-                    let i = this.getDirectoryValue().lastIndexOf('/')
-                    document.cookie = `dirHistory=${this.getDirectoryValue().substring(0,i)}`
-                    if (i===0) this.homeHistory();//如果上一层是主页则调用返回主页
-                    location.reload()
-                },
-                editorShow: false,
-                newEditor: async function(name) {
-                    const res = await fetch(`/admin/file/download?path=${this.getDirectoryValue()}/${name}&mode=edit`);
-                    if (res.status !== 200) {
-                        alert(await res.text());
-                    } else {
-                        await res.json().then(data => {
-                            let editor = ace.edit("editor");
-                            editor.setValue(data.data, -1);
-                            // editor.session.setMode("ace/mode/javascript");
-                            this.editorShow = true;
+                    checkAll: false,
+                    getDirectoryValue: function () {
+                        let directoryValue;
+                        document.cookie.split(";").forEach((cookie) => {
+                            let val = cookie.split('=')
+                            if (val[0] === 'dirHistory') {
+                                directoryValue = val[1];
+                            }
                         });
+                        return directoryValue;
+                    },
+                    inputHistory: {
+                        'x-ref': 'inputHistory',
+                        'x-init'() {
+                            this.$refs.inputHistory.style = 'width:inherit'
+                            this.$refs.inputHistory.value = `${this.getDirectoryValue()}`
+                        },
+                        //失焦事件
+                        '@blur'() {
+                            document.cookie = `dirHistory=${this.$refs.inputHistory.value}`
+                            location.reload()
+                        }
+                    },
+                    changeDirectory: function (name) {
+                        document.cookie = `dirHistory=${this.getDirectoryValue()}/${name}`
+                        location.reload()
+                    },
+                    homeHistory: function () {
+                        document.cookie = `dirHistory=/`
+                        location.reload()
+                    },
+                    backHistory: function () {
+                        let i = this.getDirectoryValue().lastIndexOf('/')
+                        document.cookie = `dirHistory=${this.getDirectoryValue().substring(0, i)}`
+                        if (i === 0) this.homeHistory();//如果上一层是主页则调用返回主页
+                        location.reload()
+                    },
+                    editorShow: false,
+                    newEditor: async function (name) {
+                        const res = await fetch(`/admin/file/download?path=${this.getDirectoryValue()}/${name}&mode=edit`);
+                        if (res.status !== 200) {
+                            alert(await res.text());
+                        } else {
+                            await res.json().then(data => {
+                                let editor = ace.edit("editor");
+                                editor.setValue(data.data, -1);
+                                // editor.session.setMode("ace/mode/javascript");
+                                this.editorShow = true;
+                            });
+                        }
                     }
-                }
                 })
             )
         }
