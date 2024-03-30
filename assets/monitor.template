@@ -23,7 +23,7 @@
         </tr>
         <tr>
             <td><b>cpu</b></td>
-            <template x-for="item in data?.CPU" :key="item.physicalId">
+            <template x-for="item in data?.CPU" :key="item.cpu">
                 <li x-text="`${item.modelName} ${item.cores}cores`"></li>
             </template>
         </tr>

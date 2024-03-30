@@ -4,17 +4,16 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
+	"math/rand"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 // JWTKey 生成一个随机[]byte
-// var JWTKey = []byte(strconv.Itoa(rand.Int()))
-var JWTKey = []byte("123")
+var JWTKey = []byte(strconv.Itoa(rand.Int()))
 
-func Warning(err error, c echo.Context) {
-	_ = c.Render(http.StatusTeapot, "warning.template", err)
-}
+//var JWTKey = []byte("123")
 
 func Login(c echo.Context) error {
 	switch c.Request().Method {
@@ -35,7 +34,7 @@ func Login(c echo.Context) error {
 		if err := c.Validate(req); err != nil {
 			return err
 		}
-		if req.Username == viper.GetString("username") && req.Password == viper.GetString("password") {
+		if req.Username == viper.GetString("panel.username") && req.Password == viper.GetString("panel.password") {
 			token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, &jwt.RegisteredClaims{
 				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)), //过期日期设置7天
 			}).SignedString(JWTKey)

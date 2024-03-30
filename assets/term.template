@@ -1,11 +1,12 @@
 {{template "header.template"}}
 <section id="term">
-    <form action="" method="post" @submit.prevent="linkssh">
+    <form action="" method="post" @submit.prevent="createSSH" x-init="memorySSH($el)">
         <input name="host" type="text" placeholder="主机" value="127.0.0.1">
-        <input name="port" type="text" placeholder="端口" value="22">
-        <input name="user" type="text" placeholder="用户名" value="root">
-        <input name="pwd" type="password" placeholder="密码">
+        <input name="port" type="text" placeholder="端口" value="22" >
+        <input name="user" type="text" placeholder="用户名" value="root" >
+        <input name="pwd" type="password" placeholder="密码" >
         <button type='submit'>Connect</button>
+        <button type='button' @click.prevent="localStorage.clear();$el.remove()" x-show="localStorage.host">Clear</button>
     </form>
     <div id="terminal"></div>
 </section>
@@ -28,7 +29,51 @@
                         };
                     }
                 },
-                linkssh(e){
+                memorySSH(el){
+                    if (localStorage.host){
+                        el.host.value=localStorage.host;
+                        el.port.value=localStorage.port;
+                        el.user.value=localStorage.user;
+                        el.pwd.value=localStorage.pwd;
+                        fetch(el.action,{
+                            method: 'POST',
+                            body: new FormData(el)
+                        })
+                            .then(res=>res.json())
+                            .then(data=>{
+                                this.linkSSH(data.id)
+                            })
+                    }
+                },
+                linkSSH(id){
+                    let attachAddon = new AttachAddon.AttachAddon(
+                        new WebSocket('ws://' + window.location.host + `/admin/term/${id}/data`), { bidirectional: true });
+                    let fitAddon = new FitAddon.FitAddon();
+                    let webLinksAddon = new WebLinksAddon.WebLinksAddon();
+                    let term = new Terminal({
+                        'fontFamily': 'monospace, "Lucida Console", "Courier New"',
+                        'fontSize': 14,
+                        'rows': 40,
+                        'cols': 100,
+                    });
+                    term.loadAddon(webLinksAddon);
+                    term.loadAddon(fitAddon);
+                    term.loadAddon(attachAddon);
+                    term.open(document.getElementById('terminal'));
+                    term.onResize(({cols, rows}) => {
+                        console.log(`Resize to: ${cols}, ${rows}`);
+                        fetch(`./term/resize?id=${id}&cols=${cols}&rows=${rows}`)
+                            .then(resp => resp.json())
+                            .then(term => console.log('Okay', term));
+                    })
+                    fitAddon.fit();
+                    term.focus();
+                    window.addEventListener('resize', debounce(() => {
+                        fitAddon.fit();
+                        term.focus();
+                    }, 250))
+                },
+                createSSH(e){
                     fetch(e.target.action,{
                         method: 'POST',
                         body: new FormData(e.target)
@@ -42,39 +87,11 @@
                         })
                         .then(data=>{
                             if (data===null) return
-                            let id = data.id;
-                            let attachAddon = new AttachAddon.AttachAddon(
-                                new WebSocket('ws://' + window.location.host + `/admin/term/${id}/data`), { bidirectional: true });
-                            let fitAddon = new FitAddon.FitAddon();
-                            let webLinksAddon = new WebLinksAddon.WebLinksAddon();
-                            let term = new Terminal({
-                                'fontFamily': '"Lucida Console", "Courier New", monospace',
-                                'fontSize': 16,
-                                'rows': 40,
-                                'cols': 160,
-                            });
-                            term.loadAddon(webLinksAddon);
-                            term.loadAddon(fitAddon);
-                            term.loadAddon(attachAddon);
-                            term.open(document.getElementById('terminal'));
-                            term.onResize(({cols, rows}) => {
-                                console.log(`Resize to: ${cols}, ${rows}`);
-                                fetch(`./term/${id}/windowsize`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify({ 'cols': cols, 'rows': rows})
-                                })
-                                    .then(resp => resp.json())
-                                    .then(term => console.log('Okay', term));
-                            })
-                            fitAddon.fit();
-                            term.focus();
-                            window.addEventListener('resize', debounce(() => {
-                                fitAddon.fit();
-                                term.focus();
-                            }, 250))
+                            localStorage.host=e.target.host.value;
+                            localStorage.port=e.target.port.value;
+                            localStorage.user=e.target.user.value;
+                            localStorage.pwd=e.target.pwd.value;
+                            this.linkSSH(data.id)
                         })
                     }
                 })

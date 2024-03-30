@@ -24,3 +24,9 @@
         {{end}}
     </table>
 </section>
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('panel', () => ({
+        }))
+    })
+</script>

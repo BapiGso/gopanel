@@ -3,10 +3,18 @@
 <head>
     <meta charset="utf-8">
     <title>GoPanel Dashboard</title>
-    <link rel="stylesheet" href="/assets/css/sakura.css">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="stylesheet" href="/assets/css/sakura.css" x-data x-init="if (localStorage.theme) $el.href=`/assets/css/${localStorage.theme}.css`">
     <link rel="stylesheet" href="/assets/css/index.css">
     <link rel="icon" type="image/jpg" href="/assets/img/favicon.jpg" />
     <script type="text/javascript" src="/assets/js/alpine.min.js" defer></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker
+                .register('/sw.js') //Service Worker文件路径
+                .then(() => { console.log('Service Worker Registered'); });
+        }
+    </script>
 </head>
 <body x-data="panel">
     <aside>

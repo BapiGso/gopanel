@@ -48,9 +48,10 @@ func (c *Core) Route() {
 		c.JSON(400, err.Error())
 	}
 
-	c.e.Any(viper.GetString("path"), login.Login, middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(3))) //限制频率
-	c.e.Any("/webdav", webdav.FileSystem())
-	c.e.Any("/webdav/*", webdav.FileSystem())
+	c.e.Any(viper.GetString("panel.path"), login.Login, middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(3))) //限制频率
+	webdavMethods := []string{"GET", "HEAD", "POST", "OPTIONS", "PUT", "MKCOL", "DELETE", "PROPFIND", "PROPPATCH", "COPY", "MOVE", "REPORT", "LOCK", "UNLOCK"}
+	c.e.Match(webdavMethods, "/webdav", webdav.FileSystem())
+	c.e.Match(webdavMethods, "/webdav/*", webdav.FileSystem())
 	// 后台路由
 	admin := c.e.Group("/admin")
 	admin.Use(echojwt.WithConfig(echojwt.Config{
@@ -65,22 +66,22 @@ func (c *Core) Route() {
 	admin.GET("/website", website.Index)
 	admin.GET("/database", database.Index)
 	admin.GET("/file", file.Index)
-	admin.GET("/file/download", file.Download)
+	admin.Any("/file/process", file.Process)
 	admin.Any("/webdav", webdav.Index)
 	admin.GET("/term", term.Index)
 	admin.POST("/term", term.CreateTermHandler)
 	admin.GET("/term/:id/data", term.LinkTermDataHandler)
-	admin.POST("/term/:id/windowsize", term.SetTermWindowSizeHandler)
+	admin.GET("/term/resize", term.SetTermWindowSizeHandler)
 	admin.GET("/security", security.Index)
 	admin.GET("/docker", docker.Index)
 	admin.GET("/cron", cron.Index)
 
 	// 静态资源
 	c.e.StaticFS("/assets", c.assetsFS)
-
-	c.e.Start(viper.GetString("port"))
-}
-
-func Index(c echo.Context) error {
-	return c.Render(http.StatusOK, "index.template", nil)
+	//用于PWA的路径重写
+	c.e.Pre(middleware.Rewrite(map[string]string{
+		"/manifest.webmanifest": "/assets/manifest.webmanifest",
+		"/sw.js":                "/assets/js/sw.js",
+	}))
+	c.e.Start(viper.GetString("panel.port"))
 }

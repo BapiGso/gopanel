@@ -1,0 +1,15 @@
+{
+  "background_color": "#fff", //Web App启动时的背景颜色，可以使用预设的一些颜色名字如red,blue等，或者直接使用HEX颜色值如#66ccff(天依蓝)
+  "description": "a simple server manage panel", //Web App的描述，这里的内容将会在安装时展现
+  "display": "standalone", //Web App展示的方式，可选的值有fullscreen,standalone,minimal-ui,browser等，具体含义请见文末拓展阅读
+  "icons": [
+    {
+      "src": "/assets/img/favicon.jpg",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ], //这里举例了应用图片的配置，可以配置多个图标！
+  "name": "GoPanel", //应用的名称，在安装时展示
+  "short_name": "GoPanel", //缩略名，一般在添加到桌面之后会展示这个名字
+  "start_url": "/admin/monitor" //启动后进入的
+}

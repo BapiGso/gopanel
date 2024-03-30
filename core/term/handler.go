@@ -22,15 +22,12 @@ func CreateTermHandler(c echo.Context) error {
 		Rows     int    `query:"rows" form:"rows" json:"rows"`
 		Cols     int    `query:"cols" form:"cols" json:"cols"`
 	}{}
-
 	if err := c.Bind(req); err != nil {
 		return err
 	}
-
 	if req.Host == "" || req.Username == "" || req.Password == "" {
 		return c.JSON(http.StatusBadRequest, "host or user or password not provided")
 	}
-
 	term, err := termStore.New(TermOption{
 		Host:     req.Host,
 		Port:     req.Port,
@@ -40,39 +37,30 @@ func CreateTermHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	c.SetCookie(&http.Cookie{
-		Name:  term.Name(),
-		Value: term.Id,
-	})
-
-	return c.NoContent(200)
+	return c.JSON(200, term)
 }
 
 func SetTermWindowSizeHandler(c echo.Context) error {
 	req := &struct {
-		Rows int `query:"rows" form:"rows" json:"rows"`
-		Cols int `query:"cols" form:"cols" json:"cols"`
+		Id   string `query:"id" form:"id" json:"id"`
+		Rows int    `query:"rows" form:"rows" json:"rows"`
+		Cols int    `query:"cols" form:"cols" json:"cols"`
 	}{}
-
 	if err := c.Bind(req); err != nil {
 		return err
 	}
-
 	if req.Rows == 0 || req.Cols == 0 {
-		return c.JSON(http.StatusBadRequest, "Rows or cols can't be zero")
+		return c.JSON(http.StatusBadRequest, "Rows or Cols can't be zero")
 	}
-
-	term, err := termStore.Get(c.Param("id"))
+	term, err := termStore.Get(req.Id)
 	if err != nil {
 		return err
 	}
 	defer termStore.Put(term.Id)
-
 	err = term.SetWindowSize(req.Rows, req.Cols)
 	if err != nil {
 		return err
 	}
-
 	return c.JSON(http.StatusOK, term)
 }
 
@@ -82,16 +70,13 @@ func LinkTermDataHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-
 	websocket.Handler(func(ws *websocket.Conn) {
 		defer func() {
 			c.Logger().Infof("Destroy term: %s", term)
 			termStore.Put(term.Id)
 			ws.Close()
 		}()
-
 		c.Logger().Infof("Linking term: %s", term)
-
 		go func() {
 			b := [TermBufferSize]byte{}
 			for {
@@ -150,6 +135,5 @@ func LinkTermDataHandler(c echo.Context) error {
 			}
 		}
 	}).ServeHTTP(c.Response(), c.Request())
-
 	return nil
 }

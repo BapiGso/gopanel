@@ -4,25 +4,25 @@
         <table>
             <thead>
             <tr>
-                <th>GoPanel Config</th>
+                <th><h4>GoPanel Config</h4></th>
             </tr>
             </thead>
             <tbody>
             <tr>
                 <td>Port</td>
-                <td><input type="text" name="port" value="{{call .getPanelConfig "port"}}" required></td>
+                <td><input type="text" name="port" value="{{call .getPanelConfig "panel.port"}}" required></td>
             </tr>
             <tr>
                 <td>Path</td>
-                <td><input type="text" name="path" value="{{call .getPanelConfig "path"}}" required></td>
+                <td><input type="text" name="path" value="{{call .getPanelConfig "panel.path"}}" required></td>
             </tr>
             <tr>
                 <td>Username</td>
-                <td><input type="text" name="username" value="{{call .getPanelConfig "username"}}" required></td>
+                <td><input type="text" name="username" value="{{call .getPanelConfig "panel.username"}}" required></td>
             </tr>
             <tr>
                 <td>Password</td>
-                <td><input type="text" name="password" value="{{call .getPanelConfig "password"}}" required></td>
+                <td><input type="text" name="password" value="{{call .getPanelConfig "panel.password"}}" required></td>
             </tr>
             <tr>
                 <td></td>
@@ -31,6 +31,13 @@
             </tbody>
         </table>
     </form>
+    <p>
+        <h4>Theme Switch</h4>
+        <button @click="localStorage.theme= $el.textContent;location.reload()">sakura</button>
+        <button @click="localStorage.theme= $el.textContent;location.reload()">bamboo</button>
+        <button @click="localStorage.theme= $el.textContent;location.reload()">almond</button>
+        <button @click="localStorage.theme= $el.textContent;location.reload()">marx</button>
+    </p>
 </section>
 <script>
     document.addEventListener('alpine:init', () => {

@@ -1,11 +1,8 @@
 {{template "header.template"}}
 <div id="editorParent" :style="editorShow && {visibility: 'visible'} || {visibility: 'hidden'}">
     <script type="text/javascript" src="/assets/js/ace.js"></script>
-    <div style="background-color: whitesmoke;width: 80%">
-        <button>Save</button>
-        <button>Refresh</button>
-        <button>Search</button>
-        <button>Replace</button>
+    <div style="background-color: cadetblue;width: 80%">
+        <button @click.prevent="updateFile('update',editor.filename,editor.getSession().getValue())" style="float: left">Save</button>
         <button @click="editorShow=false" style="float: right">×</button>
     </div>
     <div id="editor"></div>
@@ -17,7 +14,10 @@
         <button @click="backHistory">🔙Back</button>
         <input type="text" x-bind="inputHistory">
     </p>
-    <p>For complex file management, please use the <button @click="location.href='/admin/webdav'">webdav</button> function</p>
+    <p>
+        <input type="file" @change="uploadFiles($el)" multiple name="files">
+        For complex file management, please use the <button @click="location.href='/admin/webdav'">webdav</button> function
+    </p>
     <table>
         <thead>
         <tr>
@@ -52,10 +52,11 @@
                         | <a @click.prevent="changeDirectory(`{{.Name}}`)">Open</a>
                     {{else}}
                         | <a @click.prevent="newEditor(`{{.Name}}`)">Edit</a>
-                        | <a @click="">Download</a>
+                        | <a x-init="$el.href=`/admin/file/process?path=${getDirectoryValue()}/{{.Name}}`">Download</a>
                     {{end}}
-                    | <a>Rename</a>
-                    | <a>PMSN</a>
+                        | <a @click.prevent="updateFile('rename', `{{.Name}}`,prompt('rename', `{{.Name}}`))">Rename</a>
+                        | <a @click.prevent="updateFile('PMSN', `{{.Name}}`,prompt('set PMSN eg:0644', ''))">PMSN</a>
+                        | <a @click.prevent="deleteFile(`{{.Name}}`)">Delete</a>
                 </td>
             </tr>
         {{end}}
@@ -66,65 +67,102 @@
 <script>
     document.addEventListener('alpine:init', () => {
             Alpine.data('panel', () => ({
-                    formatBytes(bytes, decimals = 2) {
-                        if (bytes === '0') return '0';
-                        const k = 1024;
-                        const dm = decimals < 0 ? 0 : decimals;
-                        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-                        const i = Math.floor(Math.log(bytes) / Math.log(k));
-                        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-                    },
-                    checkAll: false,
-                    getDirectoryValue: function () {
-                        let directoryValue;
-                        document.cookie.split(";").forEach((cookie) => {
-                            let val = cookie.split('=')
-                            if (val[0] === 'dirHistory') {
-                                directoryValue = val[1];
-                            }
-                        });
-                        return directoryValue;
-                    },
-                    inputHistory: {
-                        'x-ref': 'inputHistory',
-                        'x-init'() {
-                            this.$refs.inputHistory.style = 'width:inherit'
-                            this.$refs.inputHistory.value = `${this.getDirectoryValue()}`
-                        },
-                        //失焦事件
-                        '@blur'() {
-                            document.cookie = `dirHistory=${this.$refs.inputHistory.value}`
-                            location.reload()
+                formatBytes(bytes, decimals = 2) {
+                    if (bytes === '0') return '0';
+                    const k = 1024;
+                    const dm = decimals < 0 ? 0 : decimals;
+                    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+                },
+                checkAll: false,
+                getDirectoryValue: function () {
+                    let directoryValue;
+                    document.cookie.split(";").forEach((cookie) => {
+                        let val = cookie.split('=')
+                        if (val[0] === 'dirHistory') {
+                            directoryValue = val[1];
                         }
+                    });
+                    return directoryValue;
+                },
+                inputHistory: {
+                    'x-ref': 'inputHistory',
+                    'x-init'() {
+                        this.$refs.inputHistory.style = 'width:inherit'
+                        this.$refs.inputHistory.value = `${this.getDirectoryValue()}`
                     },
-                    changeDirectory: function (name) {
-                        document.cookie = `dirHistory=${this.getDirectoryValue()}/${name}`
+                    //失焦事件
+                    '@blur'() {
+                        document.cookie = `dirHistory=${this.$refs.inputHistory.value}`
                         location.reload()
-                    },
-                    homeHistory: function () {
-                        document.cookie = `dirHistory=/`
-                        location.reload()
-                    },
-                    backHistory: function () {
-                        let i = this.getDirectoryValue().lastIndexOf('/')
-                        document.cookie = `dirHistory=${this.getDirectoryValue().substring(0, i)}`
-                        if (i === 0) this.homeHistory();//如果上一层是主页则调用返回主页
-                        location.reload()
-                    },
-                    editorShow: false,
-                    newEditor: async function (name) {
-                        const res = await fetch(`/admin/file/download?path=${this.getDirectoryValue()}/${name}&mode=edit`);
-                        if (res.status !== 200) {
-                            alert(await res.text());
-                        } else {
-                            await res.json().then(data => {
-                                let editor = ace.edit("editor");
-                                editor.setValue(data.data, -1);
-                                // editor.session.setMode("ace/mode/javascript");
-                                this.editorShow = true;
-                            });
-                        }
                     }
+                },
+                changeDirectory: function (name) {
+                    document.cookie = `dirHistory=${this.getDirectoryValue()}/${name}`
+                    location.reload()
+                },
+                homeHistory: function () {
+                    document.cookie = `dirHistory=/`
+                    location.reload()
+                },
+                backHistory: function () {
+                    let i = this.getDirectoryValue().lastIndexOf('/')
+                    document.cookie = `dirHistory=${this.getDirectoryValue().substring(0, i)}`
+                    if (i === 0) this.homeHistory();//如果上一层是主页则调用返回主页
+                    location.reload()
+                },
+                editorShow: false,
+                newEditor: async function (name) {
+                    const res = await fetch(`/admin/file/process?path=${this.getDirectoryValue()}/${name}&mode=edit`);
+                    if (res.status !== 200) {
+                        alert(await res.text());
+                    } else {
+                        await res.json().then(data => {
+                            window.editor = ace.edit("editor");
+                            editor.setValue(data.data, -1);
+                            editor.filename = name;
+                            editor.session.setMode(`ace/mode/${data.type}`);
+                            this.editorShow = true;
+                        });
+                    }
+                },
+                uploadFiles: function (el) {
+                    let formData = new FormData();
+                    for (let i = 0; i < el.files.length; i++) {
+                        formData.append('files', el.files[i])
+                    }
+                    fetch(`/admin/file/process?path=${this.getDirectoryValue()}`, {
+                        method: 'POST',
+                        body: formData
+                    })
+                        .then(res => res.text())
+                        .then(data => {
+                            alert(data);
+                            location.reload()
+                        })
+                },
+                updateFile: function (type,name,data) {
+                    if(!data)return
+                    if (type==='rename')data=`${this.getDirectoryValue()}/${data}`
+                    fetch(`/admin/file/process?path=${this.getDirectoryValue()}/${name}&mode=${type}`, {
+                        method: 'PUT',
+                        headers: {'Content-Type': 'text/plain', },// 或者你的文件内容的实际MIME类型
+                        body: data
+                    })
+                        .then(response => response.text())
+                        .then(data => alert(data))
+                },
+                deleteFile: function (name) {
+                    if (confirm("sure to delete?")) {
+                        fetch(`/admin/file/process?path=${this.getDirectoryValue()}/${name}`, {
+                            method: 'DELETE'
+                        })
+                            .then(res => res.text())
+                            .then(data => alert(data))
+                    }
+                },
+
                 })
             )
         }
