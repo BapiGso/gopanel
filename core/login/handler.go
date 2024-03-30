@@ -13,7 +13,10 @@ import (
 // JWTKey 生成一个随机[]byte
 var JWTKey = []byte(strconv.Itoa(rand.Int()))
 
-//var JWTKey = []byte("123")
+// debug use this function
+//func init() {
+//	JWTKey = []byte("123")
+//}
 
 func Login(c echo.Context) error {
 	switch c.Request().Method {

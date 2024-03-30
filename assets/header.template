@@ -22,6 +22,7 @@
         <a href="/admin/monitor">monitor</a>
         <a href="/admin/website">website</a>
         <a href="/admin/cron">cron</a>
+        <a href="/admin/docker">docker</a>
         <a href="/admin/file">file</a>
         <a href="/admin/webdav">webdav</a>
         <a href="/admin/term">term</a>

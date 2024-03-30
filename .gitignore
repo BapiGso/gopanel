@@ -1,4 +1,5 @@
 /config.json
+/caddyConfig.json
 /caddy
 ./.idea
 /websiteConfig

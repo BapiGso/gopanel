@@ -23,7 +23,8 @@
 
 
 #### TODOLIST
- - 多到列不完，慢慢更吧
+ - cron
+ - docker manage
 
 ## 许可证
 

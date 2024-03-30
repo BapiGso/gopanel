@@ -9,7 +9,6 @@ import (
 	"log/slog"
 	"net/http"
 	"panel/core/cron"
-	"panel/core/database"
 	"panel/core/docker"
 	"panel/core/file"
 	"panel/core/login"
@@ -63,8 +62,7 @@ func (c *Core) Route() {
 	}))
 	admin.GET("/monitor", monitor.Index)
 	admin.GET("/monitor/Stream", monitor.StreamInfo)
-	admin.GET("/website", website.Index)
-	admin.GET("/database", database.Index)
+	admin.Any("/website", website.Index)
 	admin.GET("/file", file.Index)
 	admin.Any("/file/process", file.Process)
 	admin.Any("/webdav", webdav.Index)
@@ -73,8 +71,8 @@ func (c *Core) Route() {
 	admin.GET("/term/:id/data", term.LinkTermDataHandler)
 	admin.GET("/term/resize", term.SetTermWindowSizeHandler)
 	admin.GET("/security", security.Index)
-	admin.GET("/docker", docker.Index)
 	admin.GET("/cron", cron.Index)
+	admin.GET("/docker", docker.Index)
 
 	// 静态资源
 	c.e.StaticFS("/assets", c.assetsFS)

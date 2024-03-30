@@ -1,28 +1,39 @@
 {{template "header.template"}}
-
+<div id="editorParent" :style="editorShow && {visibility: 'visible'} || {visibility: 'hidden'}">
+    <script type="text/javascript" src="/assets/js/ace.js"></script>
+    <div style="background-color: cadetblue;width: 80%">
+        <button @click.prevent="updateConfig(editor.filename,editor.getSession().getValue())" style="float: left">Save</button>
+        <button @click="editorShow=false" style="float: right">×</button>
+    </div>
+    <div id="editor"></div>
+</div>
 <section>
+
     <h3>website manage</h3>
     <p>
-        <button>Add site</button>
-        <button>Start Caddy</button>
-        <button>Stop Caddy</button>
-        <button>Restart Caddy</button>
+        <button @click="">Add site</button>
+        <button @click="manageCaddy('restart')">Restart Caddy</button>
+        <button @click="manageCaddy('stop')">Stop Caddy</button>
+        <button @click="getConfig('AllSetting')">Modify full config</button>
     </p>
     <table>
         <thead>
         <tr>
             <th>name</th>
-            <th>status</th>
-            <th>root</th>
-            <th>backup</th>
-            <th>config</th>
+            <th>domain</th>
+            <th>listen</th>
+            <th>Operation</th>
         </tr>
         </thead>
         <tbody>
-        {{range .caddyFile}}
+        {{range $key, $val := .websiteList}}
         <tr>
+            <td>{{$key}}</td>
+            <td>{{range $val.routes}}{{range .match}}{{range .host}}{{.}}{{end}}{{end}}{{end}}</td>
+            <td>{{range $val.listen}}{{.}}{{end}}</td>
             <td>
-                {{.}}
+                <a @click.prevent="getConfig('{{$key}}')">conf</a>
+                <a> | del</a>
             </td>
         </tr>
         {{end}}
@@ -33,6 +44,33 @@
 <script>
     document.addEventListener('alpine:init', () => {
             Alpine.data('panel', () => ({
+                editorShow: false,
+                getConfig:function (name) {
+                    fetch(`/admin/website?name=${name}`,{method:'POST'}).then(res=>res.json())
+                        .then(data=>{
+                            window.editor = ace.edit("editor");
+                            editor.setValue(data, -1);
+                            editor.filename=name;
+                            this.editorShow = true;
+                        })
+                },
+                updateConfig:function (name,data) {
+                    fetch(`/admin/website?name=${name}`, {
+                        method:'PUT',
+                        body: data,
+                    })
+                        .then(res=>res.text())
+                        .then(data=>alert(data));
+                        location.reload();
+                },
+                manageCaddy: function (status) {
+                    fetch(`/admin/website?status=${status}`, {
+                        method:'OPTIONS'
+                    })
+                        .then(res=>res.text())
+                        .then(data=>alert(data));
+                        location.reload();
+                }
                 })
             )
         }
