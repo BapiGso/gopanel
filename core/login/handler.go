@@ -1,6 +1,7 @@
 package login
 
 import (
+	"flag"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
@@ -14,9 +15,14 @@ import (
 var JWTKey = []byte(strconv.Itoa(rand.Int()))
 
 // debug use this function
-//func init() {
-//	JWTKey = []byte("123")
-//}
+func init() {
+	debug := flag.Bool("debug", false, "enable debug mode")
+	// 解析传入的命令行参数
+	flag.Parse()
+	if *debug {
+		JWTKey = []byte("123")
+	}
+}
 
 func Login(c echo.Context) error {
 	switch c.Request().Method {

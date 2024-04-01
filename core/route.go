@@ -51,6 +51,13 @@ func (c *Core) Route() {
 	webdavMethods := []string{"GET", "HEAD", "POST", "OPTIONS", "PUT", "MKCOL", "DELETE", "PROPFIND", "PROPPATCH", "COPY", "MOVE", "REPORT", "LOCK", "UNLOCK"}
 	c.e.Match(webdavMethods, "/webdav", webdav.FileSystem())
 	c.e.Match(webdavMethods, "/webdav/*", webdav.FileSystem())
+	// 静态资源
+	c.e.StaticFS("/assets", c.assetsFS)
+	//用于PWA的路径重写
+	c.e.Pre(middleware.Rewrite(map[string]string{
+		"/manifest.webmanifest": "/assets/manifest.webmanifest",
+		"/sw.js":                "/assets/js/sw.js",
+	}))
 	// 后台路由
 	admin := c.e.Group("/admin")
 	admin.Use(echojwt.WithConfig(echojwt.Config{
@@ -74,12 +81,5 @@ func (c *Core) Route() {
 	admin.GET("/cron", cron.Index)
 	admin.GET("/docker", docker.Index)
 
-	// 静态资源
-	c.e.StaticFS("/assets", c.assetsFS)
-	//用于PWA的路径重写
-	c.e.Pre(middleware.Rewrite(map[string]string{
-		"/manifest.webmanifest": "/assets/manifest.webmanifest",
-		"/sw.js":                "/assets/js/sw.js",
-	}))
 	c.e.Start(viper.GetString("panel.port"))
 }

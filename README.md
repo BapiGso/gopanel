@@ -1,31 +1,57 @@
 
-<img src="./assets/img/preview1.webp" alt="Webmin" ></p>
+<p><img src="./assets/img/preview1.webp" alt="Webmin" width="300px"></p>
 
-<img src="https://img.shields.io/github/last-commit/BapiGso/gopanel" alt="Latest commit"><img src="https://img.shields.io/github/license/BapiGso/gopanel">
+<img src="https://img.shields.io/github/last-commit/BapiGso/gopanel" alt="Latest commit">
+<img src="https://img.shields.io/github/license/BapiGso/gopanel">
 
 
 ---
 
-## 关于
+## ABOUT
 
-**Gopanel** 是go语言编写的一个零依赖，部署超级简单，功能也很简单的管理面板
+**Gopanel** It is a management panel written in Go language with zero dependencies, super simple deployment and very simple functions.
 
-❗娱乐项目，勿用于生产环境
+❗Entertainment project, do not use in production environment
 
-### 功能&TODOLIST
-#### 功能
- - 面板安全入口![](./assets/img/preview3.webp)
- - 服务器资源监控
+#### INSTALL
+```shell
+# For other platforms, please replace wget link your ARCH and OS 
+wget https://github.com/BapiGso/gopanel/releases/latest/download/gopanel_linux_amd64 -O /usr/local/bin/gopanel
+chmod +x /usr/local/bin/gopanel
+cat <<EOF > /etc/systemd/system/gopanel.service
+[Unit]
+Description=GoPanel Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/gopanel
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable gopanel
+systemctl start gopanel
+systemctl status gopanel
+```
+
+#### FUNCTION
+ - Panel security entrance![](./assets/img/preview3.webp)
+ - Server monitoring
  - webssh![](./assets/img/preview2.webp)
  - webdav server
- - web 文件编辑
- - caddy管理
+ - web file editor
+ - caddy manage
 
 
 #### TODOLIST
  - cron
  - docker manage
 
-## 许可证
+## LICENSE
 
 released under the [BSD License](https://github.com/webmin/webmin/blob/master/LICENCE).

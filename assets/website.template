@@ -8,10 +8,12 @@
     <div id="editor"></div>
 </div>
 <section>
-
     <h3>website manage</h3>
+    <p>1. This program embed a standard caddy server</p>
+    <p>2. The configuration of caddy is divided into <a href="https://caddyserver.com/docs/json">admin, logging, storage and apps</a>. Here we mainly configure apps.</p>
+    <p>3. caddyfile is not supported, only json configuration is supported</p>
     <p>
-        <button @click="">Add site</button>
+        <button @click="window.editor = ace.edit('editor');editor.filename=prompt('Please enter remarks for this configuration');editorShow=true">Add site</button>
         <button @click="manageCaddy('restart')">Restart Caddy</button>
         <button @click="manageCaddy('stop')">Stop Caddy</button>
         <button @click="getConfig('AllSetting')">Modify full config</button>
@@ -46,10 +48,13 @@
             Alpine.data('panel', () => ({
                 editorShow: false,
                 getConfig:function (name) {
-                    fetch(`/admin/website?name=${name}`,{method:'POST'}).then(res=>res.json())
+                    fetch(`/admin/website?name=${name}`, {
+                        method:'POST'
+                    })
+                        .then(res=>res.json())
                         .then(data=>{
                             window.editor = ace.edit("editor");
-                            editor.setValue(data, -1);
+                            editor.setValue(JSON.stringify(data,null,4), -1);
                             editor.filename=name;
                             this.editorShow = true;
                         })
@@ -60,16 +65,20 @@
                         body: data,
                     })
                         .then(res=>res.text())
-                        .then(data=>alert(data));
-                        location.reload();
+                        .then(data=>{
+                            alert(data);
+                            location.reload();
+                        })
                 },
                 manageCaddy: function (status) {
                     fetch(`/admin/website?status=${status}`, {
                         method:'OPTIONS'
                     })
                         .then(res=>res.text())
-                        .then(data=>alert(data));
-                        location.reload();
+                        .then(data=>{
+                            alert(data)
+                            location.reload();
+                        });
                 }
                 })
             )

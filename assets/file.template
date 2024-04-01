@@ -2,22 +2,29 @@
 <div id="editorParent" :style="editorShow && {visibility: 'visible'} || {visibility: 'hidden'}">
     <script type="text/javascript" src="/assets/js/ace.js"></script>
     <div style="background-color: cadetblue;width: 80%">
-        <button @click.prevent="updateFile('update',editor.filename,editor.getSession().getValue())" style="float: left">Save</button>
+        <button @click.prevent="updateFile('update',editor.filename,editor.getSession().getValue())"
+                style="float: left">Save
+        </button>
         <button @click="editorShow=false" style="float: right">×</button>
     </div>
     <div id="editor"></div>
 </div>
 <section>
     <p>
-        <div x-ref="element"></div>
-        <button @click="homeHistory">🏠Home</button>
-        <button @click="backHistory">🔙Back</button>
-        <input type="text" x-bind="inputHistory">
+    <div x-ref="element"></div>
+    <button @click="homeHistory">🏠Home</button>
+    <button @click="backHistory">🔙Back</button>
+    <input type="text" x-bind="inputHistory" aria-label="">
     </p>
     <p>
-        <input type="file" @change="uploadFiles($el)" multiple name="files">
-        For complex file management, please use the <button @click="location.href='/admin/webdav'">webdav</button> function
+
+        <input type="file" @change="oldUploadFiles($el)" multiple name="files">
+
+        For complex file management, please use the
+        <button @click="location.href='/admin/webdav'">webdav</button>
+        function
     </p>
+
     <table>
         <thead>
         <tr>
@@ -54,9 +61,9 @@
                         | <a @click.prevent="newEditor(`{{.Name}}`)">Edit</a>
                         | <a x-init="$el.href=`/admin/file/process?path=${getDirectoryValue()}/{{.Name}}`">Download</a>
                     {{end}}
-                        | <a @click.prevent="updateFile('rename', `{{.Name}}`,prompt('rename', `{{.Name}}`))">Rename</a>
-                        | <a @click.prevent="updateFile('PMSN', `{{.Name}}`,prompt('set PMSN eg:0644', ''))">PMSN</a>
-                        | <a @click.prevent="deleteFile(`{{.Name}}`)">Delete</a>
+                    | <a @click.prevent="updateFile('rename', `{{.Name}}`,prompt('rename', `{{.Name}}`))">Rename</a>
+                    | <a @click.prevent="updateFile('PMSN', `{{.Name}}`,prompt('set PMSN eg:0644', ''))">PMSN</a>
+                    | <a @click.prevent="deleteFile(`{{.Name}}`)">Delete</a>
                 </td>
             </tr>
         {{end}}
@@ -67,102 +74,158 @@
 <script>
     document.addEventListener('alpine:init', () => {
             Alpine.data('panel', () => ({
-                formatBytes(bytes, decimals = 2) {
-                    if (bytes === '0') return '0';
-                    const k = 1024;
-                    const dm = decimals < 0 ? 0 : decimals;
-                    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-                    const i = Math.floor(Math.log(bytes) / Math.log(k));
-                    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-                },
-                checkAll: false,
-                getDirectoryValue: function () {
-                    let directoryValue;
-                    document.cookie.split(";").forEach((cookie) => {
-                        let val = cookie.split('=')
-                        if (val[0] === 'dirHistory') {
-                            directoryValue = val[1];
-                        }
-                    });
-                    return directoryValue;
-                },
-                inputHistory: {
-                    'x-ref': 'inputHistory',
-                    'x-init'() {
-                        this.$refs.inputHistory.style = 'width:inherit'
-                        this.$refs.inputHistory.value = `${this.getDirectoryValue()}`
+                    formatBytes(bytes, decimals = 2) {
+                        if (bytes === '0') return '0';
+                        const k = 1024;
+                        const dm = decimals < 0 ? 0 : decimals;
+                        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+                        const i = Math.floor(Math.log(bytes) / Math.log(k));
+                        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
                     },
-                    //失焦事件
-                    '@blur'() {
-                        document.cookie = `dirHistory=${this.$refs.inputHistory.value}`
-                        location.reload()
-                    }
-                },
-                changeDirectory: function (name) {
-                    document.cookie = `dirHistory=${this.getDirectoryValue()}/${name}`
-                    location.reload()
-                },
-                homeHistory: function () {
-                    document.cookie = `dirHistory=/`
-                    location.reload()
-                },
-                backHistory: function () {
-                    let i = this.getDirectoryValue().lastIndexOf('/')
-                    document.cookie = `dirHistory=${this.getDirectoryValue().substring(0, i)}`
-                    if (i === 0) this.homeHistory();//如果上一层是主页则调用返回主页
-                    location.reload()
-                },
-                editorShow: false,
-                newEditor: async function (name) {
-                    const res = await fetch(`/admin/file/process?path=${this.getDirectoryValue()}/${name}&mode=edit`);
-                    if (res.status !== 200) {
-                        alert(await res.text());
-                    } else {
-                        await res.json().then(data => {
-                            window.editor = ace.edit("editor");
-                            editor.setValue(data.data, -1);
-                            editor.filename = name;
-                            editor.session.setMode(`ace/mode/${data.type}`);
-                            this.editorShow = true;
+                    checkAll: false,
+                    getDirectoryValue: function () {
+                        let directoryValue;
+                        document.cookie.split(";").forEach((cookie) => {
+                            let val = cookie.split('=')
+                            if (val[0] === 'dirHistory') {
+                                directoryValue = val[1];
+                            }
                         });
-                    }
-                },
-                uploadFiles: function (el) {
-                    let formData = new FormData();
-                    for (let i = 0; i < el.files.length; i++) {
-                        formData.append('files', el.files[i])
-                    }
-                    fetch(`/admin/file/process?path=${this.getDirectoryValue()}`, {
-                        method: 'POST',
-                        body: formData
-                    })
-                        .then(res => res.text())
-                        .then(data => {
-                            alert(data);
+                        return directoryValue;
+                    },
+                    inputHistory: {
+                        'x-ref': 'inputHistory',
+                        'x-init'() {
+                            this.$refs.inputHistory.style = 'width:inherit'
+                            this.$refs.inputHistory.value = `${this.getDirectoryValue()}`
+                        },
+                        //失焦事件
+                        '@blur'() {
+                            document.cookie = `dirHistory=${this.$refs.inputHistory.value}`
                             location.reload()
-                        })
-                },
-                updateFile: function (type,name,data) {
-                    if(!data)return
-                    if (type==='rename')data=`${this.getDirectoryValue()}/${data}`
-                    fetch(`/admin/file/process?path=${this.getDirectoryValue()}/${name}&mode=${type}`, {
-                        method: 'PUT',
-                        headers: {'Content-Type': 'text/plain', },// 或者你的文件内容的实际MIME类型
-                        body: data
-                    })
-                        .then(response => response.text())
-                        .then(data => alert(data))
-                },
-                deleteFile: function (name) {
-                    if (confirm("sure to delete?")) {
-                        fetch(`/admin/file/process?path=${this.getDirectoryValue()}/${name}`, {
-                            method: 'DELETE'
+                        }
+                    },
+                    changeDirectory: function (name) {
+                        document.cookie = `dirHistory=${this.getDirectoryValue()}/${name}`
+                        location.reload()
+                    },
+                    homeHistory: function () {
+                        document.cookie = `dirHistory=/`
+                        location.reload()
+                    },
+                    backHistory: function () {
+                        let i = this.getDirectoryValue().lastIndexOf('/')
+                        document.cookie = `dirHistory=${this.getDirectoryValue().substring(0, i)}`
+                        if (i === 0) this.homeHistory();//如果上一层是主页则调用返回主页
+                        location.reload()
+                    },
+                    editorShow: false,
+                    newEditor: async function (name) {
+                        const res = await fetch(`/admin/file/process?path=${this.getDirectoryValue()}/${name}&mode=edit`);
+                        if (res.status !== 200) {
+                            alert(await res.text());
+                        } else {
+                            await res.json().then(data => {
+                                window.editor = ace.edit("editor");
+                                editor.setValue(data.data, -1);
+                                editor.filename = name;
+                                editor.session.setMode(`ace/mode/${data.type}`);
+                                this.editorShow = true;
+                            });
+                        }
+                    },
+                    oldUploadFiles: function (el) {
+                        let formData = new FormData();
+                        for (let i = 0; i < el.files.length; i++) {
+                            formData.append('files', el.files[i])
+                        }
+                        fetch(`/admin/file/process?path=${this.getDirectoryValue()}`, {
+                            method: 'POST',
+                            body: formData
                         })
                             .then(res => res.text())
+                            .then(data => {
+                                alert(data);
+                                location.reload()
+                            })
+                    },
+                    updateFile: function (type, name, data) {
+                        if (!data) return
+                        if (type === 'rename') data = `${this.getDirectoryValue()}/${data}`
+                        fetch(`/admin/file/process?path=${this.getDirectoryValue()}/${name}&mode=${type}`, {
+                            method: 'PUT',
+                            headers: {'Content-Type': 'text/plain',},// 或者你的文件内容的实际MIME类型
+                            body: data
+                        })
+                            .then(response => response.text())
                             .then(data => alert(data))
-                    }
-                },
-
+                    },
+                    deleteFile: function (name) {
+                        if (confirm("sure to delete?")) {
+                            fetch(`/admin/file/process?path=${this.getDirectoryValue()}/${name}`, {
+                                method: 'DELETE'
+                            })
+                                .then(res => res.text())
+                                .then(data => alert(data))
+                                location.reload()
+                        }
+                    },
+                    // progressArray: [],
+                    // uploadFiles: function (files) {
+                    //     this.progressArray = Array(files.length).fill(0);
+                    //
+                    //     [...files].forEach((file, index) => {
+                    //         const fileSize = file.size;
+                    //         let uploadedBytes = 0;
+                    //         const stream = new ReadableStream({
+                    //             start(controller) {
+                    //                 const reader = file.stream().getReader();
+                    //                 read();
+                    //
+                    //                 function read() {
+                    //                     reader.read().then(({done, value}) => {
+                    //                         if (done) {
+                    //                             controller.close();
+                    //                             return;
+                    //                         }
+                    //                         controller.enqueue(value);
+                    //                         read();
+                    //                     }).catch(error => {
+                    //                         console.error('读取流时出现错误:', error);
+                    //                         controller.error(error);
+                    //                     });
+                    //                 }
+                    //             }
+                    //         });
+                    //
+                    //         const ts = new TransformStream({
+                    //             transform(chunk, controller) {
+                    //                 uploadedBytes += chunk.length;
+                    //                 this.progressArray[index] = +(uploadedBytes / fileSize * 100).toFixed(2);
+                    //                 this.$nextTick(() => {
+                    //                     controller.enqueue(chunk);
+                    //                 });
+                    //             }
+                    //         }, {
+                    //             // 在 Alpine 中必须更新组件内的数据
+                    //             writableStrategy: new ByteLengthQueuingStrategy({highWaterMark: 1}),
+                    //             readableStrategy: new ByteLengthQueuingStrategy({highWaterMark: 1}),
+                    //         });
+                    //
+                    //         const uploadStream = stream.pipeThrough(ts);
+                    //
+                    //         fetch(`/admin/file/process?path=${this.getDirectoryValue()}`, {
+                    //             method: 'POST',
+                    //             headers: {'Content-Type': 'application/octet-stream'},
+                    //             body: uploadStream,
+                    //             duplex: "half"      // 指定请求双工类型
+                    //         }).then(() => {
+                    //             console.log(`File ${index + 1} uploaded`);
+                    //         }).catch(error => {
+                    //             console.error('上传出错:', error);
+                    //         });
+                    //     });
+                    // }
                 })
             )
         }
