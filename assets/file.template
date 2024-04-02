@@ -158,7 +158,10 @@
                             body: data
                         })
                             .then(response => response.text())
-                            .then(data => alert(data))
+                            .then(data => {
+                                alert(data);
+                                location.reload();
+                            })
                     },
                     deleteFile: function (name) {
                         if (confirm("sure to delete?")) {

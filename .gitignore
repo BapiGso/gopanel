@@ -1,5 +1,6 @@
 /config.json
 /caddyConfig.json
+/access.log
 /caddy
-./.idea
+/.idea
 /websiteConfig

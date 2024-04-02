@@ -1,6 +1,7 @@
 package website
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/labstack/echo/v4"
 	"io"
@@ -13,7 +14,7 @@ func Index(c echo.Context) error {
 		if c.QueryParam("name") == "AllSetting" {
 			return c.JSON(200, caddyConfig.AllSettings())
 		}
-		return c.JSON(200, caddyConfig.Get("servers."+c.QueryParam("name")))
+		return c.JSON(200, caddyConfig.Get("apps.http.servers."+c.QueryParam("name")))
 	case "PUT":
 		data, err := io.ReadAll(c.Request().Body)
 		defer c.Request().Body.Close()
@@ -25,9 +26,12 @@ func Index(c echo.Context) error {
 			return err
 		}
 		if c.QueryParam("name") == "AllSetting" {
-			caddyConfig.SetConfigFile(string(data))
+			if err := caddyConfig.ReadConfig(io.Reader(bytes.NewBuffer(data))); err != nil {
+				return err
+			}
+		} else {
+			caddyConfig.Set("apps.http.servers."+c.QueryParam("name"), result)
 		}
-		caddyConfig.Set("servers."+c.QueryParam("name"), result)
 		if err := caddyConfig.WriteConfig(); err != nil {
 			return err
 		}
@@ -37,15 +41,13 @@ func Index(c echo.Context) error {
 			return err
 		}
 		if c.QueryParam("status") == "restart" {
-			if err := caddyStart(convertJSON(caddyConfig.AllSettings())); err != nil {
+			if err := caddyStart(convertJSON(caddyConfig.Get("logging.logs.access_log.writer")), convertJSON(caddyConfig.Get("apps.http"))); err != nil {
 				return err
 			}
 		}
 		return c.JSON(200, "success")
 	case "GET":
-		return c.Render(http.StatusOK, "website.template", map[string]any{
-			"websiteList": caddyConfig.Get("servers"),
-		})
+		return c.Render(http.StatusOK, "website.template", nil)
 	}
 	return echo.ErrMethodNotAllowed
 }

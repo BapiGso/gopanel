@@ -35,20 +35,21 @@ var caddyConfig = func() *viper.Viper {
 	cv.AddConfigPath(".")           // 设置配置文件路径
 	if err := cv.ReadInConfig(); err != nil {
 		//https://caddyserver.com/docs/json 主要是配apps字段
-		cv.Set("servers", map[string]any{
-			"example": map[string]any{
-				"listen": []string{":2015"},
-				"routes": []any{
+		cv.Set("logging.logs.access_log.writer", map[string]string{
+			"output":   "file",
+			"filename": "/access.log",
+		})
+		cv.Set("apps.http.servers.example.listen", []string{":2015"})
+		cv.Set("apps.http.servers.example.routes", []any{
+			map[string]any{
+				"match": []any{
 					map[string]any{
-						"match": []any{
-							map[string]any{
-								"host": []string{"example.com"}}},
-						"handle": []any{
-							map[string]any{
-								"handler": "static_response",
-								"body":    "Hello, world!",
-							},
-						},
+						"host": []string{"example.com"}},
+				},
+				"handle": []any{
+					map[string]any{
+						"handler": "static_response",
+						"body":    "Hello, world!",
 					},
 				},
 			},
@@ -62,31 +63,37 @@ var caddyConfig = func() *viper.Viper {
 			return
 		}
 		lastRead = time.Now()
-		if err := caddyStart(convertJSON(cv.AllSettings())); err != nil {
+		if err := caddyStart(convertJSON(cv.Get("logging.logs.access_log.writer")), convertJSON(cv.Get("apps.http"))); err != nil {
 			slog.Error("caddy start error:", err)
 		}
 		// 这里可以放置你的代码来处理配置更改
 	})
 	cv.WatchConfig()
-	//cv.Set("apps", true)
-	//cv.WriteConfig()
 	return cv
 }()
 
-func caddyStart(data []byte) error {
+func caddyStart(log, http []byte) error {
 	if err := caddy.Stop(); err != nil {
 		return err
 	}
-
 	//if err := caddy.Validate(&conf); err != nil {
 	//	return err
 	//}
 	return caddy.Run(&caddy.Config{
-		Admin:      &caddy.AdminConfig{Disabled: true},
-		Logging:    nil,
+		Admin: &caddy.AdminConfig{Disabled: true},
+		Logging: &caddy.Logging{
+			Sink: nil,
+			Logs: map[string]*caddy.CustomLog{
+				"access": {
+					BaseLog: caddy.BaseLog{
+						WriterRaw: log,
+					},
+				},
+			},
+		},
 		StorageRaw: nil,
 		AppsRaw: map[string]json.RawMessage{
-			"http": data,
+			"http": http,
 		},
 	})
 }

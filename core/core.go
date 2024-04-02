@@ -21,10 +21,9 @@ type Core struct {
 }
 
 func New() (c *Core) {
-	viper.SetConfigName("config") // name of config file (without extension)
-	viper.SetConfigType("json")   // REQUIRED if the config file does not have the extension in the name
-	viper.AddConfigPath(".")      // optionally look for config in the working directory
-
+	viper.SetConfigName("config")                // name of config file (without extension)
+	viper.SetConfigType("json")                  // REQUIRED if the config file does not have the extension in the name
+	viper.AddConfigPath(".")                     // optionally look for config in the working directory
 	if err := viper.ReadInConfig(); err != nil { // Handle errors reading the config file
 		// function to generate random string
 		generateRandomString := func(n int) string {
@@ -40,7 +39,6 @@ func New() (c *Core) {
 		viper.Set("webdav.enable", false)
 		viper.Set("webdav.username", generateRandomString(3))
 		viper.Set("webdav.password", generateRandomString(3))
-		fmt.Println("Initial configuration for the panel:")
 		fmt.Printf("Panel Port: %s\n", viper.GetString("panel.port"))
 		fmt.Printf("Panel Path: %s\n", viper.GetString("panel.path"))
 		fmt.Printf("Panel Username: %s\n", viper.GetString("panel.username"))
