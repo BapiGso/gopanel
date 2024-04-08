@@ -28,7 +28,7 @@
         </tr>
         </thead>
         <tbody x-init="getConfigList">
-        <template x-for="(config,i) in configList?.apps.http.servers">
+        <template x-for="(config,i) in configList.apps?.http.servers">
             <tr>
                 <td x-text="i"></td>
                 <td x-text="config.routes[0].match[0].host"></td>

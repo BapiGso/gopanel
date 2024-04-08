@@ -25,6 +25,8 @@
         <a href="/admin/docker">docker</a>
         <a href="/admin/file">file</a>
         <a href="/admin/webdav">webdav</a>
+        <a href="/admin/frps">frps</a>
+        <a href="/admin/UnblockNeteaseMusic">UnblockNeteaseMusic</a>
         <a href="/admin/term">term</a>
         <a href="/admin/security">security</a>
     </aside>

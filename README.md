@@ -1,8 +1,7 @@
 
 <p><img src="./assets/img/preview1.webp" alt="Webmin" width="300px"></p>
 
-<img src="https://img.shields.io/github/last-commit/BapiGso/gopanel" alt="Latest commit">
-<img src="https://img.shields.io/github/license/BapiGso/gopanel">
+<img src="https://img.shields.io/github/last-commit/BapiGso/gopanel" alt="Latest commit"><img src="https://img.shields.io/github/license/BapiGso/gopanel">
 
 
 ---

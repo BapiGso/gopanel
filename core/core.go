@@ -32,13 +32,17 @@ func New() (c *Core) {
 			return hex.EncodeToString(bytes)
 		}
 		// generate random strings
-		viper.Set("panel.port", ":8080")
-		viper.Set("panel.path", generateRandomString(4))
-		viper.Set("panel.username", generateRandomString(6))
-		viper.Set("panel.password", generateRandomString(6))
-		viper.Set("webdav.enable", false)
-		viper.Set("webdav.username", generateRandomString(3))
-		viper.Set("webdav.password", generateRandomString(3))
+		viper.Set("panel", map[string]string{
+			"port":     ":8080",
+			"path":     generateRandomString(4),
+			"username": generateRandomString(6),
+			"password": generateRandomString(6),
+		})
+		viper.Set("webdav", map[string]any{
+			"enable":   false,
+			"username": generateRandomString(3),
+			"password": generateRandomString(3),
+		})
 		fmt.Printf("Panel Port: %s\n", viper.GetString("panel.port"))
 		fmt.Printf("Panel Path: %s\n", viper.GetString("panel.path"))
 		fmt.Printf("Panel Username: %s\n", viper.GetString("panel.username"))
