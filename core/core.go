@@ -8,8 +8,8 @@ import (
 	"github.com/go-co-op/gocron"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
-	"log"
 	"panel/assets"
+	"panel/core/website"
 	"time"
 )
 
@@ -43,16 +43,17 @@ func New() (c *Core) {
 			"username": generateRandomString(3),
 			"password": generateRandomString(3),
 		})
+		viper.Set("caddyEnable", false)
 		fmt.Printf("Panel Port: %s\n", viper.GetString("panel.port"))
 		fmt.Printf("Panel Path: %s\n", viper.GetString("panel.path"))
 		fmt.Printf("Panel Username: %s\n", viper.GetString("panel.username"))
 		fmt.Printf("Panel Password: %s\n", viper.GetString("panel.password"))
 		// save the config file
 		if err = viper.WriteConfigAs("config.json"); err != nil {
-			log.Fatalln("Unable to create configuration file.", err)
+			fmt.Printf("Unable to create configuration file: %v", err)
 		}
-
 	}
+	website.Init()
 	c = &Core{}
 	c.assetsFS = &assets.Assets
 	c.e = echo.New()

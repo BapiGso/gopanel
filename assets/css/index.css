@@ -28,6 +28,10 @@ body {
             height: 200px;
             display: flex;
         }
+        &>#editor{
+            height: 450px;
+            width: 90%;
+        }
     }
     &>#editorParent{
         height: 100%;

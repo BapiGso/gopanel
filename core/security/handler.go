@@ -3,10 +3,7 @@ package security
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
-	"math/rand"
 	"net/http"
-	"panel/core/login"
-	"strconv"
 )
 
 func Index(c echo.Context) error {
@@ -34,8 +31,6 @@ func Index(c echo.Context) error {
 		if err := viper.WriteConfig(); err != nil {
 			return err // 处理错误
 		}
-		//更新新的密钥
-		login.JWTKey = []byte(strconv.Itoa(rand.Int()))
 		return c.JSON(200, "success")
 	}
 	return echo.ErrMethodNotAllowed

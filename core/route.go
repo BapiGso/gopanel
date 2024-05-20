@@ -8,6 +8,7 @@ import (
 	"golang.org/x/net/context"
 	"log/slog"
 	"net/http"
+	"os"
 	"panel/core/cron"
 	"panel/core/docker"
 	"panel/core/file"
@@ -18,6 +19,7 @@ import (
 	"panel/core/unit"
 	"panel/core/webdav"
 	"panel/core/website"
+	"strconv"
 	"text/template"
 )
 
@@ -64,8 +66,11 @@ func (c *Core) Route() {
 		ErrorHandler: func(c echo.Context, err error) error {
 			return c.Render(http.StatusTeapot, "warning.template", err)
 		},
-		SigningKey:  login.JWTKey,
+		SigningKey:  []byte(strconv.Itoa(os.Getpid())),
 		TokenLookup: "cookie:panel_token",
+		Skipper: func(c echo.Context) bool {
+			return login.Debug
+		},
 	}))
 	admin.GET("/monitor", monitor.Index)
 	admin.GET("/monitor/Stream", monitor.StreamInfo)
