@@ -9,7 +9,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
 	"panel/assets"
-	"panel/core/website"
 	"time"
 )
 
@@ -53,7 +52,6 @@ func New() (c *Core) {
 			fmt.Printf("Unable to create configuration file: %v", err)
 		}
 	}
-	website.Init()
 	c = &Core{}
 	c.assetsFS = &assets.Assets
 	c.e = echo.New()

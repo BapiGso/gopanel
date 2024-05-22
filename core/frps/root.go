@@ -23,8 +23,8 @@ var (
 	serverCfg v1.ServerConfig
 )
 
-func init() {
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file of frps")
+func init2() {
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "frps.ini", "config file of frps")
 	rootCmd.PersistentFlags().BoolVarP(&showVersion, "version", "v", false, "version of frps")
 	rootCmd.PersistentFlags().BoolVarP(&strictConfigMode, "strict_config", "", true, "strict config parsing mode, unknown fields will cause errors")
 

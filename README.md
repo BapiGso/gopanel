@@ -50,6 +50,8 @@ systemctl status gopanel
 #### TODOLIST
  - cron
  - docker manage
+ - frps
+ - UnblockNeteaseMusic
 
 ## LICENSE
 

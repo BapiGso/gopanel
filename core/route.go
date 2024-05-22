@@ -9,9 +9,11 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"panel/core/UnblockNeteaseMusic"
 	"panel/core/cron"
 	"panel/core/docker"
 	"panel/core/file"
+	"panel/core/frps"
 	"panel/core/login"
 	"panel/core/monitor"
 	"panel/core/security"
@@ -34,10 +36,9 @@ func (c *Core) Route() {
 		LogError:  true,
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
 			if v.Error != nil {
-				slog.LogAttrs(context.Background(), slog.LevelError, "REQUEST",
+				slog.LogAttrs(context.Background(), slog.LevelError, v.Error.Error(),
 					slog.String("Method", v.Method),
 					slog.String("Url", v.URI),
-					slog.String("Err", v.Error.Error()),
 				)
 			}
 			return nil
@@ -68,9 +69,7 @@ func (c *Core) Route() {
 		},
 		SigningKey:  []byte(strconv.Itoa(os.Getpid())),
 		TokenLookup: "cookie:panel_token",
-		Skipper: func(c echo.Context) bool {
-			return login.Debug
-		},
+		Skipper:     func(c echo.Context) bool { return login.Debug },
 	}))
 	admin.GET("/monitor", monitor.Index)
 	admin.GET("/monitor/Stream", monitor.StreamInfo)
@@ -85,6 +84,11 @@ func (c *Core) Route() {
 	admin.GET("/security", security.Index)
 	admin.GET("/cron", cron.Index)
 	admin.GET("/docker", docker.Index)
-
+	admin.Any("/frps", frps.Index)
+	admin.Any("/UnblockNeteaseMusic", UnblockNeteaseMusic.Index)
 	c.e.Start(viper.GetString("panel.port"))
+}
+
+func (c *Core) Close() {
+	c.e.Close()
 }

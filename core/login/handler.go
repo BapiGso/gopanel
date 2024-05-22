@@ -1,7 +1,6 @@
 package login
 
 import (
-	"flag"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
@@ -12,12 +11,7 @@ import (
 )
 
 // debug use this function
-var Debug = func() bool {
-	debug := flag.Bool("debug", false, "enable debug mode")
-	// 解析传入的命令行参数
-	flag.Parse()
-	return *debug
-}()
+var Debug = false
 
 func Login(c echo.Context) error {
 	switch c.Request().Method {

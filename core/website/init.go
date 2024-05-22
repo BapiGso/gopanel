@@ -3,16 +3,19 @@ package website
 import (
 	"github.com/spf13/viper"
 	"os"
+	"time"
 )
 
-// Init 这个函数在core.New中手动执行，因为依赖viper的初始化
-func Init() {
+func init() {
 	filePath := "./Caddyfile"
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		content := ":2015\n\nrespond \"Hello, world!\""
+		content := "{\nadmin off\n}\n\n:2015\nrespond \"Hello, world!\""
 		_ = os.WriteFile(filePath, []byte(content), 0644)
 	}
-	if viper.Get("caddyEnable").(bool) {
-		_ = start()
-	}
+	go func() {
+		time.Sleep(time.Second)
+		if viper.Get("caddyEnable").(bool) {
+			_ = start()
+		}
+	}()
 }

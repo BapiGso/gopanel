@@ -1,0 +1,67 @@
+{{template "header.template"}}
+<section>
+    <h3>UnblockNeteaseMusic</h3>
+    <p>1.
+        <a href="https://github.com/cnsilvan/UnblockNeteaseMusic?tab=readme-ov-file#%E5%85%B7%E4%BD%93%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E">
+            Modify startup parameters according to this instruction
+        </a></p>
+    <p>2. UnblockNeteaseMusic cannot be stopped after it is started unless you restart the panel.</p>
+    <p>3. The Windows version is preferably less than 2.9.6.</p>
+    <p>
+        <button @click="manageUnblock()">Start Unblock</button>
+        <button @click="downloadCA()">Download CA</button>
+    </p>
+    <div id="editor"></div>
+</section>
+<script type="text/javascript" src="/assets/js/ace.js"></script>
+<script>
+    document.addEventListener('alpine:init', () => {
+            Alpine.data('panel', () => ({
+                init(){
+                    window.editor = ace.edit("editor");
+                    editor.setValue(`-p 8081 -sp 8082`, -1);
+                },
+                manageUnblock(status){
+                    fetch(`/admin/UnblockNeteaseMusic?params=${editor.getSession().getValue()}`,{
+                        method:"POST"
+                    }).then(res=>res.text()).then(data=>{
+                        alert(data);
+                        location.reload();
+                    })
+                },
+                downloadCA(){
+                    let text = `-----BEGIN CERTIFICATE-----
+MIIDgzCCAmugAwIBAgIUXtIzczuq/+8/AZklGPd4jYsjzHcwDQYJKoZIhvcNAQEL
+BQAwUTELMAkGA1UEBhMCQ04xJDAiBgNVBAMMG1VuYmxvY2tOZXRlYXNlTXVzaWMg
+Um9vdCBDQTEcMBoGA1UECgwTVW5ibG9ja05ldGVhc2VNdXNpYzAeFw0yMTExMDQx
+MzA5NTFaFw0yNDAyMDcxMzA5NTFaMFExCzAJBgNVBAYTAkNOMSQwIgYDVQQDDBtV
+bmJsb2NrTmV0ZWFzZU11c2ljIFJvb3QgQ0ExHDAaBgNVBAoME1VuYmxvY2tOZXRl
+YXNlTXVzaWMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDNZR1BPERU
+r2D6slyh/f3egGMJBwmkGMrKG7rZN94PBvs2XgtnUnMvB3qMVFcBs1w8K7B47/8j
+RnBJwFWGU1GBcckWk4pxk12f3gajJdle6WXjQRvdIlqMLv99wLOZ7hlQ381hacOq
+utIq6u03LenWQKthEyON9GYtTNs61lFc7qD964E7N/waV8MnJYL2qUaLMXgAg0Bv
+Q+089OlVcCtL1bqXkry2Y/uwTi8mJyApvh5mxYg5VI4hhE3hJn6uu6wq7QYanH8G
+fTHH4kGScK4f7A8cJO/HvhLoqvIzZzV5NSaudfu3oJAaAR/Pan1CpXTFKOZvDvN7
+Vb65IzY3aggvAgMBAAGjUzBRMB0GA1UdDgQWBBQfDQYLl5oA7M4hLTxlO5ddru4X
+3jAfBgNVHSMEGDAWgBQfDQYLl5oA7M4hLTxlO5ddru4X3jAPBgNVHRMBAf8EBTAD
+AQH/MA0GCSqGSIb3DQEBCwUAA4IBAQAsq1QFh98IntJbFdCdHDTHEcDlvN5AT8M0
+bCPLMSJPDhA0IWl8o3pHkgbvAusAVa4CTfKnMVbq3Q3KBK9T+F7AAQ8EJk8g+Ew4
+KgqFI9Ju686Eog7m2nZU/mNGr7KZggFQbfdb+Btw2KFNnc9OH4AmmgKoLLLMPWgy
+BV4/smjbo7gyqqV3S3ohOD2dZJrzBq9e5+u0Dn5Og+Joc/o3B+HvUHNGqAsAeCTP
+VVgw8A8nHFCS/pQwHze6Xq2q0khQDmloituFnIm+EX4fUGyX6SkRT6LxaNSBNHgg
+v7T+Jdat4fAQ771ltRlaYKSp0ytYq2k0t4RxVfnMtNYj2LUH+Lmh
+-----END CERTIFICATE-----
+`;
+                    let blob = new Blob([text], { type: 'text/plain' });
+                    let downloadUrl = URL.createObjectURL(blob);
+                    let a = document.createElement("a");
+                    a.href = downloadUrl;
+                    a.download = "ca.crt"; // 文件名
+                    a.click(); // 模拟点击
+                    URL.revokeObjectURL(downloadUrl); // 释放对象URL
+                }
+                })
+            )
+        }
+    )
+</script>

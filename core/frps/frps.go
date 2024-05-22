@@ -6,7 +6,7 @@ import (
 	"github.com/fatedier/frp/pkg/util/system"
 )
 
-func init() {
+func init1() {
 	system.EnableCompatibilityMode()
 	Execute()
 }

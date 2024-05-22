@@ -2,3 +2,5 @@
 /Caddyfile
 /access.log
 /.idea
+server.crt
+server.key
