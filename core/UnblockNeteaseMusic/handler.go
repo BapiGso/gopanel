@@ -17,7 +17,7 @@ func Index(c echo.Context) error {
 		if err := flag.CommandLine.Parse(strings.Fields(c.QueryParam("params"))); err != nil {
 			return err
 		}
-		start()
+		go start()
 		return c.JSON(200, "success")
 	}
 	return echo.ErrMethodNotAllowed

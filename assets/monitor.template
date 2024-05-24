@@ -54,7 +54,7 @@
                 init(){
                     let cpu=new JustGage({parentNode:this.$refs.cpuUsage, value: 0, max: 100, title: "CPU usage"});
                     let memory=new JustGage({parentNode:this.$refs.memUsage, value: 0, max: 100, title: "MEM usage"});
-                    const eventSource = new EventSource('/admin/monitor/Stream');
+                    const eventSource = new EventSource('/admin/monitor?type=info');
                     eventSource.onmessage=(event) => {
                         const data = JSON.parse(event.data);
                         cpu.refresh(data.CPUUsage)

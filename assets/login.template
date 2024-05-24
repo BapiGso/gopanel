@@ -5,9 +5,184 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 引入css样式 -->
-    <link rel="stylesheet" href="/assets/css/clover.css">
-    <title>clover</title>
+    <style>
+        * {
+            /* 去除浏览器默认内外边距 */
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            /* 溢出隐藏 */
+            overflow: hidden;
+            /* 设置弹性布局 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* 设置渐变色 */
+            background: linear-gradient(to right, #be9de6, #fff)
+        }
+
+        /* 四叶草 */
+        .box {
+            width: 500px;
+            height: 500px;
+            display: flex;
+            /* 设置换行 */
+            flex-wrap: wrap;
+            /* 动画，转动 */
+            animation: myRotate 10s linear infinite;
+        }
+
+        /* 单片四叶草，正方形 */
+        .clover {
+            width: 200px;
+            height: 200px;
+            background-color: #ba9de6;
+            border: 1px solid #fff;
+        }
+
+        /* 单片四叶草，圆形 */
+        .clover::before {
+            content: '';
+            width: 200px;
+            height: 200px;
+            background-color: #ba9de6;
+            position: absolute;
+            border-radius: 50%;
+            transform: translateX(-100px);
+        }
+
+        /* 单片四叶草，圆形 */
+        .clover::after {
+            content: '';
+            width: 200px;
+            height: 200px;
+            background-color: #ba9de6;
+            position: absolute;
+            border-radius: 50%;
+            transform: translateY(-100px);
+        }
+
+        /* 设置水平竖直方向的位置，以及旋转角度 */
+        .clover:nth-child(1) {
+            transform: translate(52px, 52px);
+        }
+
+        .clover:nth-child(2) {
+            transform: translate(52px, 52px) rotate(90deg);
+        }
+
+        .clover:nth-child(3) {
+            transform: translateX(52px) rotate(-90deg);
+        }
+
+        .clover:nth-child(4) {
+            transform: translateX(52px) rotate(180deg);
+        }
+
+        /* 旋转动画 */
+        @keyframes myRotate {
+            25% {
+                transform: rotate(90deg);
+            }
+
+            50% {
+                transform: rotate(180deg);
+            }
+
+            75% {
+                transform: rotate(270deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 表单盒子 */
+        form {
+            position: absolute;
+            width: 400px;
+            height: 500px;
+            border-radius: 5px;
+            right: 20%;
+            /* 模糊，磨砂质感 */
+            backdrop-filter: blur(10px);
+            box-shadow: 2px 1px 19px rgba(0, 0, 0, .1);
+            z-index: 99;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 标题 */
+        h1 {
+            text-align: center;
+            /* 设置用户禁止选中 */
+            user-select: none;
+            color: #fff;
+            /* 文字阴影 */
+            text-shadow: 4px 4px 3px rgba(0, 0, 0, .1);
+        }
+        img {
+            width: 100px;
+            height: 100px;
+            margin: 10px auto;
+            user-select: none;
+            border-radius: 50%;
+            /* 溢出隐藏 */
+            overflow: hidden;
+            box-shadow: 4px 4px 3px rgba(0, 0, 0, .1);
+        }
+
+        /* 图片 */
+        .img-box img {
+            width: 100%;
+        }
+
+
+        /* 输入框 */
+        input {
+            outline: none;
+            width: 60%;
+            height: 40px;
+            margin-bottom: 20px;
+            text-indent: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            background-color: rgba(0, 0, 0, 0);
+            border-radius: 20px;
+            border: 1px solid #fff;
+        }
+
+        input::placeholder {
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        input:focus::placeholder {
+            opacity: 0;
+        }
+
+
+        button {
+            width: 100px;
+            height: 30px;
+            margin-bottom: 10px;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            border-radius: 4px;
+            background-color: #aa8ac0;
+            cursor: pointer;
+            /* border: 1px solid #e6a49d; */
+        }
+
+    </style>
 </head>
 <body>
     <!-- 四叶草 -->
@@ -19,26 +194,12 @@
         <div class="clover"></div>
     </div>
     <!-- 表单盒子 -->
-    <div class="form-box">
-        <!-- 登录盒子 -->
-        <div class="login-box">
-            <!-- 标题 -->
-            <h1 class="title">
-                Sign in
-            </h1>
-            <!-- 图片盒子 -->
-            <div class="img-box">
-                <!-- 图片 -->
-                <img src="/assets/img/胡桃.jpg" alt="">
-            </div>
-            <!-- 输入框盒子 -->
-            <form  class="input-box" action="" method="post">
-                <!-- 输入框 -->
-                <input type="text"     placeholder="用户名" name="username">
-                <input type="password" placeholder="密码"  name="password">
-                <input type="submit" value="登录">
-            </form >
-        </div>
-    </div>
+    <form action="" method="post">
+        <h1>Sign in</h1>
+        <img src="/assets/img/胡桃.jpg" alt="">
+        <input type="text"     placeholder="用户名" name="username">
+        <input type="password" placeholder="密码"  name="password">
+        <button type="submit">登录</button>
+    </form>
 </body>
 </html>

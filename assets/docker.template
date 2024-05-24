@@ -1,5 +1,8 @@
 {{template "header.template"}}
 <section>
+    <h3>Docker Manage</h3>
+    <p>1. This docker calls the docker API installed on the system.</p>
+    <p>2. </p>
     <p>
         <button>Run Docker</button>
         <button>Stop Docker</button>
@@ -9,20 +12,38 @@
         <thead>
         <tr>
             <th>name</th>
+            <th>tag</th>
             <th>status</th>
-            <th>last run</th>
-            <th>action</th>
+            <th>port(s)</th>
+            <th>created</th>
+            <th>actions</th>
         </tr>
         </thead>
         <tbody>
-        <tr>
-            <td></td>
-            <td></td>
+        <template x-for="d in data">
+            <tr>
+                <td x-text="d.Name"></td>
+                <td x-text="d.Image"></td>
+                <td x-text="d.Status"></td>
+                <td x-text="d.Ports"></td>
+                <td x-text="d.Created"></td>
+                <td><button>▶</button></td>
+            </tr>
+        </template>
     </table>
 </section>
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('panel', () => ({
+            data:(async function(){
+                let response = await fetch(`/admin/docker?type=info`)
+                if (response.ok){
+                    return await response.json()
+                }else{
+                    alert(await response.text())
+                    return []
+                }
+            })()
         }))
     })
 </script>

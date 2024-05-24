@@ -6,7 +6,9 @@
             Modify startup parameters according to this instruction
         </a></p>
     <p>2. UnblockNeteaseMusic cannot be stopped after it is started unless you restart the panel.</p>
-    <p>3. The Windows version is preferably less than 2.9.6.</p>
+    <p><a href="https://d1.music.126.net/dmusic/cloudmusicsetup2.8.0.198822.exe">
+            3. The Windows version is preferably less than 2.8.0.
+        </a></p>
     <p>
         <button @click="manageUnblock()">Start Unblock</button>
         <button @click="downloadCA()">Download CA</button>
@@ -19,7 +21,7 @@
             Alpine.data('panel', () => ({
                 init(){
                     window.editor = ace.edit("editor");
-                    editor.setValue(`-p 8081 -sp 8082`, -1);
+                    editor.setValue(`-p 8081 -sp 8082 -o kuwo`, -1);
                 },
                 manageUnblock(status){
                     fetch(`/admin/UnblockNeteaseMusic?params=${editor.getSession().getValue()}`,{

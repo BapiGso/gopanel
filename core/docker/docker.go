@@ -2,13 +2,13 @@ package docker
 
 import (
 	"github.com/docker/docker/client"
+	"log/slog"
 )
 
-var dockerCLI = func() *client.Client {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+var apiClient = func() *client.Client {
+	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		panic(err)
+		slog.Error(err.Error())
 	}
-
 	return cli
-}
+}()
