@@ -1,4 +1,48 @@
 {{template "header.template"}}
 <section>
-    <button></button>
+    <h3>frps manage</h3>
+    <p>1. This panel embed a standard frp server</p>
+    <p>2.
+        <a href="https://github.com/fatedier/frp/blob/dev/conf/frps_full_example.toml">
+            startup config according to this instruction
+        </a>
+    </p>
+    <p>3. frps cannot be stopped after it is started unless you restart the panel.</p>
+    <p>4. The current frps startup status with the panel:{{.frpsEnable}}</p>
+    <p>
+        <button @click="updateConfig">Save Config</button>
+        <button @click="manageFrps('start')">Start frps</button>
+        <!-- <button @click="manageFrps('stop')">Stop frps</button> -->
+        <button @click="manageFrps('enable')">Switch Enable</button>
+    </p>
+    <div id="editor"></div>
 </section>
+<script type="text/javascript" src="/assets/js/ace.js"></script>
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('panel', () => ({
+            init(){
+                window.editor = ace.edit("editor");
+                editor.setValue(`{{.frpsConfig}}`, -1);
+            },
+            updateConfig(){
+                fetch(`/admin/frps`, {
+                    method:'PUT',
+                    body: editor.getSession().getValue(),
+                }).then(res=>res.text()).then(data=>{
+                    alert(data);
+                    location.reload();
+                })
+            },
+            manageFrps(status){
+                fetch(`/admin/frps?status=${status}`,{
+                    method:"POST"
+                }).then(res=>res.text()).then(data=>{
+                    alert(data);
+                    location.reload();
+                })
+            }
+            })
+        )
+    })
+</script>

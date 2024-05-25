@@ -23,7 +23,7 @@ func Index(c echo.Context) error {
 			}
 		}
 		if c.QueryParam("status") == "enable" {
-			viper.Set("caddyEnable", !viper.Get("caddyEnable").(bool))
+			viper.Set("enable.caddy", !viper.Get("enable.caddy").(bool))
 		}
 		return c.JSON(200, "success")
 	case "PUT":
@@ -37,13 +37,13 @@ func Index(c echo.Context) error {
 		}
 		return c.JSON(200, "success")
 	case "GET":
-		file, err := os.ReadFile("./Caddyfile")
+		file, err := os.ReadFile("Caddyfile")
 		if err != nil {
 			return err
 		}
 		return c.Render(http.StatusOK, "website.template", map[string]any{
 			"caddyFile":   string(file),
-			"caddyEnable": viper.Get("caddyEnable").(bool),
+			"caddyEnable": viper.Get("enable.caddy").(bool),
 		})
 	}
 	return echo.ErrMethodNotAllowed
