@@ -45,13 +45,13 @@ systemctl status gopanel
  - webdav server
  - web file editor
  - caddy manage
+ - frps manage
+ - UnblockNeteaseMusic
 
 
 #### TODOLIST
  - cron
  - docker manage
- - frps
- - UnblockNeteaseMusic
 
 ## LICENSE
 

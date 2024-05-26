@@ -47,7 +47,7 @@
                 },
                 linkSSH(id){
                     let attachAddon = new AttachAddon.AttachAddon(
-                        new WebSocket('ws://' + window.location.host + `/admin/term/${id}/data`), { bidirectional: true });
+                        new WebSocket((window.location.protocol === "https:") ? "wss://" : "ws://") + window.location.host + `/admin/term/${id}/data`), { bidirectional: true });
                     let fitAddon = new FitAddon.FitAddon();
                     let webLinksAddon = new WebLinksAddon.WebLinksAddon();
                     let term = new Terminal({
