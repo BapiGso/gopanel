@@ -1,5 +1,3 @@
-//go:build debug
-
 package frps
 
 //func init3() {
