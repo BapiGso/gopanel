@@ -20,7 +20,7 @@ func init() {
 	viper.AddConfigPath(".")                     // optionally look for config in the working directory
 	if err := viper.ReadInConfig(); err != nil { // Handle errors reading the config file
 		viper.Set("panel", map[string]string{
-			"port":     ":8080",
+			"port":     ":8443",
 			"path":     generateRandomString(4),
 			"username": generateRandomString(6),
 			"password": generateRandomString(6),

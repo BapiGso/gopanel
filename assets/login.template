@@ -5,201 +5,80 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/css/pico.purple.min.css">
     <style>
-        * {
-            /* 去除浏览器默认内外边距 */
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            height: 100vh;
-            /* 溢出隐藏 */
-            overflow: hidden;
-            /* 设置弹性布局 */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            /* 设置渐变色 */
-            background: linear-gradient(to right, #be9de6, #fff)
-        }
-
-        /* 四叶草 */
-        .box {
-            width: 500px;
-            height: 500px;
-            display: flex;
-            /* 设置换行 */
-            flex-wrap: wrap;
-            /* 动画，转动 */
-            animation: myRotate 10s linear infinite;
-        }
-
-        /* 单片四叶草，正方形 */
-        .clover {
-            width: 200px;
-            height: 200px;
-            background-color: #ba9de6;
-            border: 1px solid #fff;
-        }
-
-        /* 单片四叶草，圆形 */
-        .clover::before {
-            content: '';
-            width: 200px;
-            height: 200px;
-            background-color: #ba9de6;
-            position: absolute;
-            border-radius: 50%;
-            transform: translateX(-100px);
-        }
-
-        /* 单片四叶草，圆形 */
-        .clover::after {
-            content: '';
-            width: 200px;
-            height: 200px;
-            background-color: #ba9de6;
-            position: absolute;
-            border-radius: 50%;
-            transform: translateY(-100px);
-        }
-
-        /* 设置水平竖直方向的位置，以及旋转角度 */
-        .clover:nth-child(1) {
-            transform: translate(52px, 52px);
-        }
-
-        .clover:nth-child(2) {
-            transform: translate(52px, 52px) rotate(90deg);
-        }
-
-        .clover:nth-child(3) {
-            transform: translateX(52px) rotate(-90deg);
-        }
-
-        .clover:nth-child(4) {
-            transform: translateX(52px) rotate(180deg);
-        }
-
-        /* 旋转动画 */
-        @keyframes myRotate {
-            25% {
-                transform: rotate(90deg);
-            }
-
-            50% {
-                transform: rotate(180deg);
-            }
-
-            75% {
-                transform: rotate(270deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* 表单盒子 */
-        form {
-            position: absolute;
-            width: 400px;
-            height: 500px;
-            border-radius: 5px;
-            right: 20%;
-            /* 模糊，磨砂质感 */
-            backdrop-filter: blur(10px);
-            box-shadow: 2px 1px 19px rgba(0, 0, 0, .1);
-            z-index: 99;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* 标题 */
-        h1 {
-            text-align: center;
-            /* 设置用户禁止选中 */
-            user-select: none;
-            color: #fff;
-            /* 文字阴影 */
-            text-shadow: 4px 4px 3px rgba(0, 0, 0, .1);
-        }
-        img {
-            width: 100px;
-            height: 100px;
-            margin: 10px auto;
-            user-select: none;
-            border-radius: 50%;
-            /* 溢出隐藏 */
-            overflow: hidden;
-            box-shadow: 4px 4px 3px rgba(0, 0, 0, .1);
-        }
-
-        /* 图片 */
-        .img-box img {
+        *{padding: 0;margin: 0;}
+        body>article{
             width: 100%;
+            height: 100vh;
+            background:linear-gradient(to right, #c09de6, #fff);
+            padding: 0;
+            margin: 0;
+            &>form{
+                position: absolute;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: space-evenly;
+                width: 400px;
+                height: 420px;
+                border-radius: 5px;
+                top: 20%;
+                right: 20%;
+                backdrop-filter: url(#displacementFilter) blur(1px);
+                box-shadow: 2px 1px 19px rgba(0, 0, 0, .1);
+                &>h1{
+                    font-size: 2rem;
+                    font-weight: 800;
+                    color: #fff;
+                    text-shadow: 4px 4px 3px rgba(0, 0, 0, .1);
+                    user-select: none;
+                }
+                &>img{
+                    width: 100px;
+                    height: 100px;
+                    border-radius: 50%;
+                    box-shadow: 4px 4px 3px rgba(0, 0, 0, .1);
+                }
+                &>input{
+                    max-width: 250px;
+                    max-height: 50px;
+                    border-radius: 25px;
+                    background-color: #fff9;
+                }
+                &>.button{
+                    width: 30%;
+                    height: 40px;
+                    border-radius: 20px;
+                    background-color: #a48ac0;
+                    font-size: 14px;
+                    padding: 0;
+                }
+            }
         }
-
-
-        /* 输入框 */
-        input {
-            outline: none;
-            width: 60%;
-            height: 40px;
-            margin-bottom: 20px;
-            text-indent: 10px;
-            font-size: 16px;
-            font-weight: 500;
-            background-color: rgba(0, 0, 0, 0);
-            border-radius: 20px;
-            border: 1px solid #fff;
-        }
-
-        input::placeholder {
-            font-size: 14px;
-            font-weight: 400;
-        }
-
-        input:focus::placeholder {
-            opacity: 0;
-        }
-
-
-        button {
-            width: 100px;
-            height: 30px;
-            margin-bottom: 10px;
-            border: none;
-            color: #fff;
-            font-size: 16px;
-            border-radius: 4px;
-            background-color: #aa8ac0;
-            cursor: pointer;
-            /* border: 1px solid #e6a49d; */
-        }
-
     </style>
 </head>
 <body>
-    <!-- 四叶草 -->
-    <div class="box">
-        <!-- 四叶草的单片叶子 -->
-        <div class="clover"></div>
-        <div class="clover"></div>
-        <div class="clover"></div>
-        <div class="clover"></div>
-    </div>
-    <!-- 表单盒子 -->
-    <form action="" method="post">
-        <h1>Sign in</h1>
-        <img src="/assets/img/胡桃.jpg" alt="">
-        <input type="text"     placeholder="用户名" name="username">
-        <input type="password" placeholder="密码"  name="password">
-        <button type="submit">登录</button>
-    </form>
-</body>
-</html>
+<article>
+<svg width="100%" height="100vh" viewBox="-30 -20 390 390">
+    <filter id="displacementFilter">
+        <feTurbulence type="turbulence" baseFrequency="0.01 .1" numOctaves="1" result="turbulence" seed="95" />
+        <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="15" xChannelSelector="R" yChannelSelector="B" />
+    </filter>
+    <g fill="#c99de6">
+        <animateTransform attributeName="transform" type="rotate" from="0 151 151" to="360 151 151" dur="9.5s" repeatCount="indefinite" />
+        <path d="M 150 150 L 50 150 A 50 50 0 0 1 50 50 A 50 50 0 0 1 150 50 Z" />
+        <path d="M 152 150 L 152 50 A 50 50 0 0 1 252 50 A 50 50 0 0 1 252 150 Z" />
+        <path d="M 152 152 L 252 152 A 50 50 0 0 1 252 254 A 50 50 0 0 1 152 254 Z"/>
+        <path d="M 150 152 L 150 254 A 50 50 0 0 1 50 254 A 50 50 0 0 1 50 152 Z"/>
+        <!--                <path d="M 0 0 C 60 70, 60 80, 110 110 S 150 160, 180 180 L 200 180 C 195 150, 180 140, 190 110 S 200 120, 210 0 Z" stroke="black"/>-->
+    </g>
+</svg>
+<form action="" method="post">
+    <h1>Sign in</h1>
+    <img alt="muq" src="/assets/img/胡桃.jpg">
+    <input aria-label placeholder="username" type="text" name="username" required>
+    <input aria-label placeholder="password" type="password" name="password" required>
+    <button class="button" type="submit">login</button>
+</form>
+</article>

@@ -1,12 +1,14 @@
 {{template "header.template"}}
 <section id="term">
     <form action="" method="post" @submit.prevent="createSSH" x-init="memorySSH($el)">
-        <input name="host" type="text" placeholder="主机" value="127.0.0.1">
-        <input name="port" type="text" placeholder="端口" value="22" >
-        <input name="user" type="text" placeholder="用户名" value="root" >
-        <input name="pwd" type="password" placeholder="密码" >
-        <button type='submit'>Connect</button>
-        <button type='button' @click.prevent="localStorage.clear();$el.remove()" x-show="localStorage.host">Clear</button>
+        <fieldset role="group">
+            <input name="host" type="text" placeholder="主机" value="127.0.0.1">
+            <input name="port" type="text" placeholder="端口" value="22" >
+            <input name="user" type="text" placeholder="用户名" value="root" >
+            <input name="pwd" type="password" placeholder="密码" >
+            <button type='submit'>Connect</button>
+            <button type='button' @click.prevent="localStorage.clear();$el.remove()" x-show="localStorage.host">Clear</button>
+        </fieldset>
     </form>
     <div id="terminal"></div>
 </section>

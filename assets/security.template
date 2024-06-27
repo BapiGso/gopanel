@@ -31,13 +31,6 @@
             </tbody>
         </table>
     </form>
-    <p>
-        <h4>Theme Switch</h4>
-        <button @click="localStorage.theme= $el.textContent;location.reload()">sakura</button>
-        <button @click="localStorage.theme= $el.textContent;location.reload()">bamboo</button>
-        <button @click="localStorage.theme= $el.textContent;location.reload()">almond</button>
-        <button @click="localStorage.theme= $el.textContent;location.reload()">marx</button>
-    </p>
 </section>
 <script>
     document.addEventListener('alpine:init', () => {

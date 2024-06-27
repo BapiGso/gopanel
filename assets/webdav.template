@@ -9,7 +9,7 @@
         <table>
             <thead>
             <tr>
-                <th>Webdav Config</th>
+                <th colspan="2">Webdav Config</th>
             </tr>
             </thead>
             <tbody>

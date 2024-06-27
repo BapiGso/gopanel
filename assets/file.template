@@ -10,16 +10,14 @@
     <div id="editor"></div>
 </div>
 <section>
-    <p>
     <div x-ref="element"></div>
-    <button @click="homeHistory">🏠Home</button>
-    <button @click="backHistory">🔙Back</button>
-    <input type="text" x-bind="inputHistory" aria-label="">
-    </p>
+    <fieldset role="group">
+        <button @click="homeHistory" data-tooltip="返回根目录">🏠</button>
+        <button @click="backHistory" data-tooltip="返回上一级">🔙</button>
+        <input type="text" x-bind="inputHistory" aria-label="">
+    </fieldset>
     <p>
-
-        <input type="file" @change="oldUploadFiles($el)" multiple name="files">
-
+        <input type="file" @change="oldUploadFiles($el)" multiple name="files" style="width: 250px">
         For complex file management, please use the
         <button @click="location.href='/admin/webdav'">webdav</button>
         function
@@ -48,18 +46,15 @@
                     {{if .IsDir}}
                         📁<a @click="changeDirectory($el.innerText)">{{.Name}}</a>
                     {{else}}
-                        📄{{.Name}}
+                        📄<a :href= "`/admin/file/process?path=${getDirectoryValue()}/{{.Name}}`">{{.Name}}</a>
                     {{end}}
                 </td>
                 <td>{{.Mode.Perm}}</td>
                 <td x-text="formatBytes(`{{.Size}}`)"></td>
                 <td>{{.ModTime.Format "2006-01-02 15:04:05"}}</td>
                 <td @focus="$el.style.color='black'" @blur="$el.style.color='transparent'" style="color: transparent">
-                    {{if .IsDir}}
-                        | <a @click.prevent="changeDirectory(`{{.Name}}`)">Open</a>
-                    {{else}}
+                    {{if not .IsDir}}
                         | <a @click.prevent="newEditor(`{{.Name}}`)">Edit</a>
-                        | <a x-init="$el.href=`/admin/file/process?path=${getDirectoryValue()}/{{.Name}}`">Download</a>
                     {{end}}
                     | <a @click.prevent="updateFile('rename', `{{.Name}}`,prompt('rename', `{{.Name}}`))">Rename</a>
                     | <a @click.prevent="updateFile('PMSN', `{{.Name}}`,prompt('set PMSN eg:0644', ''))">PMSN</a>
@@ -103,7 +98,12 @@
                         '@blur'() {
                             document.cookie = `dirHistory=${this.$refs.inputHistory.value}`
                             location.reload()
+                        },
+                        '@keydown.enter'(){
+                            document.cookie = `dirHistory=${this.$refs.inputHistory.value}`
+                            location.reload()
                         }
+
                     },
                     changeDirectory: function (name) {
                         document.cookie = `dirHistory=${this.getDirectoryValue()}/${name}`

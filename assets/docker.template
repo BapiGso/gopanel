@@ -1,7 +1,7 @@
 {{template "header.template"}}
 <section>
     <h3>Docker Manage</h3>
-    <p>1. This docker calls the docker API installed on the system.</p>
+    <p>1. This function calls the docker API installed on the system.</p>
     <p>2. </p>
     <p>
         <button>Run Docker</button>
