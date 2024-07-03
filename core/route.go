@@ -81,7 +81,7 @@ func (c *Core) Route() {
 	admin.GET("/term/resize", term.SetTermWindowSizeHandler)
 	admin.GET("/security", security.Index)
 	admin.GET("/cron", cron.Index)
-	admin.GET("/docker", docker.Index)
+	admin.Any("/docker", docker.Index)
 	admin.Any("/frps", frps.Index)
 	admin.Any("/UnblockNeteaseMusic", UnblockNeteaseMusic.Index)
 	c.e.StartTLS(viper.GetString("panel.port"), []byte(certPEM), []byte(keyPEM))

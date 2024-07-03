@@ -12,8 +12,15 @@
 <section>
     <div x-ref="element"></div>
     <fieldset role="group">
-        <button @click="homeHistory" data-tooltip="返回根目录">🏠</button>
-        <button @click="backHistory" data-tooltip="返回上一级">🔙</button>
+        <button @click="homeHistory" data-tooltip="return to home">🏠</button>
+        <button @click="backHistory" data-tooltip="return to previous">🔙</button>
+        <select name="select" aria-label="Select" required>
+            <option selected disabled value="">Select</option>
+            <option>Solid</option>
+            <option>Liquid</option>
+            <option>Gas</option>
+            <option>Plasma</option>false
+        </select>
         <input type="text" x-bind="inputHistory" aria-label="">
     </fieldset>
     <p>
