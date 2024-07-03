@@ -50,6 +50,9 @@
                     height: 450px;
                     width: 90%;
                 }
+                &>details{
+                    display: inline;
+                }
             }
             &>#editorParent{
                 height: 100%;

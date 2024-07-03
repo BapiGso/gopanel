@@ -92,6 +92,17 @@ func Process(c echo.Context) error {
 				return err
 			}
 		}
+		if mode == "createFile" {
+			if file, err := os.Create(path); err != nil && file.Close() == nil {
+				return err
+			}
+		}
+		if mode == "createFolder" {
+			if err := os.MkdirAll(path, 0755); err != nil {
+				return err
+			}
+		}
+
 		return c.JSON(200, "success")
 	case "DELETE":
 		if err := os.RemoveAll(path); err != nil {

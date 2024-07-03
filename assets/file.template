@@ -10,25 +10,24 @@
     <div id="editor"></div>
 </div>
 <section>
-    <div x-ref="element"></div>
     <fieldset role="group">
         <button @click="homeHistory" data-tooltip="return to home">🏠</button>
         <button @click="backHistory" data-tooltip="return to previous">🔙</button>
-        <select name="select" aria-label="Select" required>
-            <option selected disabled value="">Select</option>
-            <option>Solid</option>
-            <option>Liquid</option>
-            <option>Gas</option>
-            <option>Plasma</option>false
-        </select>
         <input type="text" x-bind="inputHistory" aria-label="">
     </fieldset>
-    <p>
-        <input type="file" @change="oldUploadFiles($el)" multiple name="files" style="width: 250px">
-        For complex file management, please use the
-        <button @click="location.href='/admin/webdav'">webdav</button>
-        function
-    </p>
+
+    <details class="dropdown">
+        <summary>🆕</summary>
+        <ul>
+            <li @click.prevent="createFile('createFolder',prompt('type name', ''))">📁Folder</li>
+            <li @click.prevent="createFile('createFile',prompt('type name', ''))">📄File</li>
+        </ul>
+    </details>
+    <input type="file" @change="oldUploadFiles($el)" multiple name="files" style="width: 250px">
+    For complex file management, please use the
+    <button @click="location.href='/admin/webdav'">webdav</button>
+    function
+
 
     <table>
         <thead>
@@ -36,11 +35,11 @@
             <th>
                 <input type="checkbox" x-model="checkAll">
             </th>
-            <th>名称</th>
-            <th>权限</th>
-            <th>大小</th>
-            <th>修改时间</th>
-            <th>操作</th>
+            <th>name</th>
+            <th>perm</th>
+            <th>size</th>
+            <th>modified</th>
+            <th>action</th>
         </tr>
         </thead>
         <tbody>
@@ -85,7 +84,7 @@
                         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
                     },
                     checkAll: false,
-                    getDirectoryValue: function () {
+                    getDirectoryValue () {
                         let directoryValue;
                         document.cookie.split(";").forEach((cookie) => {
                             let val = cookie.split('=')
@@ -112,15 +111,15 @@
                         }
 
                     },
-                    changeDirectory: function (name) {
+                    changeDirectory (name) {
                         document.cookie = `dirHistory=${this.getDirectoryValue()}/${name}`
                         location.reload()
                     },
-                    homeHistory: function () {
+                    homeHistory () {
                         document.cookie = `dirHistory=/`
                         location.reload()
                     },
-                    backHistory: function () {
+                    backHistory () {
                         let i = this.getDirectoryValue().lastIndexOf('/')
                         document.cookie = `dirHistory=${this.getDirectoryValue().substring(0, i)}`
                         if (i === 0) this.homeHistory();//如果上一层是主页则调用返回主页
@@ -141,7 +140,7 @@
                             });
                         }
                     },
-                    oldUploadFiles: function (el) {
+                    oldUploadFiles (el) {
                         let formData = new FormData();
                         for (let i = 0; i < el.files.length; i++) {
                             formData.append('files', el.files[i])
@@ -156,7 +155,7 @@
                                 location.reload()
                             })
                     },
-                    updateFile: function (type, name, data) {
+                    updateFile (type, name, data) {
                         if (!data) return
                         if (type === 'rename') data = `${this.getDirectoryValue()}/${data}`
                         fetch(`/admin/file/process?path=${this.getDirectoryValue()}/${name}&mode=${type}`, {
@@ -170,7 +169,7 @@
                                 location.reload();
                             })
                     },
-                    deleteFile: function (name) {
+                    deleteFile (name) {
                         if (confirm("sure to delete?")) {
                             fetch(`/admin/file/process?path=${this.getDirectoryValue()}/${name}`, {
                                 method: 'DELETE'
@@ -180,6 +179,14 @@
                                 location.reload()
                         }
                     },
+                    createFile (type,name) {
+                        fetch(`/admin/file/process?path=${this.getDirectoryValue()}/${name}&mode=${type}`, {
+                            method: 'PUT',
+                        }).then(res=>res.json().then(d=>{
+                            alert(d)
+                            location.reload()
+                        }))
+                    }
                     // progressArray: [],
                     // uploadFiles: function (files) {
                     //     this.progressArray = Array(files.length).fill(0);
@@ -236,6 +243,7 @@
                     //         });
                     //     });
                     // }
+
                 })
             )
         }
