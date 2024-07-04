@@ -34,12 +34,13 @@ func init() {
 			"caddy": false,
 			"frps":  false,
 		})
-		fmt.Printf("Panel Port: %s\n", viper.GetString("panel.port"))
-		fmt.Printf("Panel Path: %s\n", viper.GetString("panel.path"))
-		fmt.Printf("Panel Username: %s\n", viper.GetString("panel.username"))
-		fmt.Printf("Panel Password: %s\n", viper.GetString("panel.password"))
 		if err = viper.WriteConfigAs("config.json"); err != nil {
 			fmt.Printf("Unable to create configuration file: %v", err)
 		}
+		fmt.Printf("Panel Port: %s\n", viper.GetStringMapString("panel")["port"])
+		fmt.Printf("Panel Path: %s\n", viper.GetStringMapString("panel")["path"])
+		fmt.Printf("Panel Username: %s\n", viper.GetStringMapString("panel")["username"])
+		fmt.Printf("Panel Password: %s\n", viper.GetStringMapString("panel")["password"])
+
 	}
 }

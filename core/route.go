@@ -84,7 +84,7 @@ func (c *Core) Route() {
 	admin.Any("/docker", docker.Index)
 	admin.Any("/frps", frps.Index)
 	admin.Any("/UnblockNeteaseMusic", UnblockNeteaseMusic.Index)
-	c.e.StartTLS(viper.GetString("panel.port"), []byte(certPEM), []byte(keyPEM))
+	c.e.StartTLS(viper.GetStringMapString("panel")["port"], []byte(certPEM), []byte(keyPEM))
 }
 
 const certPEM = `
