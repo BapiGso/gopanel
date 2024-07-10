@@ -50,7 +50,7 @@ func (c *Core) Route() {
 		c.JSON(400, err.Error())
 	}
 
-	c.e.Any(viper.GetString("panel.path"), login.Login, middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(3))) //限制频率
+	c.e.Any(viper.GetStringMapString("panel")["path"], login.Login, middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(3))) //限制频率
 	webdavMethods := []string{"GET", "HEAD", "POST", "OPTIONS", "PUT", "MKCOL", "DELETE", "PROPFIND", "PROPPATCH", "COPY", "MOVE", "REPORT", "LOCK", "UNLOCK"}
 	c.e.Match(webdavMethods, "/webdav*", webdav.FileSystem())
 	// 静态资源

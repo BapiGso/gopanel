@@ -41,6 +41,5 @@ func init() {
 		fmt.Printf("Panel Path: %s\n", viper.GetStringMapString("panel")["path"])
 		fmt.Printf("Panel Username: %s\n", viper.GetStringMapString("panel")["username"])
 		fmt.Printf("Panel Password: %s\n", viper.GetStringMapString("panel")["password"])
-
 	}
 }
