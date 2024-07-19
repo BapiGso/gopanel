@@ -5,9 +5,29 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="/assets/js/alpine.min.js" defer></script>
     <link rel="stylesheet" href="/assets/css/pico.purple.min.css">
+    <link rel="icon" type="image/jpg" href="/assets/img/favicon.jpg" />
     <style>
         *{padding: 0;margin: 0;}
+        [data-theme=light],
+        :root:not([data-theme=dark]) {
+            --pico-accordion-active-summary-color: #0009;
+            --pico-text-selection-color: #E7B6EE33;
+            --pico-primary: #943DA5;
+            --pico-font-family-sans-serif: Inter, system-ui, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, Helvetica, Arial, "Helvetica Neue", sans-serif, var(--pico-font-family-emoji);
+            --pico-font-size: 87.5%;
+            /* Original: 100% */
+            --pico-line-height: 1.25;
+            /* Original: 1.5 */
+            --pico-form-element-spacing-vertical: 0.5rem;
+            /* Original: 1rem */
+            --pico-form-element-spacing-horizontal: 1.0rem;
+            /* Original: 1.25rem */
+            --pico-border-radius: 0.375rem;
+            /* Original: 0.25rem */
+        }
+
         body>article{
             width: 100%;
             height: 100vh;
@@ -58,7 +78,7 @@
         }
     </style>
 </head>
-<body>
+<body x-data="panel">
 <article>
 <svg width="100%" height="100vh" viewBox="-30 -20 390 390">
     <filter id="displacementFilter">
@@ -74,11 +94,23 @@
         <!--                <path d="M 0 0 C 60 70, 60 80, 110 110 S 150 160, 180 180 L 200 180 C 195 150, 180 140, 190 110 S 200 120, 210 0 Z" stroke="black"/>-->
     </g>
 </svg>
-<form action="" method="post">
+<form action="" method="post" @submit="Remember($el)">
     <h1>Sign in</h1>
     <img alt="muq" src="/assets/img/胡桃.jpg">
-    <input aria-label placeholder="username" type="text" name="username" required>
-    <input aria-label placeholder="password" type="password" name="password" required>
+    <input aria-label placeholder="username" type="text" name="username" required x-model="username">
+    <input aria-label placeholder="password" type="password" name="password" required x-model="password" >
     <button class="button" type="submit">login</button>
 </form>
 </article>
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('panel', () => ({
+            username:localStorage.username||'',
+            password:localStorage.password||'',
+            Remember(el){
+                localStorage.username=el.username.value;
+                localStorage.password=el.password.value;
+            },
+        }))
+    })
+</script>
