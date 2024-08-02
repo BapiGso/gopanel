@@ -7,7 +7,7 @@ toolchain go1.22.1
 require (
 	github.com/caddyserver/caddy/v2 v2.7.6
 	github.com/cnsilvan/UnblockNeteaseMusic v0.0.0-20230310083816-92b59c95a366
-	github.com/docker/docker v26.1.3+incompatible
+	github.com/docker/docker v26.1.4+incompatible
 	github.com/fatedier/frp v0.56.0
 	github.com/go-co-op/gocron v1.37.0
 	github.com/go-playground/validator/v10 v10.20.0
