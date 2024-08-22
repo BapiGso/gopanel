@@ -1,4 +1,4 @@
-package unit
+package mymiddleware
 
 import (
 	"github.com/go-playground/validator/v10"
@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"sync"
 )
+
+var DefaultValidator = &Validator{}
 
 type Validator struct {
 	once     sync.Once

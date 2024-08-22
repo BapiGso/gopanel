@@ -1,6 +1,6 @@
-<html lang="zh">
+<html lang="en">
 <head>
-    <title>访问已被拦截</title>
+    <title>Access denied</title>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
     <style>
@@ -32,17 +32,17 @@
 <body>
 <main>
     <section>
-        <h2>很抱歉，您的访问已被拦截</h2>
-        <h2>正在使用安全服务来保护自己免受在线攻击 </h2>
-        <h2>请使用正确的路径登录面板</h2>
+        <h2>Sorry, your access has been blocked</h2>
+        <h2>Using security services to protect against online attacks</h2>
+        <h2>Please log in using the correct path</h2>
         <br>
-        <h3>新安装的机器会随机分配一个 8 位的安全入口。也可以在面板设置中进行修改。如果没有记录或者不记得了，可以使用下面的方法解决错误</h3>
-        <h3>解决方法:</h3>
-        <h4>1.查看安全入口：./gopanel -q path</h4>
-        <h4>2.重置配置文件：rm config.json</h4>
+        <h3>A newly installed machine will randomly assign an 8-digit security entrance. It can also be modified in the panel settings. If you do not have a record or cannot remember it, you can resolve the error using the following methods</h3>
+        <h3>Solution:</h3>
+        <h4>1. Check the security entrance : nano config.json</h4>
+        <h4>2. Reset the configuration file: rm config.json; systemctl restart gopanel</h4>
         <div class="sub-footer">
-            <h4>RAY_ID:{{.}}</h4>
-            <h4>CLIENT_IP:</h4>
+            <h4>ERROR_MSG:{{.message}}</h4>
+            <h4>CLIENT_IP:{{.ip}}</h4>
         </div>
     </section>
 </main>

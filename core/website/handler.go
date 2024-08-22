@@ -13,7 +13,7 @@ func Index(c echo.Context) error {
 	switch c.Request().Method {
 	case "POST":
 		if c.QueryParam("status") == "restart" {
-			if err := start(); err != nil {
+			if err := caddyStart(); err != nil {
 				return err
 			}
 		}
@@ -23,7 +23,10 @@ func Index(c echo.Context) error {
 			}
 		}
 		if c.QueryParam("status") == "enable" {
-			viper.Set("enable.caddy", !viper.Get("enable.caddy").(bool))
+			viper.Set("enable.caddy", !viper.GetBool("enable.caddy"))
+			if err := viper.WriteConfig(); err != nil {
+				return err // 处理错误
+			}
 		}
 		return c.JSON(200, "success")
 	case "PUT":
@@ -43,7 +46,7 @@ func Index(c echo.Context) error {
 		}
 		return c.Render(http.StatusOK, "website.template", map[string]any{
 			"caddyFile":   string(file),
-			"caddyEnable": viper.Get("enable.caddy").(bool),
+			"caddyEnable": viper.GetBool("enable.caddy"),
 		})
 	}
 	return echo.ErrMethodNotAllowed

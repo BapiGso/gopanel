@@ -19,7 +19,7 @@ func Index(c echo.Context) error {
 			default:
 				jsonStu, err := json.Marshal(M)
 				if err != nil {
-					fmt.Println("生成json字符串错误")
+					return err
 				}
 				fmt.Fprint(c.Response(), "data: "+string(jsonStu)+"\n\n")
 				c.Response().Flush()

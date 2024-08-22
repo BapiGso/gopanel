@@ -23,12 +23,12 @@
             <li @click.prevent="createFile('createFile',prompt('type name', ''))">📄File</li>
         </ul>
     </details>
+
     <input type="file" @change="oldUploadFiles($el)" multiple name="files" style="width: 250px">
     For complex file management, please use the
     <button @click="location.href='/admin/webdav'">webdav</button>
     function
-
-
+    
     <table>
         <thead>
         <tr>

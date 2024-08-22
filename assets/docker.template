@@ -89,7 +89,6 @@
                 };
                 eventSource.onerror=(event) => {
                     console.log(event)
-
                 }
             },
             data:null,

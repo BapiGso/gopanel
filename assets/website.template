@@ -1,9 +1,9 @@
 {{template "header.template"}}
 
 <section>
-    <h3>website manage</h3>
-    <p>1. This panel embed a standard Caddy server</p>
-    <p>2. The current Caddy startup status with the panel:{{.caddyEnable}}</p>
+    <h3>Website Manage</h3>
+    <p>1. Caddy is a powerful, enterprise-ready, open source web server</p>
+    <p>2. The current Caddy startup status with the panel: <b>{{.caddyEnable}}</b></p>
     <p>
         <button @click="updateConfig">Save Config</button>
         <button @click="manageCaddy('restart')">Restart Caddy</button>

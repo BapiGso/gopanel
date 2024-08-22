@@ -1,6 +1,6 @@
 {{template "header.template"}}
 <section>
-    <h3>frps manage</h3>
+    <h3>Frps Manage</h3>
     <p>1. This panel embed a standard frp server</p>
     <p>2.
         <a href="https://github.com/fatedier/frp/blob/dev/conf/frps_full_example.toml">

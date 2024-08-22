@@ -22,7 +22,7 @@ import (
 	"os"
 )
 
-func start() error {
+func caddyStart() error {
 
 	adapter := caddyfile.Adapter{
 		ServerType: &httpcaddyfile.ServerType{},

@@ -16,11 +16,8 @@ import (
 )
 
 func Process(c echo.Context) error {
-	path := c.QueryParam("path")
+	path := filepath.Clean(c.QueryParam("path"))
 	mode := c.QueryParam("mode")
-	if strings.HasPrefix(path, "//") {
-		path = path[1:]
-	}
 	switch c.Request().Method {
 	case "GET":
 		if mode == "edit" {
@@ -153,12 +150,4 @@ func Index(c echo.Context) error {
 	//}
 	c.SetCookie(&http.Cookie{Name: "dirHistory", Value: directory, Expires: time.Now(), MaxAge: 86400})
 	return c.Render(http.StatusOK, "file.template", files)
-}
-
-func DownloadHandler(c echo.Context) error {
-	return c.Render(http.StatusOK, "download.template", nil)
-}
-
-func UploadHandler(c echo.Context) error {
-	return c.Render(http.StatusOK, "upload.template", nil)
 }

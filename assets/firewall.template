@@ -1,0 +1,17 @@
+{{template "header.template"}}
+<section>
+    <h3>nftables Manage</h3>
+    <p>1. nftables is described as a subsystem of the Linux kernel.</p>
+    <p>2. These capabilities apply to network packets, datagrams, and Ethernet frames.</p>
+
+
+</section>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+            Alpine.data('panel', () => ({
+
+            }))
+        }
+    )
+</script>

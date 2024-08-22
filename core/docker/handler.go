@@ -43,7 +43,9 @@ func Index(c echo.Context) error {
 					time.Sleep(2 * time.Second)
 				}
 			}
-
+		}
+		if apiClientErr != nil {
+			return apiClientErr
 		}
 		return c.Render(http.StatusOK, "docker.template", nil)
 	case "POST":
@@ -74,8 +76,6 @@ func Index(c echo.Context) error {
 			} else {
 				return c.JSON(200, remove)
 			}
-		default:
-			return c.JSON(400, "unknown type")
 		}
 		return c.JSON(200, "success")
 	}

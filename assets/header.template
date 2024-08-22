@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head x-data>
     <meta charset="utf-8">
-    <title>GoPanel Dashboard</title>
+    <title x-text="localStorage.title||'GoPanel Dashboard'"></title>
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="stylesheet" href="/assets/css/pico.purple.min.css">
+    <link rel="stylesheet" href="/assets/css/devicon.min.css" />
+{{/*    <link rel="stylesheet" type='text/css' href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />*/}}
     <style>
         * {
             padding: 0;
@@ -17,9 +19,9 @@
             --pico-text-selection-color: #E7B6EE33;
             --pico-primary: #943DA5;
             --pico-font-family-sans-serif: Inter, system-ui, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, Helvetica, Arial, "Helvetica Neue", sans-serif, var(--pico-font-family-emoji);
-            --pico-font-size: 87.5%;
+            --pico-font-size: 95%;
             /* Original: 100% */
-            --pico-line-height: 1.25;
+            --pico-line-height: 1.1;
             /* Original: 1.5 */
             --pico-form-element-spacing-vertical: 0.5rem;
             /* Original: 1rem */
@@ -87,17 +89,18 @@
 </head>
 <body x-data="panel">
     <aside>
-        <h2>Go panel</h2>
+        <h2 @click="localStorage.title=prompt('new name', '');location.reload()" x-text="localStorage.title||'GoPanel'"></h2>
         <ul>
-            <li><a href="/admin/monitor">monitor</a></li>
-            <li><a href="/admin/website">website</a></li>
-            <li><a href="/admin/cron">cron</a></li>
-            <li><a href="/admin/docker">docker</a></li>
-            <li><a href="/admin/file">file</a></li>
-            <li><a href="/admin/webdav">webdav</a></li>
-            <li><a href="/admin/frps">frps</a></li>
+            <li><a href="/admin/monitor" class="devicon-embeddedc-plain">monitor</a></li>
+            <li><a href="/admin/website" class="devicon-chrome-plain">website</a></li>
+            <li><a href="/admin/cron" class="devicon-githubactions-plain">cron</a></li>
+            <li><a href="/admin/docker" class="devicon-docker-plain">docker</a></li>
+            <li><a href="/admin/file" class="devicon-firebase-plain">file</a></li>
+            <li><a href="/admin/webdav" class="devicon-gitbook-original">webdav</a></li>
+            <li><a href="/admin/frps" class="devicon-putty-plain">frps</a></li>
             <li><a href="/admin/UnblockNeteaseMusic">UnblockNeteaseMusic</a></li>
-            <li><a href="/admin/term">term</a></li>
+            <li><a href="/admin/term" class="devicon-bash-plain">term</a></li>
+            <li><a href="/admin/firewall">firewall</a></li>
             <li><a href="/admin/security">security</a></li>
         </ul>
     </aside>

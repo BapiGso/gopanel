@@ -1,58 +1,42 @@
 package core
 
 import (
-	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/viper"
-	"golang.org/x/net/context"
-	"log/slog"
-	"net/http"
-	"os"
 	"panel/core/UnblockNeteaseMusic"
 	"panel/core/cron"
 	"panel/core/docker"
 	"panel/core/file"
+	"panel/core/firewall"
 	"panel/core/frps"
 	"panel/core/login"
 	"panel/core/monitor"
+	"panel/core/mymiddleware"
 	"panel/core/security"
 	"panel/core/term"
-	"panel/core/unit"
 	"panel/core/webdav"
 	"panel/core/website"
-	"strconv"
-	"text/template"
 )
 
 func (c *Core) Route() {
-	c.e.Validator = &unit.Validator{}
-	c.e.Renderer = &unit.TemplateRender{
-		Template: template.Must(template.ParseFS(c.assetsFS, "*.template")),
-	}
-	c.e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
-		LogMethod: true,
-		LogURI:    true,
-		LogError:  true,
-		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-			if v.Error != nil {
-				slog.LogAttrs(context.Background(), slog.LevelError, v.Error.Error(),
-					slog.String("Method", v.Method),
-					slog.String("Url", v.URI),
-				)
-			}
-			return nil
-		},
-	}))
+	c.e.Validator = mymiddleware.DefaultValidator
+	c.e.Renderer = mymiddleware.DefaultTemplateRender
+
+	c.e.Use(mymiddleware.Slog)
 	c.e.Use(middleware.Recover())
-	c.e.Use(middleware.GzipWithConfig(middleware.GzipConfig{Level: 3}))
+	c.e.Use(middleware.Gzip())
+
 	c.e.HTTPErrorHandler = func(err error, c echo.Context) {
 		c.JSON(400, err.Error())
 	}
+	//限制频率
+	c.e.Any(viper.GetString("panel.path"), login.Login, middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(3)))
 
-	c.e.Any(viper.GetStringMapString("panel")["path"], login.Login, middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(3))) //限制频率
-	webdavMethods := []string{"GET", "HEAD", "POST", "OPTIONS", "PUT", "MKCOL", "DELETE", "PROPFIND", "PROPPATCH", "COPY", "MOVE", "REPORT", "LOCK", "UNLOCK"}
-	c.e.Match(webdavMethods, "/webdav*", webdav.FileSystem())
+	c.e.Match([]string{"GET", "HEAD", "POST", "OPTIONS", "PUT", "MKCOL",
+		"DELETE", "PROPFIND", "PROPPATCH", "COPY", "MOVE", "REPORT",
+		"LOCK", "UNLOCK"}, "/webdav*", webdav.WebDav)
+
 	// 静态资源
 	c.e.StaticFS("/assets", c.assetsFS)
 	//用于PWA的路径重写
@@ -62,14 +46,7 @@ func (c *Core) Route() {
 	}))
 	// 后台路由
 	admin := c.e.Group("/admin")
-	admin.Use(echojwt.WithConfig(echojwt.Config{
-		ErrorHandler: func(c echo.Context, err error) error {
-			return c.Render(http.StatusTeapot, "warning.template", err)
-		},
-		SigningKey:  []byte(strconv.Itoa(os.Getpid())),
-		TokenLookup: "cookie:panel_token",
-		Skipper:     func(c echo.Context) bool { return login.Debug },
-	}))
+	admin.Use(mymiddleware.JWT)
 	admin.GET("/monitor", monitor.Index)
 	admin.Any("/website", website.Index)
 	admin.GET("/file", file.Index)
@@ -83,8 +60,9 @@ func (c *Core) Route() {
 	admin.GET("/cron", cron.Index)
 	admin.Any("/docker", docker.Index)
 	admin.Any("/frps", frps.Index)
+	admin.Any("/firewall", firewall.Index)
 	admin.Any("/UnblockNeteaseMusic", UnblockNeteaseMusic.Index)
-	c.e.StartTLS(viper.GetStringMapString("panel")["port"], []byte(certPEM), []byte(keyPEM))
+	c.e.StartTLS(viper.GetString("panel.port"), []byte(certPEM), []byte(keyPEM))
 }
 
 const certPEM = `

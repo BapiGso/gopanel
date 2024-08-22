@@ -10,10 +10,6 @@ import (
 	"time"
 )
 
-func init() {
-	M.refresh()
-}
-
 type Monitor struct {
 	CPUUsage []float64
 	CPU      []cpu.InfoStat

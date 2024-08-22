@@ -4,7 +4,7 @@
         <table>
             <thead>
             <tr>
-                <th><h4>GoPanel Config</h4></th>
+                <th colspan="2"><h4>GoPanel Config</h4></th>
             </tr>
             </thead>
             <tbody>
@@ -25,8 +25,7 @@
                 <td><input type="text" name="password" value="{{call .getPanelConfig "panel.password"}}" required></td>
             </tr>
             <tr>
-                <td></td>
-                <td><button type="submit">Save</button></td>
+                <td colspan="2"><button type="submit">Save</button></td>
             </tr>
             </tbody>
         </table>
@@ -34,9 +33,9 @@
 </section>
 <script>
     document.addEventListener('alpine:init', () => {
-            Alpine.data('panel', () => ({
-                })
-            )
+        Alpine.data('panel', () => ({
+
+            }))
         }
     )
 </script>

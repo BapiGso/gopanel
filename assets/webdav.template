@@ -1,5 +1,6 @@
 {{template "header.template"}}
 <section>
+    <h3>Webdav Manage</h3>
     <h5>Windows explorer natively supports webdav (only https), execute the following command to support http</h5>
     <code>
         reg add "HKLM\SYSTEM\CurrentControlSet\Services\WebClient\Parameters" /v BasicAuthLevel /t REG_DWORD /d 2 /f

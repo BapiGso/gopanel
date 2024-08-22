@@ -1,6 +1,7 @@
 package webdav
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
 	"golang.org/x/net/webdav"
@@ -43,6 +44,7 @@ func Index(c echo.Context) error {
 
 func FileSystem() echo.HandlerFunc {
 	return echo.WrapHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println(viper.GetString("webdav.username"))
 		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 		username, password, ok := r.BasicAuth()
 		if !ok {
@@ -59,4 +61,10 @@ func FileSystem() echo.HandlerFunc {
 		}
 		srv.ServeHTTP(w, r)
 	}))
+}
+
+func WebDav(c echo.Context) error {
+	fmt.Println(123)
+	srv.ServeHTTP(c.Response(), c.Request())
+	return nil
 }

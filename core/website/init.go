@@ -8,8 +8,8 @@ import (
 func init() {
 	filePath := "Caddyfile"
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		content := `
-{
+		content :=
+			`{
 admin off
 }
 
@@ -18,7 +18,7 @@ respond "Hello, world!"
 `
 		_ = os.WriteFile(filePath, []byte(content), 0644)
 	}
-	if viper.Get("enable.caddy").(bool) {
-		_ = start()
+	if viper.GetBool("enable.caddy") {
+		_ = caddyStart()
 	}
 }

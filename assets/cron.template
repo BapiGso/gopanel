@@ -1,11 +1,14 @@
 {{template "header.template"}}
 <section>
+    <h3>Cron Manage</h3>
+    <p>1. </p>
     <p>
         <button>Creat cron</button>
         <button>start</button>
         <button>ban</button>
         <button>Delete cron</button>
     </p>
+
     <table>
         <thead>
         <tr>

@@ -10,16 +10,9 @@ import (
 	"time"
 )
 
-// debug use this function
-var Debug = false
-
 func Login(c echo.Context) error {
 	switch c.Request().Method {
 	case "GET":
-		user, ok := c.Get("user").(*jwt.Token)
-		if ok && user.Valid {
-			return c.Redirect(302, "/admin/monitor")
-		}
 		return c.Render(200, "login.template", nil)
 	case "POST":
 		req := &struct {
