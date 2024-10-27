@@ -6,6 +6,7 @@
 ![last - commit](https://img.shields.io/github/last-commit/BapiGso/gopanel)
 ![stars - gopanel](https://img.shields.io/github/stars/bapigso/gopanel?style=social)
 ![forks - gopanel](https://img.shields.io/github/forks/bapigso/gopanel?style=social)
+![CodeQL](https://github.com/BapiGso/gopanel/workflows/CodeQL/badge.svg)
 
 ---
 
