@@ -1,8 +1,11 @@
 
-<p><img src="./assets/img/preview1.webp" alt="Webmin" width="300px"></p>
+![preview](./assets/img/preview2.png)
 
-<img src="https://img.shields.io/github/last-commit/BapiGso/gopanel" alt="Latest commit"><img src="https://img.shields.io/github/license/BapiGso/gopanel">
 
+![license](https://img.shields.io/github/license/BapiGso/gopanel)
+![last - commit](https://img.shields.io/github/last-commit/BapiGso/gopanel)
+![stars - gopanel](https://img.shields.io/github/stars/bapigso/gopanel?style=social)
+![forks - gopanel](https://img.shields.io/github/forks/bapigso/gopanel?style=social)
 
 ---
 
@@ -13,6 +16,7 @@
 ❗Entertainment project, do not use in production environment
 
 #### INSTALL
+
 ```shell
 # For other platforms, please replace wget link your ARCH and OS 
 wget https://github.com/BapiGso/gopanel/releases/latest/download/gopanel_linux_amd64 -O /usr/local/bin/gopanel
@@ -38,20 +42,26 @@ systemctl start gopanel
 systemctl status gopanel
 ```
 
+#### UNINSTALL
+
+```shell
+    rm /usr/local/bin/gopanel
+    rm config.json Caddyfile frps.conf
+```
+
 #### FUNCTION
  - Panel security entrance
  - Server monitoring
+ - cron
  - webssh
  - webdav server
  - web file editor
  - caddy manage
  - frps manage
  - UnblockNeteaseMusic
-
-
-#### TODOLIST
- - cron
  - docker manage
+
+
 
 ## LICENSE
 
