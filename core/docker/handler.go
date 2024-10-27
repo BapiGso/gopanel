@@ -48,7 +48,7 @@ func Index(c echo.Context) error {
 			return apiClientErr
 		}
 		return c.Render(http.StatusOK, "docker.template", nil)
-	case "POST":
+	case "PUT":
 		switch c.QueryParam("type") {
 		case "pause":
 			if err := apiClient.ContainerPause(context.Background(), c.QueryParam("id")); err != nil {

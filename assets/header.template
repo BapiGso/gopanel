@@ -5,7 +5,7 @@
     <title x-text="localStorage.title||'GoPanel Dashboard'"></title>
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="stylesheet" href="/assets/css/pico.purple.min.css">
-    <link rel="stylesheet" href="/assets/css/devicon.min.css" />
+{{/*    <link rel="stylesheet" href="/assets/css/devicon.min.css" />*/}}
 {{/*    <link rel="stylesheet" type='text/css' href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />*/}}
     <style>
         * {
@@ -89,7 +89,7 @@
 </head>
 <body x-data="panel">
     <aside>
-        <h2 @click="localStorage.title=prompt('new name', '');location.reload()" x-text="localStorage.title||'GoPanel'"></h2>
+        <h2 @click="localStorage.title=prompt('new name', 'GoPanel');location.reload()" x-text="localStorage.title||'GoPanel'"></h2>
         <ul>
             <li><a href="/admin/monitor" class="devicon-embeddedc-plain">monitor</a></li>
             <li><a href="/admin/website" class="devicon-chrome-plain">website</a></li>

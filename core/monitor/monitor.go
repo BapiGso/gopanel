@@ -19,7 +19,11 @@ type Monitor struct {
 	HostInfo *host.InfoStat
 }
 
-var M = &Monitor{}
+var M = func() *Monitor {
+	tmp := &Monitor{}
+	go tmp.refresh()
+	return tmp
+}()
 
 func (m *Monitor) refresh() {
 	var err error

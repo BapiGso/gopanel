@@ -25,6 +25,7 @@
             &>img{
                 width: 50%;
                 background-size: 100% 100%;
+                object-fit: cover;
             }
         }
     </style>
@@ -46,6 +47,6 @@
         </div>
     </section>
 </main>
-<img src="/assets/img/right-rec.jpg" alt="cover">
+<img src="/assets/img/right-rec.webp" alt="pixiv3104565" title="pixiv3104565">
 </body>
 </html>

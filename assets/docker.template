@@ -94,7 +94,7 @@
             data:null,
             dockerRunModal:false,
             async Action(action, id) {
-                let response = await fetch(`/admin/docker?type=${action}&id=${id}`, {method: 'POST'});
+                let response = await fetch(`/admin/docker?type=${action}&id=${id}`, {method: 'PUT'});
                 if (response.ok) {
                     alert(`${action} successful`);
                 } else {

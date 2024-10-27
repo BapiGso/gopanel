@@ -8,7 +8,7 @@
         </a>
     </p>
     <p>3. frps cannot be stopped after it is started unless you restart the panel.</p>
-    <p>4. The current frps startup status with the panel:{{.frpsEnable}}</p>
+    <p>4. The current frps startup status with the panel: <b>{{.frpsEnable}}</b></p>
     <p>
         <button @click="updateConfig">Save Config</button>
         <button @click="manageFrps('start')">Start frps</button>

@@ -1,5 +1,7 @@
 {{template "header.template"}}
 <section id="term">
+    <h3>Term</h3>
+    <p>Did you know that Windows can also be managed using <a href="https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse">SSH</a> ?</p>
     <form action="" method="post" @submit.prevent="createSSH" x-init="memorySSH($el)">
         <fieldset role="group">
             <input name="host" type="text" placeholder="主机" value="127.0.0.1">
@@ -76,17 +78,8 @@
                     }, 250))
                 },
                 createSSH(e){
-                    fetch(e.target.action,{
-                        method: 'POST',
-                        body: new FormData(e.target)
-                        })
-                        .then(res=>{
-                            if (res.status === 200) {
-                                return res.json()
-                            }
-                            alert(res.status)
-                            return null
-                        })
+                    fetch(e.target.action,{method: 'POST', body: new FormData(e.target)})
+                        .then(res=>res.json())
                         .then(data=>{
                             if (data===null) return
                             localStorage.host=e.target.host.value;

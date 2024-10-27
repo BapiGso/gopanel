@@ -31,7 +31,7 @@
         body>article{
             width: 100%;
             height: 100vh;
-            background:linear-gradient(to right, #c09de6, #fff);
+            background:linear-gradient(to right, #fde0e6, #fff);
             padding: 0;
             margin: 0;
             &>form{
@@ -70,7 +70,7 @@
                     width: 30%;
                     height: 40px;
                     border-radius: 20px;
-                    background-color: #a48ac0;
+                    background-color: rgba(164, 138, 192, 0.39);
                     font-size: 14px;
                     padding: 0;
                 }
@@ -85,7 +85,7 @@
         <feTurbulence type="turbulence" baseFrequency="0.01 .1" numOctaves="1" result="turbulence" seed="95" />
         <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="15" xChannelSelector="R" yChannelSelector="B" />
     </filter>
-    <g fill="#c99de6">
+    <g fill="#fde">
         <animateTransform attributeName="transform" type="rotate" from="0 151 151" to="360 151 151" dur="9.5s" repeatCount="indefinite" />
         <path d="M 150 150 L 50 150 A 50 50 0 0 1 50 50 A 50 50 0 0 1 150 50 Z" />
         <path d="M 152 150 L 152 50 A 50 50 0 0 1 252 50 A 50 50 0 0 1 252 150 Z" />
@@ -96,7 +96,7 @@
 </svg>
 <form action="" method="post" @submit="Remember($el)">
     <h1>Sign in</h1>
-    <img alt="muq" src="/assets/img/胡桃.jpg">
+    <img alt="pixiv72471572" src="/assets/img/avatar.webp" title="pixiv72471572">
     <input aria-label placeholder="username" type="text" name="username" required x-model="username">
     <input aria-label placeholder="password" type="password" name="password" required x-model="password" >
     <button class="button" type="submit">login</button>

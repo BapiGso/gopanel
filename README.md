@@ -39,9 +39,9 @@ systemctl status gopanel
 ```
 
 #### FUNCTION
- - Panel security entrance![](./assets/img/preview3.webp)
+ - Panel security entrance
  - Server monitoring
- - webssh![](./assets/img/preview2.webp)
+ - webssh
  - webdav server
  - web file editor
  - caddy manage

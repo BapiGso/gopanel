@@ -15,18 +15,20 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.22.1
+          go-version: 1.23
 
       - name: Build
         run: |
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o gopanel_linux_amd64
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o gopanel_linux_arm64
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm go build -o gopanel_linux_arm
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64   go build -o gopanel_linux_amd64
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64   go build -o gopanel_linux_arm64
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm     go build -o gopanel_linux_arm
           CGO_ENABLED=0 GOOS=linux GOARCH=riscv64 go build -o gopanel_linux_riscv64
           CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o gopanel_windows_amd64.exe
           CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -o gopanel_windows_arm64.exe
-          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o gopanel_mac_amd64
-          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o gopanel_mac_arm64
+          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64  go build -o gopanel_mac_amd64
+          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64  go build -o gopanel_mac_arm64
+          CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 go build -o gopanel_freebsd_amd64
+          CGO_ENABLED=0 GOOS=freebsd GOARCH=arm   go build -o gopanel_freebsd_arm
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -40,3 +42,5 @@ jobs:
             gopanel_windows_arm64.exe
             gopanel_mac_amd64
             gopanel_mac_arm64
+            gopanel_freebsd_amd64
+            gopanel_freebsd_arm
