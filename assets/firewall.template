@@ -1,16 +1,99 @@
 {{template "header.template"}}
 <section>
-    <h3>nftables Manage</h3>
+    <h3>Nftables Manage(Experimental features!)</h3>
     <p>1. nftables is described as a subsystem of the Linux kernel.</p>
     <p>2. These capabilities apply to network packets, datagrams, and Ethernet frames.</p>
-
-
+    <form action="" @submit.prevent="createRule">
+        <fieldset role="group">
+            <select name="network" aria-label required>
+                <option selected disabled value="">Select Network Layer</option>
+                <option value="2">IPv4</option>
+                <option value="10">IPv6</option>
+            </select>
+            <select name="transport" aria-label required>
+                <option selected disabled value="">Select Transport Layer</option>
+                <option value="17">TCP</option>
+                <option value="6">UDP</option>
+            </select>
+            <select name="verdict" aria-label required>
+                <option selected disabled value="">Select Verdict</option>
+                <option value="1">Accept</option>
+                <option value="0">Drop</option>
+            </select>
+            <select name="chainhook" aria-label="Select Chain Hook" required>
+                <option selected disabled value="">Select Chain Hook</option>
+                <option value="0">Pre-routing</option>
+                <option value="1">Input</option>
+                <option value="2">Forward</option>
+                <option value="3">Output</option>
+                <option value="4">Post-routing</option>
+                <option value="0">Ingress</option>
+            </select>
+            <input name="port" aria-label required placeholder="port">
+            <input type="submit" value="save">
+        </fieldset>
+    </form>
+    <table>
+        <thead>
+        <tr>
+            <th>Position</th>
+            <th>Handle</th>
+            <th>Flags</th>
+            <th>Network Layer</th>
+            <th>chain</th>
+            <th>action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{range .}}
+            <tr>
+                <td>{{.Position}}</td>
+                <td>{{.Handle}}</td>
+                <td>{{.Flags}}</td>
+                <td x-text="net2str(`{{.Table.Family}}`)"></td>
+                <td x-text="chainHook2str(`{{.Chain.Hooknum}}`)"></td>
+                <td><button @click="deleteRule(`{{.Handle}}`)">🚮</button></td>
+            </tr>
+        {{end}}
+    </table>
 </section>
 
 <script>
     document.addEventListener('alpine:init', () => {
             Alpine.data('panel', () => ({
-
+                net2str(val){
+                    const tableFamilyMap = {
+                        0: "Unspecified",
+                        1: "INet",
+                        2: "IPv4",
+                        10: "IPv6",
+                        3: "ARP",
+                        5: "Netdev",
+                        7: "Bridge"
+                    };
+                    return tableFamilyMap[val] || "Unknown";
+                },
+                chainHook2str(val) {
+                    const chainHookMap = {
+                        0: "Pre-routing",
+                        1: "Input",
+                        2: "Forward",
+                        3: "Output",
+                        4: "Post-routing",
+                        5: "Ingress"//todo Ingress is 0 too
+                    };
+                    return chainHookMap[val] || "Unknown";
+                },
+                async createRule(e){
+                    alert(await (await fetch(e.target.action,{method:"POST",body: new FormData(e.target)})).json())
+                    location.reload()
+                },
+                async deleteRule(handle){
+                    if (confirm("sure to delete?")) {
+                        alert(await (await fetch(`/admin/firewall?handle=${handle}`, {method: "DELETE"})).json())
+                        location.reload()
+                    }
+                }
             }))
         }
     )

@@ -35,27 +35,25 @@
     </form>
 
 
-{{/*    <table>*/}}
-{{/*        <thead>*/}}
-{{/*        <tr>*/}}
-{{/*            <th>name</th>*/}}
-{{/*            <th>frequency</th>*/}}
-{{/*            <th>action</th>*/}}
-{{/*        </tr>*/}}
-{{/*        </thead>*/}}
-{{/*        <tbody>*/}}
-{{/*        <template x-for="d in data">*/}}
-{{/*        <tr>*/}}
-{{/*            <td x-text="d.name"></td>*/}}
-{{/*            <td x-text="freStr(d.frequency)+formatTimestamp(d.attime)"></td>*/}}
-{{/*            <td>*/}}
-{{/*                <a x-show="!d.enable" @click="Action('unpause', d.name)">▶️</a>*/}}
-{{/*                <a x-show="d.enable"  @click="Action('pause', d.name)"  >⏸️</a>*/}}
-{{/*                <a @click="confirm('sure to delete?') && Action('remove', d.name)">🚮</a>*/}}
-{{/*            </td>*/}}
-{{/*        </tr>*/}}
-{{/*        </template>*/}}
-{{/*    </table>*/}}
+    <table>
+        <thead>
+        <tr>
+            <th>name</th>
+            <th>action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <template x-for="(k,v) in data">
+        <tr>
+            <td x-text="v"></td>
+            <td>
+                <a @click="Action('unpause', v)">▶️</a>
+                <a @click="Action('pause', v)"  >⏸️</a>
+                <a @click="confirm('sure to delete?') && Action('remove', v)">🚮</a>
+            </td>
+        </tr>
+        </template>
+    </table>
 </section>
 <script>
     document.addEventListener('alpine:init', () => {

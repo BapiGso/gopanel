@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/viper"
+	"net/http"
 	"panel/core/UnblockNeteaseMusic"
 	"panel/core/cron"
 	"panel/core/docker"
@@ -38,7 +39,14 @@ func (c *Core) Route() {
 		"LOCK", "UNLOCK"}, "/webdav*", webdav.WebDav)
 
 	// 静态资源
-	c.e.StaticFS("/assets", c.assetsFS)
+	//c.e.StaticFS("/assets", c.assetsFS)
+	c.e.Group("/assets", middleware.StaticWithConfig(middleware.StaticConfig{
+		Skipper: func(c echo.Context) bool {
+			c.Response().Header().Set("Cache-Control", "public, max-age=86400")
+			return false
+		},
+		Filesystem: http.FS(c.assetsFS),
+	}))
 	//用于PWA的路径重写
 	c.e.Pre(middleware.Rewrite(map[string]string{
 		"/manifest.webmanifest": "/assets/manifest.webmanifest",

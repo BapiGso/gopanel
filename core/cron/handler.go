@@ -2,15 +2,16 @@ package cron
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/labstack/echo/v4"
-	"github.com/spf13/viper"
 	"log/slog"
 	"net/http"
 	"os/exec"
 	"time"
 )
+
+// 全局map存储所有scheduler
+var schedulerMap = make(map[string]gocron.Scheduler)
 
 func Index(c echo.Context) error {
 	req := &struct {
@@ -18,51 +19,60 @@ func Index(c echo.Context) error {
 		Frequency int    `form:"frequency"    json:"frequency"`
 		AtTime    int    `form:"attime"       json:"attime"`
 		Script    string `form:"script"       json:"script"`
-		Enable    bool   `json:"enable"`
-	}{
-		Enable: true,
-	}
+	}{}
 	if err := c.Bind(req); err != nil {
 		return err
 	}
+
 	switch c.Request().Method {
 	case "POST":
-		//viper.Set("cron."+req.Name, req)
-		//tmp := map[string]any{req.Name: req}
-		//maps.Copy(tmp, viper.GetStringMap("cron"))
-		//viper.Set("cron", tmp)
-		//if err := viper.WriteConfig(); err != nil {
-		//	return err // 处理错误
-		//}
-		go addCron(req.Name, req.Script, req.Frequency, req.AtTime)
+		if err := addCron(req.Name, req.Script, req.Frequency, req.AtTime); err != nil {
+			return err
+		}
 		return c.JSON(200, "success")
-	//case "PUT":
-	//	switch c.QueryParam("type") {
-	//	case "pause":
-	//		viper.Set("cron."+c.QueryParam("name")+".enable", false)
-	//	case "unpause":
-	//		viper.Set("cron."+c.QueryParam("name")+".enable", true)
-	//	case "remove":
-	//
-	//	}
-	//	if err := viper.WriteConfig(); err != nil {
-	//		return err // 处理错误
-	//	}
-	//	return c.JSON(200, "success")
+	case "PUT":
+		switch c.QueryParam("type") {
+		case "pause":
+			if s, exists := schedulerMap[c.QueryParam("name")]; exists {
+				if err := s.StopJobs(); err != nil {
+					return err
+				}
+				return c.JSON(200, "success")
+			}
+		case "unpause":
+			if oldS, exists := schedulerMap[c.QueryParam("name")]; exists {
+				oldS.Start()
+				return c.JSON(200, "success")
+			}
+		case "remove":
+			if s, exists := schedulerMap[c.QueryParam("name")]; exists {
+				s.Shutdown()
+				delete(schedulerMap, c.QueryParam("name"))
+				return c.JSON(200, "success")
+			}
+		}
+		return c.JSON(404, "scheduler not found")
 	case "GET":
-		jsonData, _ := json.Marshal(viper.Get("cron"))
+		jsonData, _ := json.Marshal(schedulerMap)
 		return c.Render(http.StatusOK, "cron.template", string(jsonData))
 	}
 	return echo.ErrMethodNotAllowed
 }
 
-func addCron(name, cmd string, fre, atTime int) {
+func addCron(name, cmd string, fre, atTime int) error {
+	// 如果已存在，先关闭旧的
+	if oldS, exists := schedulerMap[name]; exists {
+		oldS.Shutdown()
+	}
 
+	// 创建新的scheduler
 	s, err := gocron.NewScheduler()
 	if err != nil {
-		slog.Error("create NewScheduler err", err)
+
+		return err
 	}
-	j, err := s.NewJob(
+
+	_, err = s.NewJob(
 		getJobDefinition(fre, atTime),
 		gocron.NewTask(
 			func() {
@@ -70,16 +80,19 @@ func addCron(name, cmd string, fre, atTime int) {
 					slog.Error("cmd exec err", err)
 				} else {
 					slog.Info("success", time.Now().Unix())
-
 				}
 			},
 		),
 	)
 	if err != nil {
-		slog.Error("create Job err", err)
+		return err
 	}
-	slog.Info(fmt.Sprintf("Job running:%v", j.ID()))
+
+	// 保存到map中
+	schedulerMap[name] = s
+
 	s.Start()
+	return nil
 }
 
 func getJobDefinition(fre, atTime int) gocron.JobDefinition {
@@ -87,6 +100,7 @@ func getJobDefinition(fre, atTime int) gocron.JobDefinition {
 	day := atTime / (24 * 60)
 	hour := uint((atTime / 60) % 24)
 	minute := uint(atTime % 60)
+
 	switch fre {
 	case 43199:
 		return gocron.MonthlyJob(1, gocron.NewDaysOfTheMonth(day), gocron.NewAtTimes(gocron.NewAtTime(hour, minute, 0)))
