@@ -5,7 +5,6 @@
 package firewall
 
 import (
-	"fmt"
 	"github.com/google/nftables"
 	"github.com/google/nftables/expr"
 	"github.com/labstack/echo/v4"
@@ -96,7 +95,7 @@ func Index(c echo.Context) error {
 				}
 				for _, rule := range rules {
 					if rule.Table.Name == "gotable" && rule.Chain.Name == "gochain" && rule.Handle == req.Handle {
-						fmt.Println("匹配到rule")
+						//fmt.Println("匹配到rule")
 						if err := conn.DelRule(rule); err != nil {
 							return err
 						}
