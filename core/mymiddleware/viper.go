@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/spf13/viper"
+	"net"
 	"os"
 )
 
@@ -52,9 +53,25 @@ func init() {
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Printf("read config: %v\n", err)
 	}
-
+	//todo show ip addr
 	fmt.Printf("Panel Port: %s\n", viper.GetString("panel.port"))
 	fmt.Printf("Panel Path: %s\n", viper.GetString("panel.path"))
 	fmt.Printf("Panel Username: %s\n", viper.GetString("panel.username"))
 	fmt.Printf("Panel Password: %s\n", viper.GetString("panel.password"))
+}
+
+func getLocalIP() (string, error) {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return "", err
+	}
+	for _, addr := range addrs {
+		// 检查地址类型是否为 IP 网络地址
+		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			// 检查是否为 IPv4 地址
+			return ipnet.IP.String(), nil
+		}
+	}
+
+	return "", fmt.Errorf("no IP address found")
 }

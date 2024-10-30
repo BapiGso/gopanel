@@ -48,17 +48,17 @@
         </tr>
         </thead>
         <tbody>
-        {{range $key, $value := .}}
+        {{range .}}
             <tr>
-                <td hidden>{{$value.Position}}</td>
-                <td hidden>{{$value.Handle}}</td>
-                <td hidden>{{$value.Flags}}</td>
-                <td x-text="net2str(`{{$value.Table.Family}}`)"></td>
-                <td x-text="protocol2str(`{{$value.Protocol}}`)"></td>
-                <td hidden x-text="chainHook2str(`{{$value.Hook}}`)"></td>
-                <td>{{if $value.Port}}{{$value.Port}}{{else}}-{{end}}</td>
-                <td x-text="verdict2str(`{{$value.Verdict}}`)"></td>
-                <td><button @click="deleteRule(`{{$value.Table.Name}},{{$value.Chain.Name}},{{$value.Handle}}`)">🚮</button></td>
+                <td hidden>{{.Position}}</td>
+                <td hidden>{{.Handle}}</td>
+                <td hidden>{{.Flags}}</td>
+                <td x-text="net2str(`{{.Table.Family}}`)"></td>
+                <td x-text="protocol2str(`{{.Protocol}}`)"></td>
+                <td hidden x-text="chainHook2str(`{{.Hook}}`)"></td>
+                <td>{{if .Port}}{{.Port}}{{else}}-{{end}}</td>
+                <td x-text="verdict2str(`{{.Verdict}}`)"></td>
+                <td><button @click="deleteRule(`{{.Table.Name}}`,`{{.Chain.Name}}`,`{{.Handle}}`)">🚮</button></td>
             </tr>
         {{end}}
         </tbody>
@@ -119,7 +119,7 @@
                     return verdictMap[val] || "Unknown";
                 },
                 async createRule(e){
-                    alert(await (await fetch(e.target.action,{method:"POST",body: new FormData(e.target)})).json())
+                    alert(await (await fetch(e.target.action,{method:"POST",body: new FormData(e.target)})).text())
                     location.reload()
                 },
                 async deleteRule(tablename,chainname,handle){

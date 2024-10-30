@@ -46,8 +46,11 @@ systemctl status gopanel
 #### UNINSTALL
 
 ```shell
-    rm /usr/local/bin/gopanel
-    rm config.json Caddyfile frps.conf
+sudo systemctl stop gopanel
+sudo systemctl disable gopanel
+sudo rm /etc/systemd/system/gopanel.service
+sudo rm /usr/local/bin/gopanel
+sudo rm config.json Caddyfile frps.conf
 ```
 
 #### FUNCTION
@@ -61,8 +64,6 @@ systemctl status gopanel
  - frps manage
  - UnblockNeteaseMusic
  - docker manage
-
-#### TODO
  - nftables
 
 ## LICENSE
