@@ -5,6 +5,7 @@
 package firewall
 
 import (
+	"encoding/binary"
 	"github.com/google/nftables"
 	"github.com/google/nftables/expr"
 	"github.com/labstack/echo/v4"
@@ -31,6 +32,8 @@ func Index(c echo.Context) error {
 		ChainHook uint32 `form:"chainhook"      json:"chainhook"`
 		Port      uint   `form:"port"           json:"port"`
 		Handle    uint64 `query:"handle"        json:"handle"`
+		TableName string `query:"tablename"        json:"tablename"`
+		ChainName string `query:"chainname"        json:"chainnname"`
 	}{}
 	if err := c.Bind(req); err != nil {
 		return err
@@ -94,7 +97,7 @@ func Index(c echo.Context) error {
 					continue
 				}
 				for _, rule := range rules {
-					if rule.Table.Name == "gotable" && rule.Chain.Name == "gochain" && rule.Handle == req.Handle {
+					if rule.Table.Name == req.TableName && rule.Chain.Name == req.ChainName && rule.Handle == req.Handle {
 						//fmt.Println("匹配到rule")
 						if err := conn.DelRule(rule); err != nil {
 							return err
@@ -109,7 +112,8 @@ func Index(c echo.Context) error {
 
 		return c.JSON(200, "success")
 	case "GET":
-		var rulesList []nftables.Rule
+		rulesMap := make(map[uint64]RuleInfo)
+
 		for _, table := range tables {
 			for _, chain := range chains {
 				rules, err := conn.GetRules(table, chain)
@@ -117,11 +121,50 @@ func Index(c echo.Context) error {
 					continue
 				}
 				for _, rule := range rules {
-					rulesList = append(rulesList, *rule)
+					// 使用Handle作为唯一标识符
+					ruleInfo := parseRule(rule)
+					rulesMap[rule.Handle] = ruleInfo
 				}
 			}
 		}
-		return c.Render(http.StatusOK, "firewall.template", rulesList)
+		return c.Render(http.StatusOK, "firewall.template", rulesMap)
 	}
 	return echo.ErrMethodNotAllowed
+}
+
+type RuleInfo struct {
+	nftables.Rule
+	Protocol byte
+	Port     uint16
+	Verdict  uint16
+	Hook     uint32
+}
+
+func parseRule(rule *nftables.Rule) RuleInfo {
+	info := RuleInfo{Rule: *rule}
+
+	// Get Hook value
+	if rule.Chain != nil && rule.Chain.Hooknum != nil {
+		info.Hook = uint32(*rule.Chain.Hooknum)
+	}
+
+	// Parse expressions to extract protocol, port and verdict
+	for i, ex := range rule.Exprs {
+		switch Expr := ex.(type) {
+		case *expr.Cmp:
+			// First Cmp usually contains protocol info
+			if i == 1 && len(Expr.Data) == 1 {
+				info.Protocol = Expr.Data[0]
+			}
+			// Second Cmp usually contains port info
+			if i == 3 && len(Expr.Data) == 2 {
+				info.Port = binary.BigEndian.Uint16(Expr.Data)
+			}
+		case *expr.Verdict:
+			// Parse verdict information
+			info.Verdict = uint16(Expr.Kind)
+		}
+	}
+
+	return info
 }

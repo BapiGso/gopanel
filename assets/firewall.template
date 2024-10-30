@@ -12,13 +12,8 @@
             </select>
             <select name="transport" aria-label required>
                 <option selected disabled value="">Select Transport Layer</option>
-                <option value="17">TCP</option>
-                <option value="6">UDP</option>
-            </select>
-            <select name="verdict" aria-label required>
-                <option selected disabled value="">Select Verdict</option>
-                <option value="1">Accept</option>
-                <option value="0">Drop</option>
+                <option value="6">TCP</option>
+                <option value="17">UDP</option>
             </select>
             <select name="chainhook" aria-label="Select Chain Hook" required>
                 <option selected disabled value="">Select Chain Hook</option>
@@ -29,6 +24,11 @@
                 <option value="4">Post-routing</option>
                 <option value="0">Ingress</option>
             </select>
+            <select name="verdict" aria-label required>
+                <option selected disabled value="">Select Verdict</option>
+                <option value="1">Accept</option>
+                <option value="0">Drop</option>
+            </select>
             <input name="port" aria-label required placeholder="port">
             <input type="submit" value="save">
         </fieldset>
@@ -36,25 +36,32 @@
     <table>
         <thead>
         <tr>
-            <th>Position</th>
-            <th>Handle</th>
-            <th>Flags</th>
-            <th>Network Layer</th>
-            <th>chain</th>
-            <th>action</th>
+            <th hidden>Position</th>
+            <th hidden>Handle</th>
+            <th hidden>Flags</th>
+            <th>Network</th>
+            <th>Protocol</th>
+            <th hidden>Chain</th>
+            <th>Port</th>
+            <th>Verdict</th>
+            <th>Action</th>
         </tr>
         </thead>
         <tbody>
-        {{range .}}
+        {{range $key, $value := .}}
             <tr>
-                <td>{{.Position}}</td>
-                <td>{{.Handle}}</td>
-                <td>{{.Flags}}</td>
-                <td x-text="net2str(`{{.Table.Family}}`)"></td>
-                <td x-text="chainHook2str(`{{.Chain.Hooknum}}`)"></td>
-                <td><button @click="deleteRule(`{{.Handle}}`)">🚮</button></td>
+                <td hidden>{{$value.Position}}</td>
+                <td hidden>{{$value.Handle}}</td>
+                <td hidden>{{$value.Flags}}</td>
+                <td x-text="net2str(`{{$value.Table.Family}}`)"></td>
+                <td x-text="protocol2str(`{{$value.Protocol}}`)"></td>
+                <td hidden x-text="chainHook2str(`{{$value.Hook}}`)"></td>
+                <td>{{if $value.Port}}{{$value.Port}}{{else}}-{{end}}</td>
+                <td x-text="verdict2str(`{{$value.Verdict}}`)"></td>
+                <td><button @click="deleteRule(`{{$value.Table.Name}},{{$value.Chain.Name}},{{$value.Handle}}`)">🚮</button></td>
             </tr>
         {{end}}
+        </tbody>
     </table>
 </section>
 
@@ -84,13 +91,40 @@
                     };
                     return chainHookMap[val] || "Unknown";
                 },
+                protocol2str(val) {
+                    const protocolMap = {
+                        1: "ICMP",
+                        6: "TCP",
+                        17: "UDP",
+                        58: "ICMPv6",
+                        132: "SCTP",
+                        136: "UDPLite"
+                    };
+                    return protocolMap[val] || "Unknown";
+                },
+                verdict2str(val) {
+                    const verdictMap = {
+                        "-5": "Return",
+                        "-4": "Goto",
+                        "-3": "Jump",
+                        "-2": "Break",
+                        "-1": "Continue",
+                        0: "Drop",
+                        1: "Accept",
+                        2: "Stolen",
+                        3: "Queue",
+                        4: "Repeat",
+                        5: "Stop"
+                    };
+                    return verdictMap[val] || "Unknown";
+                },
                 async createRule(e){
                     alert(await (await fetch(e.target.action,{method:"POST",body: new FormData(e.target)})).json())
                     location.reload()
                 },
-                async deleteRule(handle){
+                async deleteRule(tablename,chainname,handle){
                     if (confirm("sure to delete?")) {
-                        alert(await (await fetch(`/admin/firewall?handle=${handle}`, {method: "DELETE"})).json())
+                        alert(await (await fetch(`/admin/firewall?tablename=${tablename}&chainname=${chainname}&handle=${handle}`, {method: "DELETE"})).json())
                         location.reload()
                     }
                 }
