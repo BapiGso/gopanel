@@ -32,6 +32,7 @@
     </form>
     <h3>Update</h3>
     <button @click="updateBinary">update gopanel</button>
+    <button @click="restartGopanel">restart gopanel</button>
 </section>
 <script>
     document.addEventListener('alpine:init', () => {
@@ -41,9 +42,13 @@
                 location.reload()
             },
             async updateBinary(){
-                alert(await (await fetch(`/admin/security`,{method:"PUT"})).json())
+                alert(await (await fetch(`/admin/security?action=update`,{method:"PUT"})).json())
                 location.reload()
             },
+            async restartGopanel(){
+                alert(await (await fetch(`/admin/security?action=restart`,{method:"PUT"})).json())
+                location.reload()
+            }
             }))
         }
     )

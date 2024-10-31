@@ -37,11 +37,15 @@ func Index(c echo.Context) error {
 		}
 		return c.JSON(200, "gopanel will take a little time to reboot")
 	case "PUT":
-		if err := updateBinaryIfNeeded(); err != nil {
-			return err
+		if c.QueryParam("action") == "update" {
+			if err := updateBinaryIfNeeded(); err != nil {
+				return err
+			}
 		}
-		if err := restart(); err != nil {
-			return err
+		if c.QueryParam("action") == "restart" {
+			if err := restart(); err != nil {
+				return err
+			}
 		}
 		return c.JSON(200, "success")
 	}
