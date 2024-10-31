@@ -24,20 +24,25 @@ func Index(c echo.Context) error {
 		if err := c.Bind(req); err != nil {
 			return err
 		}
-		viper.Set("panel.port", req.Port)
+
+		viper.Set("panel,port", req.Port)
 		viper.Set("panel.path", req.Path)
 		viper.Set("panel.username", req.Username)
 		viper.Set("panel.password", req.Password)
 		if err := viper.WriteConfig(); err != nil {
 			return err // 处理错误
 		}
-		c.Response().After(restart())
+		if err := restart(); err != nil {
+			return err
+		}
 		return c.JSON(200, "gopanel will take a little time to reboot")
 	case "PUT":
 		if err := updateBinaryIfNeeded(); err != nil {
 			return err
 		}
-		c.Response().After(restart())
+		if err := restart(); err != nil {
+			return err
+		}
 		return c.JSON(200, "success")
 	}
 	return echo.ErrMethodNotAllowed

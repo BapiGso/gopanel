@@ -28,6 +28,9 @@ func Index(c echo.Context) error {
 		}
 		if c.QueryParam("status") == "enable" {
 			viper.Set("enable.frps", !viper.Get("enable.frps").(bool))
+			if err := viper.WriteConfig(); err != nil {
+				return err // 处理错误
+			}
 		}
 		return c.JSON(200, "success")
 

@@ -78,7 +78,7 @@ func showPanelAddr() {
 			fmt.Printf("gopanel started on https://%v%v/%v\n", ipNet.IP, viper.GetString("panel.port"), viper.GetString("panel.path"))
 		} else if ipNet.IP.To16() != nil && ipNet.IP.IsGlobalUnicast() {
 			// Check for IPv6 unicast addresses
-			fmt.Printf("gopanel started on https://%v%v/%v\n", ipNet.IP, viper.GetString("panel.port"), viper.GetString("panel.path"))
+			fmt.Printf("gopanel started on https://[%v]%v/%v\n", ipNet.IP, viper.GetString("panel.port"), viper.GetString("panel.path"))
 		}
 	}
 }

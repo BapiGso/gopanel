@@ -4,19 +4,23 @@
 
 package security
 
-func restart() func() {
-	return func() {
-		executable, err := os.Executable()
-		if err != nil {
-			return
-		}
+import (
+	"os"
+	"syscall"
+)
 
-		// 使用 syscall.Exec 替换当前进程
-		err = syscall.Exec(executable, os.Args, os.Environ())
-		if err != nil {
-			fmt.Println("Error restarting process:", err)
-			os.Exit(1)
-		}
+func restart() error {
+
+	executable, err := os.Executable()
+	if err != nil {
+		return err
 	}
 
+	// 使用 syscall.Exec 替换当前进程
+	err = syscall.Exec(executable, os.Args, os.Environ())
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -100,7 +100,7 @@ func updateBinaryIfNeeded() error {
 
 		fmt.Println("Binary updated successfully.")
 	} else {
-		return fmt.Errorf("local binary is up-to-date")
+		return fmt.Errorf("latest release date is %s. Local binary is up-to-date", latestReleaseDate.Format("2006-01-02"))
 	}
 
 	return nil

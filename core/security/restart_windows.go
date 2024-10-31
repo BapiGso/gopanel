@@ -6,8 +6,6 @@ package security
 
 import "fmt"
 
-func restart() func() {
-	return func() {
-		fmt.Println(123)
-	}
+func restart() error {
+	return fmt.Errorf("Your operating system need manually reboot")
 }
