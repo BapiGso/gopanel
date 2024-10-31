@@ -57,7 +57,7 @@ fi
 sudo chmod +x /usr/local/bin/gopanel
 
 # 创建工作目录
-WORKDIR="/usr/local/bin/gopanel"
+WORKDIR="/usr/local/bin"
 sudo mkdir -p "$WORKDIR"
 
 # 创建服务文件
