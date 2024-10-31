@@ -17,7 +17,7 @@ case "$ARCH" in
     x86_64)
         GOARCH="amd64"
         ;;
-    aarch64)
+    arm64|aarch64)
         GOARCH="arm64"
         ;;
     armv7l)
@@ -35,17 +35,17 @@ esac
 # 将操作系统名称转换为小写
 OS_LOWER=$(echo "$OS" | tr '[:upper:]' '[:lower:]')
 
-# 设置下载链接
-DOWNLOAD_URL="https://github.com/BapiGso/gopanel/releases/latest/download/gopanel_${OS_LOWER}_${GOARCH}"
-
 # 检查是否支持的操作系统
-if [ "$OS" != "Linux" ] && [ "$OS" != "FreeBSD" ]; then
+if [ "$OS" != "Linux" ] && [ "$OS" != "FreeBSD" ] && [ "$OS" != "Darwin" ]; then
     echo "不支持的操作系统: $OS，请手动下载适用于您系统的 gopanel 版本。"
     exit 1
 fi
 
+# 设置下载链接
+DOWNLOAD_URL="https://github.com/BapiGso/gopanel/releases/latest/download/gopanel_${OS_LOWER}_${GOARCH}"
+
 # 下载 gopanel
-wget "$DOWNLOAD_URL" -O /usr/local/bin/gopanel
+sudo wget "$DOWNLOAD_URL" -O /usr/local/bin/gopanel
 
 # 检查下载是否成功
 if [ $? -ne 0 ]; then
@@ -54,15 +54,15 @@ if [ $? -ne 0 ]; then
 fi
 
 # 赋予执行权限
-chmod +x /usr/local/bin/gopanel
+sudo chmod +x /usr/local/bin/gopanel
 
 # 创建工作目录
 WORKDIR="/usr/local/bin/gopanel"
-mkdir -p "$WORKDIR"
+sudo mkdir -p "$WORKDIR"
 
 # 创建服务文件
 if [ "$OS" = "Linux" ]; then
-    cat <<EOF > /etc/systemd/system/gopanel.service
+    cat <<EOF | sudo tee /etc/systemd/system/gopanel.service > /dev/null
 [Unit]
 Description=GoPanel Service
 After=network.target
@@ -79,16 +79,17 @@ WantedBy=multi-user.target
 EOF
 
     # 重新加载 systemd 配置
-    systemctl daemon-reload
+    sudo systemctl daemon-reload
 
     # 启用并启动 gopanel 服务
-    systemctl enable gopanel
-    systemctl start gopanel
+    sudo systemctl enable gopanel
+    sudo systemctl start gopanel
 
-    # 检查服务状态并停留在界面，实时刷新
-    watch systemctl status gopanel
+    # 检查服务状态
+    sleep 2
+    sudo systemctl status gopanel
 elif [ "$OS" = "FreeBSD" ]; then
-    cat <<EOF > /usr/local/etc/rc.d/gopanel
+    cat <<EOF | sudo tee /usr/local/etc/rc.d/gopanel > /dev/null
 #!/bin/sh
 
 # PROVIDE: gopanel
@@ -112,14 +113,55 @@ run_rc_command "\$1"
 EOF
 
     # 赋予 rc.d 脚本执行权限
-    chmod +x /usr/local/etc/rc.d/gopanel
+    sudo chmod +x /usr/local/etc/rc.d/gopanel
 
     # 启用并启动 gopanel 服务
-    sysrc gopanel_enable=YES
-    service gopanel start
+    sudo sysrc gopanel_enable=YES
+    sudo service gopanel start
 
-    # 检查服务状态并停留在界面，实时刷新
-    watch service gopanel status
+    # 检查服务状态
+    sleep 2
+    sudo service gopanel status
+elif [ "$OS" = "Darwin" ]; then
+    # 创建 LaunchDaemon
+    PLIST_PATH="/Library/LaunchDaemons/com.gopanel.service.plist"
+    sudo cat <<EOF | sudo tee "$PLIST_PATH" > /dev/null
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.gopanel.service</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/gopanel</string>
+        <string>-w</string>
+        <string>$WORKDIR</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardErrorPath</key>
+    <string>/var/log/gopanel.err</string>
+    <key>StandardOutPath</key>
+    <string>/var/log/gopanel.out</string>
+    <key>WorkingDirectory</key>
+    <string>$WORKDIR</string>
+</dict>
+</plist>
+EOF
+
+    # 设置权限
+    sudo chown root:wheel "$PLIST_PATH"
+    sudo chmod 644 "$PLIST_PATH"
+
+    # 加载并启动服务
+    sudo launchctl load -w "$PLIST_PATH"
+
+    # 检查服务状态
+    sleep 2
+    sudo launchctl print system/com.gopanel.service
 else
     echo "不支持的操作系统: $OS，无法启动服务。"
     exit 1

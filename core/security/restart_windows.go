@@ -4,5 +4,10 @@
 
 package security
 
-func restart() {
+import "fmt"
+
+func restart() func() {
+	return func() {
+		fmt.Println(123)
+	}
 }

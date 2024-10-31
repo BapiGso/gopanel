@@ -30,12 +30,18 @@
             </tbody>
         </table>
     </form>
+    <h3>Update</h3>
+    <button @click="updateBinary">update gopanel</button>
 </section>
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('panel', () => ({
             async updateSecurity(e){
                 alert(await (await fetch(e.target.action,{method:"POST",body: new FormData(e.target)})).json())
+                location.reload()
+            },
+            async updateBinary(){
+                alert(await (await fetch(`/admin/security`,{method:"PUT"})).json())
                 location.reload()
             },
             }))

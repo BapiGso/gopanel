@@ -32,6 +32,12 @@ func Index(c echo.Context) error {
 			return err // 处理错误
 		}
 		c.Response().After(restart())
+		return c.JSON(200, "gopanel will take a little time to reboot")
+	case "PUT":
+		if err := updateBinaryIfNeeded(); err != nil {
+			return err
+		}
+		c.Response().After(restart())
 		return c.JSON(200, "success")
 	}
 	return echo.ErrMethodNotAllowed
