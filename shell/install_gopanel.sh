@@ -57,12 +57,12 @@ fi
 sudo chmod +x /usr/local/bin/gopanel
 
 # 创建工作目录
-WORKDIR="/usr/local/bin"
+WORKDIR="/opt/gopanel"
 sudo mkdir -p "$WORKDIR"
 
 # 创建服务文件
 if [ "$OS" = "Linux" ]; then
-    cat <<EOF | sudo tee /etc/systemd/system/gopanel.service > /dev/null
+    cat << EOF | sudo tee /etc/systemd/system/gopanel.service > /dev/null
 [Unit]
 Description=GoPanel Service
 After=network.target
@@ -70,9 +70,9 @@ After=network.target
 [Service]
 Type=simple
 User=root
-ExecStart=/usr/local/bin/gopanel -w $WORKDIR
+ExecStart=/usr/local/bin/gopanel -w ${WORKDIR}
 Restart=on-failure
-WorkingDirectory=$WORKDIR
+WorkingDirectory=${WORKDIR}
 
 [Install]
 WantedBy=multi-user.target
@@ -89,7 +89,7 @@ EOF
     sleep 2
     sudo systemctl status gopanel
 elif [ "$OS" = "FreeBSD" ]; then
-    cat <<EOF | sudo tee /usr/local/etc/rc.d/gopanel > /dev/null
+    cat << EOF | sudo tee /usr/local/etc/rc.d/gopanel > /dev/null
 #!/bin/sh
 
 # PROVIDE: gopanel
@@ -106,8 +106,8 @@ load_rc_config \${name}
 : \${gopanel_enable:="NO"}
 : \${gopanel_user:="root"}
 
-command="/usr/local/bin/gopanel -w $WORKDIR"
-command_args=""
+command="/usr/local/bin/gopanel"
+command_args="-w ${WORKDIR}"
 
 run_rc_command "\$1"
 EOF
@@ -125,7 +125,7 @@ EOF
 elif [ "$OS" = "Darwin" ]; then
     # 创建 LaunchDaemon
     PLIST_PATH="/Library/LaunchDaemons/com.gopanel.service.plist"
-    sudo cat <<EOF | sudo tee "$PLIST_PATH" > /dev/null
+    cat << EOF | sudo tee "$PLIST_PATH" > /dev/null
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -136,7 +136,7 @@ elif [ "$OS" = "Darwin" ]; then
     <array>
         <string>/usr/local/bin/gopanel</string>
         <string>-w</string>
-        <string>$WORKDIR</string>
+        <string>${WORKDIR}</string>
     </array>
     <key>RunAtLoad</key>
     <true/>
@@ -147,7 +147,7 @@ elif [ "$OS" = "Darwin" ]; then
     <key>StandardOutPath</key>
     <string>/var/log/gopanel.out</string>
     <key>WorkingDirectory</key>
-    <string>$WORKDIR</string>
+    <string>${WORKDIR}</string>
 </dict>
 </plist>
 EOF
