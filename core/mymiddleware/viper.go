@@ -53,25 +53,32 @@ func init() {
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Printf("read config: %v\n", err)
 	}
-	//todo show ip addr
+	showPanelAddr()
 	fmt.Printf("Panel Port: %s\n", viper.GetString("panel.port"))
 	fmt.Printf("Panel Path: %s\n", viper.GetString("panel.path"))
 	fmt.Printf("Panel Username: %s\n", viper.GetString("panel.username"))
 	fmt.Printf("Panel Password: %s\n", viper.GetString("panel.password"))
 }
 
-func getLocalIP() (string, error) {
+func showPanelAddr() {
+	// Attempt to show IP address
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
-		return "", err
+		return
 	}
 	for _, addr := range addrs {
-		// 检查地址类型是否为 IP 网络地址
-		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			// 检查是否为 IPv4 地址
-			return ipnet.IP.String(), nil
+		ipNet, ok := addr.(*net.IPNet)
+		if !ok || ipNet.IP.IsLoopback() {
+			continue
+		} else if ipNet.IP.To4() != nil && ipNet.IP.IsGlobalUnicast() {
+			//ip := ipNet.IP.To4()
+			//if ip[0] == 10 || (ip[0] == 172 && ip[1] >= 16 && ip[1] <= 31) || (ip[0] == 192 && ip[1] == 168) {
+			//	continue
+			//}
+			fmt.Printf("gopanel started on https://%v%v/%v\n", ipNet.IP, viper.GetString("panel.port"), viper.GetString("panel.path"))
+		} else if ipNet.IP.To16() != nil && ipNet.IP.IsGlobalUnicast() {
+			// Check for IPv6 unicast addresses
+			fmt.Printf("gopanel started on https://%v%v/%v\n", ipNet.IP, viper.GetString("panel.port"), viper.GetString("panel.path"))
 		}
 	}
-
-	return "", fmt.Errorf("no IP address found")
 }
