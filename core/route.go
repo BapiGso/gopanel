@@ -10,6 +10,7 @@ import (
 	"panel/core/docker"
 	"panel/core/file"
 	"panel/core/firewall"
+	"panel/core/frpc"
 	"panel/core/frps"
 	"panel/core/login"
 	"panel/core/monitor"
@@ -68,6 +69,7 @@ func (c *Core) Route() {
 	admin.Any("/cron", cron.Index)
 	admin.Any("/docker", docker.Index)
 	admin.Any("/frps", frps.Index)
+	admin.Any("/frpc", frpc.Index)
 	admin.Any("/firewall", firewall.Index)
 	admin.Any("/UnblockNeteaseMusic", UnblockNeteaseMusic.Index)
 	c.e.StartTLS(viper.GetString("panel.port"), []byte(certPEM), []byte(keyPEM))

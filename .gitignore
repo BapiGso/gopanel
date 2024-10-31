@@ -1,6 +1,7 @@
 gopanel_config.json
 gopanel_Caddyfile
 gopanel_frps.conf
+gopanel_frpc.conf
 access.log
 /.idea
 server.crt

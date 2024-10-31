@@ -97,6 +97,7 @@
             <li><a href="/admin/webdav" class="devicon-gitbook-original">webdav</a></li>
             <li><a href="/admin/docker" class="devicon-docker-plain">docker</a></li>
             <li><a href="/admin/frps" class="devicon-putty-plain">frps</a></li>
+            <li><a href="/admin/frpc" class="devicon-putty-plain">frpc</a></li>
             <li><a href="/admin/UnblockNeteaseMusic">UnblockNeteaseMusic</a></li>
             <li><a href="/admin/term" class="devicon-bash-plain">term</a></li>
             <li><a href="/admin/cron" class="devicon-githubactions-plain">cron</a></li>

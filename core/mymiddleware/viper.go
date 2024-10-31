@@ -34,6 +34,7 @@ func init() {
 			"enable": map[string]any{
 				"caddy": false,
 				"frps":  false,
+				"frpc":  false,
 			},
 		}
 

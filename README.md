@@ -37,6 +37,7 @@ bash <(curl -s https://raw.githubusercontent.com/BapiGso/gopanel/master/shell/un
  - web file editor
  - caddy manage
  - frps manage
+ - frpc manage
  - UnblockNeteaseMusic
  - docker manage
  - nftables
