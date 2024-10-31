@@ -30,7 +30,7 @@ fi
 sudo rm /usr/local/bin/gopanel
 
 # 删除配置文件
-CONFIG_DIR="/usr/local/bin"
+CONFIG_DIR="/opt/gopanel"
 sudo rm -f "$CONFIG_DIR/gopanel_config.json"
 sudo rm -f "$CONFIG_DIR/gopanel_Caddyfile"
 sudo rm -f "$CONFIG_DIR/gopanel_frps.conf"
