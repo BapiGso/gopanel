@@ -1,17 +1,39 @@
 package cron
 
 import (
-	"encoding/json"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/labstack/echo/v4"
-	"log/slog"
 	"net/http"
 	"os/exec"
+	"slices"
 	"time"
 )
 
-// 全局map存储所有scheduler
-var schedulerMap = make(map[string]gocron.Scheduler)
+type task struct {
+	Paused bool
+	gocron.Scheduler
+}
+
+func (t *task) LastRun() string {
+	lastRun, _ := t.Scheduler.Jobs()[0].LastRun()
+	return lastRun.Format("2006-01-02T15:04")
+}
+
+func (t *task) NextRun() string {
+	nextRun, _ := t.Scheduler.Jobs()[0].NextRun()
+	return nextRun.Format("2006-01-02T15:04")
+}
+
+func (t *task) RunNow() error {
+	return t.Scheduler.Jobs()[0].RunNow()
+}
+
+func (t *task) Name() string {
+	name := t.Scheduler.Jobs()[0].Name()
+	return name
+}
+
+var schedulerList []task
 
 func Index(c echo.Context) error {
 	req := &struct {
@@ -19,78 +41,62 @@ func Index(c echo.Context) error {
 		Frequency int    `form:"frequency"    json:"frequency"`
 		AtTime    int    `form:"attime"       json:"attime"`
 		Script    string `form:"script"       json:"script"`
+		Index     int    `query:"index"`
 	}{}
 	if err := c.Bind(req); err != nil {
 		return err
 	}
-
 	switch c.Request().Method {
 	case "POST":
-		if err := addCron(req.Name, req.Script, req.Frequency, req.AtTime); err != nil {
+		if err := addCron(req.Name, req.Script, getJobDefinition(req.Frequency, req.AtTime)); err != nil {
 			return err
 		}
 		return c.JSON(200, "success")
 	case "PUT":
 		switch c.QueryParam("type") {
 		case "pause":
-			if s, exists := schedulerMap[c.QueryParam("name")]; exists {
-				if err := s.StopJobs(); err != nil {
-					return err
-				}
-				return c.JSON(200, "success")
+			if err := schedulerList[req.Index].StopJobs(); err != nil {
+				return err
 			}
+			schedulerList[req.Index].Paused = true
 		case "unpause":
-			if oldS, exists := schedulerMap[c.QueryParam("name")]; exists {
-				oldS.Start()
-				return c.JSON(200, "success")
-			}
+			schedulerList[req.Index].Start()
+			schedulerList[req.Index].Paused = false
 		case "remove":
-			if s, exists := schedulerMap[c.QueryParam("name")]; exists {
-				s.Shutdown()
-				delete(schedulerMap, c.QueryParam("name"))
-				return c.JSON(200, "success")
+			if err := schedulerList[req.Index].Shutdown(); err != nil {
+				return err
+			}
+			schedulerList = slices.Delete(schedulerList, req.Index, req.Index+1)
+		case "runnow":
+			if err := schedulerList[req.Index].RunNow(); err != nil {
+				return err
 			}
 		}
-		return c.JSON(404, "scheduler not found")
+		return c.JSON(200, "success")
 	case "GET":
-		jsonData, _ := json.Marshal(schedulerMap)
-		return c.Render(http.StatusOK, "cron.template", string(jsonData))
+		return c.Render(http.StatusOK, "cron.template", schedulerList)
 	}
 	return echo.ErrMethodNotAllowed
 }
 
-func addCron(name, cmd string, fre, atTime int) error {
-	// 如果已存在，先关闭旧的
-	if oldS, exists := schedulerMap[name]; exists {
-		oldS.Shutdown()
-	}
-
-	// 创建新的scheduler
-	s, err := gocron.NewScheduler()
-	if err != nil {
-
+func addCron(name, cmd string, jobDefinition gocron.JobDefinition) error {
+	var s task
+	var err error
+	if s.Scheduler, err = gocron.NewScheduler(); err != nil {
 		return err
 	}
 
 	_, err = s.NewJob(
-		getJobDefinition(fre, atTime),
+		jobDefinition,
 		gocron.NewTask(
-			func() {
-				if err := exec.Command(cmd).Run(); err != nil {
-					slog.Error("cmd exec err", err)
-				} else {
-					slog.Info("success", time.Now().Unix())
-				}
-			},
+			exec.Command(cmd).Run(),
 		),
+		gocron.WithName(name),
 	)
 	if err != nil {
 		return err
 	}
-
-	// 保存到map中
-	schedulerMap[name] = s
-
+	schedulerList = append(schedulerList, s)
 	s.Start()
 	return nil
 }

@@ -1,7 +1,7 @@
-config.json
-Caddyfile
+gopanel_config.json
+gopanel_Caddyfile
+gopanel_frps.conf
 access.log
 /.idea
 server.crt
 server.key
-frps.conf

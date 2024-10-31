@@ -18,39 +18,14 @@
 
 #### INSTALL
 
-```shell
-# For other platforms, please replace wget link your ARCH and OS 
-wget https://github.com/BapiGso/gopanel/releases/latest/download/gopanel_linux_amd64 -O /usr/local/bin/gopanel
-chmod +x /usr/local/bin/gopanel
-cat <<EOF > /etc/systemd/system/gopanel.service
-[Unit]
-Description=GoPanel Service
-After=network.target
-
-[Service]
-Type=simple
-User=root
-ExecStart=/usr/local/bin/gopanel
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-systemctl daemon-reload
-systemctl enable gopanel
-systemctl start gopanel
-systemctl status gopanel
+```bash
+bash <(curl -s https://raw.githubusercontent.com/BapiGso/gopanel/master/shell/install_gopanel.sh)
 ```
 
 #### UNINSTALL
 
-```shell
-sudo systemctl stop gopanel
-sudo systemctl disable gopanel
-sudo rm /etc/systemd/system/gopanel.service
-sudo rm /usr/local/bin/gopanel
-sudo rm config.json Caddyfile frps.conf
+```bash
+bash <(curl -s https://raw.githubusercontent.com/BapiGso/gopanel/master/shell/uninstall_gopanel.sh)
 ```
 
 #### FUNCTION
@@ -68,4 +43,4 @@ sudo rm config.json Caddyfile frps.conf
 
 ## LICENSE
 
-released under the [BSD License](https://github.com/webmin/webmin/blob/master/LICENCE).
+released under the [GPL-2.0 License](https://github.com/BapiGso/gopanel/blob/master/LICENCE).

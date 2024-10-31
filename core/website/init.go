@@ -6,7 +6,7 @@ import (
 )
 
 func init() {
-	filePath := "Caddyfile"
+	filePath := "gopanel_Caddyfile"
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		content :=
 			`{

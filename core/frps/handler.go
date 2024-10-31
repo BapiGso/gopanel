@@ -37,12 +37,12 @@ func Index(c echo.Context) error {
 		if err != nil {
 			return err
 		}
-		if err := os.WriteFile("frps.conf", data, 0644); err != nil {
+		if err := os.WriteFile("gopanel_frps.conf", data, 0644); err != nil {
 			return err
 		}
 		return c.JSON(200, "success")
 	case "GET":
-		file, err := os.ReadFile("frps.conf")
+		file, err := os.ReadFile("gopanel_frps.conf")
 		if err != nil {
 			return err
 		}
@@ -57,7 +57,7 @@ func Index(c echo.Context) error {
 
 func RunFRPSServer() error {
 	//读取文件转为配置
-	cfg, _, err := config.LoadServerConfig("frps.conf", strictConfigMode)
+	cfg, _, err := config.LoadServerConfig("gopanel_frps.conf", strictConfigMode)
 	if err != nil {
 		return err
 	}

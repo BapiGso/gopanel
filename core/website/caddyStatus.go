@@ -27,7 +27,7 @@ func caddyStart() error {
 	adapter := caddyfile.Adapter{
 		ServerType: &httpcaddyfile.ServerType{},
 	}
-	file, err := os.ReadFile("./Caddyfile")
+	file, err := os.ReadFile("gopanel_Caddyfile")
 	if err != nil {
 		return err
 	}

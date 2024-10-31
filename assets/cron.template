@@ -39,20 +39,26 @@
         <thead>
         <tr>
             <th>name</th>
+            <th>lastRun</th>
+            <th>nextRun</th>
+            <th>runNow</th>
             <th>action</th>
         </tr>
         </thead>
         <tbody>
-        <template x-for="(k,v) in data">
+        {{range $k,$v:= .}}
         <tr>
-            <td x-text="v"></td>
+            <td x-text=`{{$v.Name}}`></td>
+            <td x-text=`{{$v.LastRun}}`></td>
+            <td x-text=`{{$v.NextRun}}`></td>
+            <td><a @click="Action('runnow', `{{$k}}`)">▶️</a> </td>
             <td>
-                <a @click="Action('unpause', v)">▶️</a>
-                <a @click="Action('pause', v)"  >⏸️</a>
-                <a @click="confirm('sure to delete?') && Action('remove', v)">🚮</a>
+                <a x-show="{{$v.Paused}}" @click="Action('unpause', `{{$k}}`)">▶️</a>
+                <a x-show="{{not $v.Paused}}" @click="Action('pause', `{{$k}}`)"  >⏸️</a>
+                <a @click="confirm('sure to delete?') && Action('remove',`{{$k}}`)">🚮</a>
             </td>
         </tr>
-        </template>
+        {{end}}
     </table>
 </section>
 <script>
@@ -78,13 +84,13 @@
             },
             freMax:43200,
             script:"",
-            data:JSON.parse((JSON.stringify({{.}}))),
+            {{/*data:JSON.parse((JSON.stringify({{.}}))),*/}}
             async createCron(e){
                 alert(await (await fetch(e.target.action,{method:"POST",body: new FormData(e.target)})).json())
                 location.reload()
             },
-            async Action(action, name){
-                let response = await fetch(`/admin/cron?type=${action}&name=${name}`, {method: 'PUT'});
+            async Action(action, index){
+                let response = await fetch(`/admin/cron?type=${action}&index=${index}`, {method: 'PUT'});
                 if (response.ok) {
                     alert(`${action} successful`);
                 } else {

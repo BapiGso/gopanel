@@ -31,6 +31,7 @@ func Index(c echo.Context) error {
 		if err := viper.WriteConfig(); err != nil {
 			return err // 处理错误
 		}
+		c.Response().After(restart())
 		return c.JSON(200, "success")
 	}
 	return echo.ErrMethodNotAllowed

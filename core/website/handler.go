@@ -35,12 +35,12 @@ func Index(c echo.Context) error {
 		if err != nil {
 			return err
 		}
-		if err := os.WriteFile("Caddyfile", data, 0644); err != nil {
+		if err := os.WriteFile("gopanel_Caddyfile", data, 0644); err != nil {
 			return err
 		}
 		return c.JSON(200, "success")
 	case "GET":
-		file, err := os.ReadFile("Caddyfile")
+		file, err := os.ReadFile("gopanel_Caddyfile")
 		if err != nil {
 			return err
 		}

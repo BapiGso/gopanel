@@ -1,6 +1,6 @@
 {{template "header.template"}}
 <section>
-    <form action="/admin/security" method="post">
+    <form action="/admin/security" method="post" @submit.prevent="updateSecurity">
         <table>
             <thead>
             <tr>
@@ -34,7 +34,10 @@
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('panel', () => ({
-
+            async updateSecurity(e){
+                alert(await (await fetch(e.target.action,{method:"POST",body: new FormData(e.target)})).json())
+                location.reload()
+            },
             }))
         }
     )

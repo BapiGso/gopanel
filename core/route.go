@@ -64,7 +64,7 @@ func (c *Core) Route() {
 	admin.POST("/term", term.CreateTermHandler)
 	admin.GET("/term/:id/data", term.LinkTermDataHandler)
 	admin.GET("/term/resize", term.SetTermWindowSizeHandler)
-	admin.GET("/security", security.Index)
+	admin.Any("/security", security.Index)
 	admin.Any("/cron", cron.Index)
 	admin.Any("/docker", docker.Index)
 	admin.Any("/frps", frps.Index)

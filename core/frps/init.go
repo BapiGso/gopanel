@@ -5,7 +5,7 @@ import (
 )
 
 func init() {
-	filePath := "frps.conf"
+	filePath := "gopanel_frps.conf"
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		content :=
 			`# frps.conf

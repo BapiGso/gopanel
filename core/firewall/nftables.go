@@ -1,4 +1,4 @@
-// core/firewall/handler.go
+// core/firewall/nftables.go
 //go:build linux
 // +build linux
 
