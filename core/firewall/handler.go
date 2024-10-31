@@ -1,6 +1,4 @@
-// core/firewall/handler.go
 //go:build linux
-// +build linux
 
 package firewall
 

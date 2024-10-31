@@ -1,6 +1,4 @@
-// core/firewall/nftables.go
 //go:build linux
-// +build linux
 
 package firewall
 
