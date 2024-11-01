@@ -7,6 +7,7 @@ import (
 )
 
 func Index(c echo.Context) error {
+
 	switch c.Request().Method {
 	case "GET":
 		return c.Render(http.StatusOK, "security.template", map[string]any{
@@ -24,8 +25,7 @@ func Index(c echo.Context) error {
 		if err := c.Bind(req); err != nil {
 			return err
 		}
-
-		viper.Set("panel,port", req.Port)
+		viper.Set("panel.port", req.Port)
 		viper.Set("panel.path", req.Path)
 		viper.Set("panel.username", req.Username)
 		viper.Set("panel.password", req.Password)
@@ -35,7 +35,7 @@ func Index(c echo.Context) error {
 		if err := restart(); err != nil {
 			return err
 		}
-		return c.JSON(200, "gopanel will take a little time to reboot")
+		return c.JSON(200, "success")
 	case "PUT":
 		if c.QueryParam("action") == "update" {
 			if err := updateBinaryIfNeeded(); err != nil {

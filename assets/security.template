@@ -33,11 +33,13 @@
     <h3>Update</h3>
     <button @click="updateBinary">update gopanel</button>
     <button @click="restartGopanel">restart gopanel</button>
+    <span x-show="showLoading" aria-busy="true">Waiting for server...</span>
 </section>
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('panel', () => ({
             async updateSecurity(e){
+                this.showLoading=true;
                 alert(await (await fetch(e.target.action,{method:"POST",body: new FormData(e.target)})).json())
                 location.reload()
             },
@@ -46,9 +48,11 @@
                 location.reload()
             },
             async restartGopanel(){
+                this.showLoading=true;
                 alert(await (await fetch(`/admin/security?action=restart`,{method:"PUT"})).json())
                 location.reload()
-            }
+            },
+            showLoading:false,
             }))
         }
     )

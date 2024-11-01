@@ -1,7 +1,9 @@
 package frps
 
 import (
+	"github.com/spf13/viper"
 	"os"
+	"time"
 )
 
 func init() {
@@ -20,4 +22,11 @@ webServer.password = "admin"	# Background login password
 `
 		_ = os.WriteFile(filePath, []byte(content), 0644)
 	}
+	go func() {
+		time.Sleep(3 * time.Second)
+		if viper.GetBool("enable.frps") {
+			_ = RunFRPSServer()
+		}
+	}()
+
 }

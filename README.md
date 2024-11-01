@@ -22,6 +22,8 @@
 bash <(curl -s https://raw.githubusercontent.com/BapiGso/gopanel/master/shell/install_gopanel.sh)
 ```
 
+Or, download the appropriate version for your platform from the [Releases](https://github.com/BapiGso/gopanel/releases) page and run it.
+
 #### UNINSTALL
 
 ```bash
@@ -44,4 +46,4 @@ bash <(curl -s https://raw.githubusercontent.com/BapiGso/gopanel/master/shell/un
 
 ## LICENSE
 
-released under the [GPL-2.0 License](https://github.com/BapiGso/gopanel/blob/master/LICENCE).
+released under the [GPL-2.0 License](https://github.com/BapiGso/gopanel/blob/master/LICENSE).

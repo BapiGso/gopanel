@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-//var svr *server.Service
+var svr *client.Service
 
 func Index(c echo.Context) error {
 	switch c.Request().Method {
@@ -36,6 +36,10 @@ func Index(c echo.Context) error {
 				return c.JSON(200, "success")
 			}
 		}
+		//if c.QueryParam("status") == "stop" {
+		//	svr.Close()
+		//	svr.GracefulClose(500 * time.Millisecond)
+		//}
 		if c.QueryParam("status") == "enable" {
 			viper.Set("enable.frpc", !viper.Get("enable.frpc").(bool))
 			if err := viper.WriteConfig(); err != nil {
