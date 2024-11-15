@@ -34,5 +34,6 @@ CONFIG_DIR="/opt/gopanel"
 sudo rm -f "$CONFIG_DIR/gopanel_config.json"
 sudo rm -f "$CONFIG_DIR/gopanel_Caddyfile"
 sudo rm -f "$CONFIG_DIR/gopanel_frps.conf"
+sudo rm -f "$CONFIG_DIR/gopanel_frpc.conf"
 
 echo "gopanel 已成功卸载。"

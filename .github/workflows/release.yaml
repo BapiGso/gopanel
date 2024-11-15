@@ -22,6 +22,7 @@ jobs:
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64   go build -o gopanel_linux_amd64
           CGO_ENABLED=0 GOOS=linux GOARCH=arm64   go build -o gopanel_linux_arm64
           CGO_ENABLED=0 GOOS=linux GOARCH=arm     go build -o gopanel_linux_arm
+          CGO_ENABLED=0 GOOS=linux GOARCH=s390x   go build -o gopanel_linux_s390x
           CGO_ENABLED=0 GOOS=linux GOARCH=riscv64 go build -o gopanel_linux_riscv64
           CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o gopanel_windows_amd64.exe
           CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -o gopanel_windows_arm64.exe
@@ -37,6 +38,7 @@ jobs:
             gopanel_linux_amd64
             gopanel_linux_arm64
             gopanel_linux_arm
+            gopanel_linux_s390x
             gopanel_linux_riscv64
             gopanel_windows_amd64.exe
             gopanel_windows_arm64.exe

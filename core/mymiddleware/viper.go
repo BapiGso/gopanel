@@ -32,9 +32,10 @@ func init() {
 				"password": generateRandomString(3),
 			},
 			"enable": map[string]any{
-				"caddy": false,
-				"frps":  false,
-				"frpc":  false,
+				"caddy":     false,
+				"frps":      false,
+				"frpc":      false,
+				"headscale": false,
 			},
 		}
 

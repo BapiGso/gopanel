@@ -19,7 +19,6 @@ type release struct {
 	} `json:"assets"`
 }
 
-// getLatestReleaseDate fetches the latest release date and download URL for the specified repository.
 func getLatestReleaseDate() (time.Time, string, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", "BapiGso", "gopanel")
 	resp, err := http.Get(url)
@@ -38,7 +37,6 @@ func getLatestReleaseDate() (time.Time, string, error) {
 		return time.Time{}, "", err
 	}
 
-	// Construct download URL based on OS and architecture
 	osLower := runtime.GOOS
 	goArch := runtime.GOARCH
 	downloadURL := fmt.Sprintf("https://github.com/%s/%s/releases/latest/download/gopanel_%s_%s",
@@ -47,55 +45,73 @@ func getLatestReleaseDate() (time.Time, string, error) {
 	return rel.PublishedAt, downloadURL, nil
 }
 
-// updateBinaryIfNeeded updates the local binary file if a newer version is available.
 func updateBinaryIfNeeded() error {
-	// Get current executable path
+	// 获取当前可执行文件路径
 	exePath, err := os.Executable()
 	if err != nil {
 		return fmt.Errorf("cannot get executable path: %w", err)
 	}
 
-	// Get absolute path to the binary
+	// 获取二进制文件的绝对路径
 	localBinaryPath, err := filepath.Abs(exePath)
 	if err != nil {
 		return fmt.Errorf("cannot get absolute path: %w", err)
 	}
 
-	// Step 1: Get the last modified time of the local binary
+	// 获取本地二进制文件的最后修改时间
 	localFileInfo, err := os.Stat(localBinaryPath)
 	if err != nil {
 		return fmt.Errorf("error stating local binary: %w", err)
 	}
 	localFileModTime := localFileInfo.ModTime()
 
-	// Step 2: Get the latest release date from GitHub
+	// 获取最新发布日期
 	latestReleaseDate, downloadURL, err := getLatestReleaseDate()
 	if err != nil {
 		return fmt.Errorf("error fetching latest release date: %w", err)
 	}
 
-	// Step 3: Compare release date with local binary mod time, and update if needed
+	// 比较发布日期与本地二进制修改时间
 	if latestReleaseDate.After(localFileModTime) {
 		fmt.Println("Newer release found. Downloading updated binary...")
 
-		// Download the new binary
+		// 下载新的二进制文件
 		resp, err := http.Get(downloadURL)
 		if err != nil {
 			return fmt.Errorf("error downloading binary: %w", err)
 		}
 		defer resp.Body.Close()
 
-		// Create or overwrite the local binary file
-		out, err := os.Create(localBinaryPath)
+		// 创建临时文件
+		tmpFile, err := os.CreateTemp(filepath.Dir(localBinaryPath), "gopanel.tmp.*")
 		if err != nil {
-			return fmt.Errorf("error creating local binary file: %w", err)
+			return fmt.Errorf("error creating temporary file: %w", err)
 		}
-		defer out.Close()
+		tmpPath := tmpFile.Name()
 
-		// Write the downloaded content to the file
-		_, err = io.Copy(out, resp.Body)
+		// 确保在发生错误时删除临时文件
+		defer os.Remove(tmpPath)
+
+		// 将下载的内容写入临时文件
+		_, err = io.Copy(tmpFile, resp.Body)
 		if err != nil {
-			return fmt.Errorf("error writing to local binary file: %w", err)
+			tmpFile.Close()
+			return fmt.Errorf("error writing to temporary file: %w", err)
+		}
+
+		// 关闭临时文件
+		if err = tmpFile.Close(); err != nil {
+			return fmt.Errorf("error closing temporary file: %w", err)
+		}
+
+		// 设置执行权限
+		if err = os.Chmod(tmpPath, 0755); err != nil {
+			return fmt.Errorf("error setting executable permissions: %w", err)
+		}
+
+		// 重命名临时文件以替换原文件
+		if err = os.Rename(tmpPath, localBinaryPath); err != nil {
+			return fmt.Errorf("error replacing binary file: %w", err)
 		}
 
 		fmt.Println("Binary updated successfully.")

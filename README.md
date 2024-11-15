@@ -31,7 +31,7 @@ bash <(curl -s https://raw.githubusercontent.com/BapiGso/gopanel/master/shell/un
 ```
 
 #### FUNCTION
- - Panel security entrance
+ - Panel security entrance 
  - Server monitoring
  - cron
  - webssh
@@ -43,6 +43,7 @@ bash <(curl -s https://raw.githubusercontent.com/BapiGso/gopanel/master/shell/un
  - UnblockNeteaseMusic
  - docker manage
  - nftables
+ - headscale
 
 ## LICENSE
 

@@ -13,7 +13,7 @@ func init() {
 			`# frpc.conf
 serverAddr = "0.0.0.0"
 serverPort = 7000
-auth.token = ""
+auth.token = "public"
 
 
 [[proxies]]

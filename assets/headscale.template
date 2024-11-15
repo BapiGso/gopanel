@@ -17,7 +17,7 @@
         Alpine.data('panel', () => ({
                 init(){
                     window.editor = ace.edit("editor");
-                    editor.setValue(`{{.frpsConfig}}`, -1);
+                    {{/*editor.setValue("{{.headscaleConfig}}", -1);*/}}
                 },
                 updateConfig(){
                     fetch(`/admin/headscale`, {

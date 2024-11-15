@@ -2,7 +2,6 @@ module panel
 
 go 1.23.2
 
-
 require (
 	github.com/caddyserver/caddy/v2 v2.8.4
 	github.com/cnsilvan/UnblockNeteaseMusic v0.0.0-20230310083816-92b59c95a366
@@ -328,3 +327,5 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 	tailscale.com v1.72.1 // indirect
 )
+
+replace github.com/samber/lo v1.47.0 => github.com/samber/lo v1.39.0

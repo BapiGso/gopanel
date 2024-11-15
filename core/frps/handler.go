@@ -33,7 +33,6 @@ func Index(c echo.Context) error {
 			}
 		}
 		return c.JSON(200, "success")
-
 	case "PUT":
 		data, err := io.ReadAll(c.Request().Body)
 		defer c.Request().Body.Close()
