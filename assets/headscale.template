@@ -1,0 +1,42 @@
+{{template "header.template"}}
+<section>
+    <h3>Headscale Manage</h3>
+    <p>1. An open source, self-hosted implementation of the Tailscale control server</p>
+
+    <p>
+        <button @click="updateConfig">Save Config</button>
+        <button @click="manageHeadscale('start')">Start frps</button>
+        <!-- <button @click="manageFrps('stop')">Stop frps</button> -->
+        <button @click="manageHeadscale('enable')">Switch Enable</button>
+    </p>
+    <div id="editor"></div>
+</section>
+<script type="text/javascript" src="/assets/js/ace.js"></script>
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('panel', () => ({
+                init(){
+                    window.editor = ace.edit("editor");
+                    editor.setValue(`{{.frpsConfig}}`, -1);
+                },
+                updateConfig(){
+                    fetch(`/admin/headscale`, {
+                        method:'PUT',
+                        body: editor.getSession().getValue(),
+                    }).then(res=>res.text()).then(data=>{
+                        alert(data);
+                        location.reload();
+                    })
+                },
+                manageHeadscale(status){
+                    fetch(`/admin/headscale?status=${status}`,{
+                        method:"POST"
+                    }).then(res=>res.text()).then(data=>{
+                        alert(data);
+                        location.reload();
+                    })
+                }
+            })
+        )
+    })
+</script>
