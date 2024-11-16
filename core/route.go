@@ -5,14 +5,12 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/viper"
 	"net/http"
-	"panel/core/UnblockNeteaseMusic"
 	"panel/core/cron"
 	"panel/core/docker"
 	"panel/core/file"
 	"panel/core/firewall"
 	"panel/core/frpc"
 	"panel/core/frps"
-	"panel/core/headscale"
 	"panel/core/login"
 	"panel/core/monitor"
 	"panel/core/mymiddleware"
@@ -71,9 +69,9 @@ func (c *Core) Route() {
 	admin.Any("/docker", docker.Index)
 	admin.Any("/frps", frps.Index)
 	admin.Any("/frpc", frpc.Index)
-	admin.Any("/headscale", headscale.Index)
+	//admin.Any("/headscale", headscale.Index)
 	admin.Any("/firewall", firewall.Index)
-	admin.Any("/UnblockNeteaseMusic", UnblockNeteaseMusic.Index)
+	//admin.Any("/UnblockNeteaseMusic", UnblockNeteaseMusic.Index)
 	c.e.StartTLS(viper.GetString("panel.port"), []byte(certPEM), []byte(keyPEM))
 }
 

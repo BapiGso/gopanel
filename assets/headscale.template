@@ -9,16 +9,26 @@
         <!-- <button @click="manageFrps('stop')">Stop frps</button> -->
         <button @click="manageHeadscale('enable')">Switch Enable</button>
     </p>
-    <div id="editor"></div>
+    <form action="/admin/headscale?status=start" method="POST" @submit.prevent="startHeadscale">
+        <label>服务器URL<input name="server_url" value="https://myheadscale.example.com:443"></label>
+        <label>监听地址<input name="listen_addr" value="0.0.0.0:8080"></label>
+        <label>指标监听地址<input name="metrics_listen_addr" value="127.0.0.1:9090"></label>
+        <label>gRPC监听地址<input name="grpc_listen_addr" value="127.0.0.1:50443"></label>
+        <label>Noise私钥路径<input name="private_key_path" value="/var/lib/headscale/noise_private.key"></label>
+        <label>IPv4前缀<input name="ipv4_prefix" value="100.64.0.0/10"></label>
+        <label>IPv6前缀<input name="ipv6_prefix" value="fd7a:115c:a1e0::/48"></label>
+        <label>基础域名<input name="base_domain" value="example.com"></label>
+        <button type="submit">保存配置</button>
+    </form>
 </section>
 <script type="text/javascript" src="/assets/js/ace.js"></script>
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('panel', () => ({
-                init(){
-                    window.editor = ace.edit("editor");
-                    {{/*editor.setValue("{{.headscaleConfig}}", -1);*/}}
-                },
+                {{/*init(){*/}}
+                {{/*    window.editor = ace.edit("editor");*/}}
+                {{/*    */}}{{/*editor.setValue("{{.headscaleConfig}}", -1);*/}}
+                {{/*},*/}}
                 updateConfig(){
                     fetch(`/admin/headscale`, {
                         method:'PUT',
@@ -35,7 +45,11 @@
                         alert(data);
                         location.reload();
                     })
-                }
+                },
+                async startHeadscale(e){
+                    alert(await (await fetch(e.target.action,{method:"POST",body: new FormData(e.target)})).json())
+                    location.reload()
+                },
             })
         )
     })

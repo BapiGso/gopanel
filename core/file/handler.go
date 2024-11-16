@@ -76,7 +76,7 @@ func Process(c echo.Context) error {
 			}
 		}
 		if mode == "PMSN" {
-			perm, err := strconv.ParseUint(string(data), 10, 32)
+			perm, err := strconv.ParseUint(string(data), 8, 64)
 			if err != nil {
 				return err
 			}
@@ -85,6 +85,7 @@ func Process(c echo.Context) error {
 			}
 		}
 		if mode == "update" {
+
 			if err = os.WriteFile(path, data, 0644); err != nil {
 				return err
 			}

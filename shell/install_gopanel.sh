@@ -26,6 +26,12 @@ case "$ARCH" in
     mips|mipsel)
         GOARCH="mips"
         ;;
+    s390x)
+        GOARCH="s390x"
+        ;;
+    riscv64)
+        GOARCH="riscv64"
+        ;;
     *)
         echo "不支持的系统架构: $ARCH，请手动下载适用于您系统的 gopanel 版本。"
         exit 1
