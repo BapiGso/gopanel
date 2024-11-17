@@ -9,7 +9,7 @@
             <input name="user" type="text" placeholder="用户名" value="root" >
             <input name="pwd" type="password" placeholder="密码" >
             <button type='submit'>Connect</button>
-            <button type='button' @click.prevent="localStorage.clear();$el.remove()" x-show="localStorage.host">Clear</button>
+            <button type='button' @click.prevent="localStorage.clear();$el.remove();location.reload()" x-show="localStorage.host">Clear</button>
         </fieldset>
     </form>
     <div id="terminal"></div>
@@ -77,20 +77,20 @@
                         term.focus();
                     }, 250))
                 },
-                createSSH(e){
-                    fetch(e.target.action,{method: 'POST', body: new FormData(e.target)})
-                        .then(res=>res.json())
-                        .then(data=>{
-                            if (data===null) return
-                            localStorage.host=e.target.host.value;
-                            localStorage.port=e.target.port.value;
-                            localStorage.user=e.target.user.value;
-                            localStorage.pwd=e.target.pwd.value;
-                            this.linkSSH(data.id)
-                        })
+                async createSSH(e) {
+                    const res = await fetch(e.target.action, {method: 'POST', body: new FormData(e.target)})
+                    if (res.status === 400) {
+                        alert(await res.text())
                     }
-                })
-            )
+                    const data = await res.json()
+                    if (data === null) return
+                    localStorage.host = e.target.host.value;
+                    localStorage.port = e.target.port.value;
+                    localStorage.user = e.target.user.value;
+                    localStorage.pwd = e.target.pwd.value;
+                    this.linkSSH(data.id)
+                }
+            }))
         }
     )
 </script>

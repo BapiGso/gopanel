@@ -7,10 +7,22 @@ import (
 	"golang.org/x/net/websocket"
 	"io"
 	"net/http"
+	"sync"
+)
+
+var (
+	activeTerms = make(map[string]*Term)
+	termMutex   sync.Mutex
 )
 
 func Index(c echo.Context) error {
-	return c.Render(http.StatusOK, "term.template", termStore.All())
+	termMutex.Lock()
+	terms := make([]*Term, 0, len(activeTerms))
+	for _, t := range activeTerms {
+		terms = append(terms, t)
+	}
+	termMutex.Unlock()
+	return c.Render(http.StatusOK, "term.template", terms)
 }
 
 func CreateTermHandler(c echo.Context) error {
@@ -28,15 +40,22 @@ func CreateTermHandler(c echo.Context) error {
 	if req.Host == "" || req.Username == "" || req.Password == "" {
 		return c.JSON(http.StatusBadRequest, "host or user or password not provided")
 	}
-	term, err := termStore.New(TermOption{
+	term, err := NewTerm(TermOption{
 		Host:     req.Host,
 		Port:     req.Port,
 		Username: req.Username,
 		Password: req.Password,
+		Rows:     req.Rows,
+		Cols:     req.Cols,
 	})
 	if err != nil {
 		return err
 	}
+
+	termMutex.Lock()
+	activeTerms[term.Id] = term
+	termMutex.Unlock()
+
 	return c.JSON(200, term)
 }
 
@@ -52,12 +71,16 @@ func SetTermWindowSizeHandler(c echo.Context) error {
 	if req.Rows == 0 || req.Cols == 0 {
 		return c.JSON(http.StatusBadRequest, "Rows or Cols can't be zero")
 	}
-	term, err := termStore.Get(req.Id)
-	if err != nil {
-		return err
+
+	termMutex.Lock()
+	term, exists := activeTerms[req.Id]
+	termMutex.Unlock()
+
+	if !exists {
+		return c.JSON(http.StatusNotFound, "Terminal not found")
 	}
-	defer termStore.Put(term.Id)
-	err = term.SetWindowSize(req.Rows, req.Cols)
+
+	err := term.SetWindowSize(req.Rows, req.Cols)
 	if err != nil {
 		return err
 	}
@@ -66,17 +89,26 @@ func SetTermWindowSizeHandler(c echo.Context) error {
 
 func LinkTermDataHandler(c echo.Context) error {
 	const TermBufferSize = 8192
-	term, err := termStore.Lookup(c.Param("id"))
-	if err != nil {
-		return err
+	id := c.Param("id")
+
+	termMutex.Lock()
+	term, exists := activeTerms[id]
+	termMutex.Unlock()
+
+	if !exists {
+		return c.JSON(http.StatusNotFound, "Terminal not found")
 	}
+
 	websocket.Handler(func(ws *websocket.Conn) {
 		defer func() {
-			c.Logger().Infof("Destroy term: %s", term)
-			termStore.Put(term.Id)
+			c.Logger().Infof("Destroy term: %s", term.Id)
+			termMutex.Lock()
+			delete(activeTerms, term.Id)
+			termMutex.Unlock()
+			term.Close()
 			ws.Close()
 		}()
-		c.Logger().Infof("Linking term: %s", term)
+		c.Logger().Infof("Linking term: %s", term.Id)
 		go func() {
 			b := [TermBufferSize]byte{}
 			for {
@@ -116,24 +148,19 @@ func LinkTermDataHandler(c echo.Context) error {
 		}()
 
 		for {
-			b := ""
-			err := websocket.Message.Receive(ws, &b)
+			msg := ""
+			err := websocket.Message.Receive(ws, &msg)
 			if err != nil {
-				if !errors.Is(err, io.EOF) {
-					c.Logger().Error(err)
-				}
+				c.Logger().Error(err)
 				return
 			}
-			_, err = term.Stdin.Write([]byte(b))
+			_, err = term.Stdin.Write([]byte(msg))
 			if err != nil {
-				if !errors.Is(err, io.EOF) {
-					websocket.Message.Send(ws,
-						fmt.Sprintf("\nError: %s", err.Error()))
-					c.Logger().Error(err)
-				}
+				c.Logger().Error(err)
 				return
 			}
 		}
 	}).ServeHTTP(c.Response(), c.Request())
+
 	return nil
 }

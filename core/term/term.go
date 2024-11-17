@@ -4,148 +4,125 @@ import (
 	"fmt"
 	"golang.org/x/crypto/ssh"
 	"io"
+	"net"
 	"strconv"
 	"time"
 )
 
-type TermLink struct {
-	conn *ssh.Client // ssh客户端连接的实例
-	Host string      // 主机地址
-	Port int         // 端口号
-	User string      // 用户名
-}
-
-// Dial 函数使用给定的用户名和密码连接到远程主机
-func (t *TermLink) Dial(user, pwd string) error {
-	c, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", t.Host, t.Port),
-		&ssh.ClientConfig{
-			User: user,
-			Auth: []ssh.AuthMethod{
-				ssh.Password(pwd),
-			},
-			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		})
-	if err != nil {
-		return err
-	}
-	t.conn = c    // 将ssh客户端连接实例存储到TermLink结构体属性中
-	t.User = user // 存储用户名
-	return nil
-}
-
-// Close 方法关闭ssh客户端连接
-func (t *TermLink) Close() {
-	t.conn.Close()
-}
-
-// NewTerm 方法创建新的终端并返回其指针
-func (t *TermLink) NewTerm(rows, cols int) (*Term, error) {
-	s, err := t.conn.NewSession() // 创建ssh会话
-	if err != nil {
-		return nil, err
-	}
-	stdout, err := s.StdoutPipe() // 获取远程终端的标准输出
-	if err != nil {
-		s.Close()
-		return nil, err
-	}
-
-	stderr, err := s.StderrPipe() // 获取远程终端的标准错误输出
-	if err != nil {
-		s.Close()
-		return nil, err
-	}
-
-	stdin, err := s.StdinPipe() // 获取远程终端的标准输入
-	if err != nil {
-		s.Close()
-		return nil, err
-	}
-
-	// 请求一个伪终端
-	err = s.RequestPty("xterm", rows, cols, ssh.TerminalModes{
-		ssh.ECHO: 1, // 禁用回显
-	})
-	if err != nil {
-		stdin.Close()
-		s.Close()
-		return nil, err
-	}
-
-	// 启动远程shell
-	err = s.Shell()
-	if err != nil {
-		stdin.Close()
-		s.Close()
-		return nil, err
-	}
-
-	// 返回Term实例
-	return &Term{
-		Id:     strconv.FormatInt(time.Now().UnixNano(), 10), // 使用xid库生成唯一id作为实例id
-		Rows:   rows,
-		Cols:   cols,
-		Stdin:  stdin,
-		Stdout: stdout,
-		Stderr: stderr,
-		s:      s,          // ssh会话实例
-		t:      t,          // TermLink实例
-		Since:  time.Now(), // 记录实例创建时间
-	}, nil
+type Term struct {
+	Id      string         `json:"id"`
+	Rows    int            `json:"rows"`
+	Cols    int            `json:"cols"`
+	Stdin   io.WriteCloser `json:"-"`
+	Stdout  io.Reader      `json:"-"`
+	Stderr  io.Reader      `json:"-"`
+	session *ssh.Session
+	client  *ssh.Client
+	Since   time.Time `json:"since"`
 }
 
 type TermOption struct {
-	Host       string // 主机地址
-	Port       int    // 端口号
-	Username   string // 用户名
-	Password   string // 密码
-	Rows, Cols int    // 终端窗口行数、列数
+	Host     string
+	Port     int
+	Username string
+	Password string
+	Rows     int
+	Cols     int
 }
 
-type Term struct {
-	s      *ssh.Session   // ssh会话实例
-	Id     string         `json:"id"`   // 终端实例id
-	Rows   int            `json:"rows"` // 终端窗口行数
-	Cols   int            `json:"cols"` // 终端窗口列数
-	Stdin  io.WriteCloser `json:"-"`    // 写入到远程终端的标准输入
-	Stdout io.Reader      `json:"-"`    // 从远程终端的标准输出读取数据
-	Stderr io.Reader      `json:"-"`    // 从远程终端的标准错误输出读取数据
-	t      *TermLink      // TermLink实例
-	Since  time.Time      `json:"since"` // 终端实例创建时间
-}
+func NewTerm(opt TermOption) (*Term, error) {
+	config := &ssh.ClientConfig{
+		User: opt.Username,
+		Auth: []ssh.AuthMethod{
+			ssh.Password(opt.Password),
+		},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
 
-func (t *Term) Host() string {
-	return t.t.Host
-}
+	// 处理 IPv6 地址
+	var addr string
+	if ip := net.ParseIP(opt.Host); ip != nil && ip.To4() == nil {
+		// 如果是 IPv6 地址，用方括号括起来
+		addr = fmt.Sprintf("[%s]:%d", opt.Host, opt.Port)
+	} else {
+		// IPv4 地址或主机名
+		addr = fmt.Sprintf("%s:%d", opt.Host, opt.Port)
+	}
 
-func (t *Term) Port() int {
-	return t.t.Port
-}
+	client, err := ssh.Dial("tcp", addr, config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to dial: %v", err)
+	}
 
-func (t *Term) User() string {
-	return t.t.User
-}
+	session, err := client.NewSession()
+	if err != nil {
+		client.Close()
+		return nil, err
+	}
 
-func (t *Term) Name() string {
-	return fmt.Sprintf("%s@%s:%d", t.User(), t.Host(), t.Port())
+	stdin, err := session.StdinPipe()
+	if err != nil {
+		session.Close()
+		client.Close()
+		return nil, err
+	}
+
+	stdout, err := session.StdoutPipe()
+	if err != nil {
+		stdin.Close()
+		session.Close()
+		client.Close()
+		return nil, err
+	}
+
+	stderr, err := session.StderrPipe()
+	if err != nil {
+		stdin.Close()
+		session.Close()
+		client.Close()
+		return nil, err
+	}
+
+	if err := session.RequestPty("xterm", opt.Rows, opt.Cols, ssh.TerminalModes{
+		ssh.ECHO: 1,
+	}); err != nil {
+		stdin.Close()
+		session.Close()
+		client.Close()
+		return nil, err
+	}
+
+	if err := session.Shell(); err != nil {
+		stdin.Close()
+		session.Close()
+		client.Close()
+		return nil, err
+	}
+
+	return &Term{
+		Id:      strconv.FormatInt(time.Now().UnixNano(), 10),
+		Rows:    opt.Rows,
+		Cols:    opt.Cols,
+		Stdin:   stdin,
+		Stdout:  stdout,
+		Stderr:  stderr,
+		session: session,
+		client:  client,
+		Since:   time.Now(),
+	}, nil
+}
+func (t *Term) Close() {
+	t.Stdin.Close()
+	t.session.Close()
+	t.client.Close()
 }
 
 func (t *Term) SetWindowSize(rows, cols int) error {
-	err := t.s.WindowChange(rows, cols)
+	err := t.session.WindowChange(rows, cols)
 	if err != nil {
 		return err
 	}
 	t.Rows = rows
 	t.Cols = cols
 	return nil
-}
-
-func (t *Term) String() string {
-	return fmt.Sprintf("%s-%s", t.Id, t.Name())
-}
-
-func (t *Term) Close() {
-	t.Stdin.Close()
-	t.s.Close()
-	t.t.Close()
 }
