@@ -24,7 +24,13 @@ func Index(c echo.Context) error {
 			}
 		}
 		if c.QueryParam("status") == "stop" {
-			return svr.Close()
+			if svr == nil {
+				return c.JSON(400, "FRPS server is not running")
+			}
+			if err := svr.Close(); err != nil {
+				return err
+			}
+			svr = nil // 清除svr引用
 		}
 		if c.QueryParam("status") == "enable" {
 			viper.Set("enable.frps", !viper.Get("enable.frps").(bool))
@@ -59,6 +65,7 @@ func Index(c echo.Context) error {
 
 func RunFRPSServer() error {
 	//读取文件转为配置
+	var err error
 	cfg, _, err := config.LoadServerConfig("gopanel_frps.conf", strictConfigMode)
 	if err != nil {
 		return err

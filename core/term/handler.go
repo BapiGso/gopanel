@@ -27,18 +27,15 @@ func Index(c echo.Context) error {
 
 func CreateTermHandler(c echo.Context) error {
 	req := &struct {
-		Host     string `query:"host" form:"host" json:"host"`
-		Port     int    `query:"port" form:"port" json:"port"`
-		Username string `query:"user" form:"user" json:"user"`
+		Host     string `query:"host" form:"host" json:"host" validate:"required"`
+		Port     int    `query:"port" form:"port" json:"port" validate:"required"`
+		Username string `query:"user" form:"user" json:"user" validate:"required"`
 		Password string `query:"pwd"  form:"pwd" json:"pwd"`
 		Rows     int    `query:"rows" form:"rows" json:"rows"`
 		Cols     int    `query:"cols" form:"cols" json:"cols"`
 	}{}
 	if err := c.Bind(req); err != nil {
 		return err
-	}
-	if req.Host == "" || req.Username == "" || req.Password == "" {
-		return c.JSON(http.StatusBadRequest, "host or user or password not provided")
 	}
 	term, err := NewTerm(TermOption{
 		Host:     req.Host,

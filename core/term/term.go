@@ -5,6 +5,8 @@ import (
 	"golang.org/x/crypto/ssh"
 	"io"
 	"net"
+	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -31,14 +33,41 @@ type TermOption struct {
 }
 
 func NewTerm(opt TermOption) (*Term, error) {
-	config := &ssh.ClientConfig{
-		User: opt.Username,
-		Auth: []ssh.AuthMethod{
-			ssh.Password(opt.Password),
-		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	var auth []ssh.AuthMethod
+
+	if opt.Password != "" {
+		auth = append(auth, ssh.Password(opt.Password))
 	}
 
+	// 尝试读取默认的私钥文件
+	homeDir, err := os.UserHomeDir()
+	if err == nil {
+		keyFiles := []string{"id_rsa", "id_ecdsa", "id_ed25519", "id_dsa"}
+		for _, keyFile := range keyFiles {
+			keyPath := filepath.Join(homeDir, ".ssh", keyFile)
+			key, err := os.ReadFile(keyPath)
+			if err == nil {
+				signer, err := ssh.ParsePrivateKey(key)
+				if err == nil {
+					auth = append(auth, ssh.PublicKeys(signer))
+					fmt.Printf("Added public key authentication method using %s\n", keyFile)
+					break // 成功添加一个私钥后就退出循环
+				} else {
+					fmt.Printf("Failed to parse private key %s: %v\n", keyFile, err)
+				}
+			} else {
+				fmt.Printf("Failed to read private key file %s: %v\n", keyFile, err)
+			}
+		}
+	} else {
+		fmt.Printf("Failed to get user home directory: %v\n", err)
+	}
+
+	config := &ssh.ClientConfig{
+		User:            opt.Username,
+		Auth:            auth,
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
 	// 处理 IPv6 地址
 	var addr string
 	if ip := net.ParseIP(opt.Host); ip != nil && ip.To4() == nil {
@@ -111,6 +140,7 @@ func NewTerm(opt TermOption) (*Term, error) {
 		Since:   time.Now(),
 	}, nil
 }
+
 func (t *Term) Close() {
 	t.Stdin.Close()
 	t.session.Close()

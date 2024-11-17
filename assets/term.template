@@ -1,16 +1,18 @@
 {{template "header.template"}}
 <section id="term">
     <h3>Term</h3>
-    <p>Did you know that Windows can also be managed using <a href="https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse">SSH</a> ?</p>
+    <p>1. Did you know that Windows can also be managed using <a href="https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse">SSH</a> ?</p>
+    <p>2. Terminal will use the system's private key for SSH connections.</p>
     <form action="" method="post" @submit.prevent="createSSH" x-init="memorySSH($el)">
         <fieldset role="group">
-            <input name="host" type="text" placeholder="主机" value="127.0.0.1">
-            <input name="port" type="text" placeholder="端口" value="22" >
-            <input name="user" type="text" placeholder="用户名" value="root" >
-            <input name="pwd" type="password" placeholder="密码" >
+            <input name="host" type="text" placeholder="Host" value="127.0.0.1" required>
+            <input name="port" type="text" placeholder="Port" value="22" required>
+            <input name="user" type="text" placeholder="Username" value="root" required>
+            <input name="pwd" type="password" placeholder="Password" >
             <button type='submit'>Connect</button>
             <button type='button' @click.prevent="localStorage.clear();$el.remove();location.reload()" x-show="localStorage.host">Clear</button>
         </fieldset>
+{{/*        <textarea name="key" placeholder="Private Key (optional)"></textarea>*/}}
     </form>
     <div id="terminal"></div>
 </section>
@@ -39,6 +41,7 @@
                         el.port.value=localStorage.port;
                         el.user.value=localStorage.user;
                         el.pwd.value=localStorage.pwd;
+                        // el.key.value=localStorage.key;
                         fetch(el.action,{
                             method: 'POST',
                             body: new FormData(el)
@@ -88,6 +91,7 @@
                     localStorage.port = e.target.port.value;
                     localStorage.user = e.target.user.value;
                     localStorage.pwd = e.target.pwd.value;
+                    // localStorage.key = e.target.key.value;
                     this.linkSSH(data.id)
                 }
             }))

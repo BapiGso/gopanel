@@ -12,7 +12,7 @@
     <p>
         <button @click="updateConfig">Save Config</button>
         <button @click="manageFrps('start')">Start frps</button>
-        <!-- <button @click="manageFrps('stop')">Stop frps</button> -->
+{{/*        <button @click="manageFrps('stop')">Stop frps</button>*/}}
         <button @click="manageFrps('enable')">Switch Enable</button>
     </p>
     <div id="editor"></div>
