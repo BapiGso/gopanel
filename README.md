@@ -32,7 +32,7 @@ bash <(curl -s https://raw.githubusercontent.com/BapiGso/gopanel/master/shell/un
 
 #### FUNCTION
 - Panel security entrance
-- Server monitoring([github.com/shirou/gopsutil](github.com/shirou/gopsutil))
+- Server monitoring([github.com/shirou/gopsutil](https://github.com/shirou/gopsutil))
 - cron ([github.com/go-co-op/gocron/v2](https://github.com/go-co-op/gocron))
 - webssh ([golang.org/x/crypto/ssh](https://golang.org/x/crypto/ssh))
 - webdav server ([golang.org/x/net/webdav](https://golang.org/x/net/webdav))
@@ -51,7 +51,7 @@ bash <(curl -s https://raw.githubusercontent.com/BapiGso/gopanel/master/shell/un
 
 ## LICENSE
 
-released under the [GPL-2.0 License](https://github.com/BapiGso/gopanel/blob/master/LICENSE).
+released under the [Apache License](https://github.com/BapiGso/gopanel/blob/master/LICENSE).
 
 ## Acknowledgments
 
