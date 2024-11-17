@@ -28,7 +28,7 @@ remotePort = 8848
 	go func() {
 		time.Sleep(3 * time.Second)
 		if viper.GetBool("enable.frpc") {
-			_ = RunFRPCClient()
+			_ = runFRPCClient()
 		}
 	}()
 }

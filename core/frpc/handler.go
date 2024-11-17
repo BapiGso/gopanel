@@ -25,7 +25,7 @@ func Index(c echo.Context) error {
 		if c.QueryParam("status") == "start" {
 			errCh := make(chan error)
 			go func() {
-				errCh <- RunFRPCClient()
+				errCh <- runFRPCClient()
 			}()
 			select {
 			case err := <-errCh:
@@ -72,7 +72,7 @@ func Index(c echo.Context) error {
 	return echo.ErrMethodNotAllowed
 }
 
-func RunFRPCClient() error {
+func runFRPCClient() error {
 	cfg, proxyCfgs, visitorCfgs, _, err := config.LoadClientConfig("gopanel_frpc.conf", strictConfigMode)
 	warning, err := validation.ValidateAllClientConfig(cfg, proxyCfgs, visitorCfgs)
 	if warning != nil {

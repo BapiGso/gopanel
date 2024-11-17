@@ -2,3 +2,10 @@
 <section>
     <h3>Your operating system does not support</h3>
 </section>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('panel', () => ({
+        }))
+    })
+</script>

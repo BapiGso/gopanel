@@ -1,13 +1,13 @@
 {{template "header.template"}}
 <section>
-    <h3>Headscale Manage</h3>
+    <h3>Headscale Manage(Experimental features)</h3>
     <p>1. An open source, self-hosted implementation of the Tailscale control server</p>
 
     <p>
-        <button @click="updateConfig">Save Config</button>
-        <button @click="manageHeadscale('start')">Start frps</button>
+{{/*        <button @click="updateConfig">Save Config</button>*/}}
+{{/*        <button @click="manageHeadscale('start')">Start frps</button>*/}}
         <!-- <button @click="manageFrps('stop')">Stop frps</button> -->
-        <button @click="manageHeadscale('enable')">Switch Enable</button>
+{{/*        <button @click="manageHeadscale('enable')">Switch Enable</button>*/}}
     </p>
     <form action="/admin/headscale?status=start" method="POST" @submit.prevent="startHeadscale">
         <label>服务器URL<input name="server_url" value="https://myheadscale.example.com:443"></label>
@@ -18,7 +18,7 @@
         <label>IPv4前缀<input name="ipv4_prefix" value="100.64.0.0/10"></label>
         <label>IPv6前缀<input name="ipv6_prefix" value="fd7a:115c:a1e0::/48"></label>
         <label>基础域名<input name="base_domain" value="example.com"></label>
-        <button type="submit">保存配置</button>
+        <button type="submit">start</button>
     </form>
 </section>
 <script type="text/javascript" src="/assets/js/ace.js"></script>

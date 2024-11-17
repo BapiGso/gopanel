@@ -13,24 +13,22 @@ import (
 	"os"
 )
 
-var svr *server.Service
+var (
+	svr *server.Service
+)
 
 func Index(c echo.Context) error {
 	switch c.Request().Method {
 	case "POST":
 		if c.QueryParam("status") == "start" {
-			if err := RunFRPSServer(); err != nil {
+			if err := runFRPSServer(); err != nil {
 				return err
 			}
 		}
 		if c.QueryParam("status") == "stop" {
-			if svr == nil {
-				return c.JSON(400, "FRPS server is not running")
-			}
 			if err := svr.Close(); err != nil {
 				return err
 			}
-			svr = nil // 清除svr引用
 		}
 		if c.QueryParam("status") == "enable" {
 			viper.Set("enable.frps", !viper.Get("enable.frps").(bool))
@@ -63,7 +61,7 @@ func Index(c echo.Context) error {
 	return echo.ErrMethodNotAllowed
 }
 
-func RunFRPSServer() error {
+func runFRPSServer() error {
 	//读取文件转为配置
 	var err error
 	cfg, _, err := config.LoadServerConfig("gopanel_frps.conf", strictConfigMode)

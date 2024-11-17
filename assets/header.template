@@ -98,7 +98,7 @@
             <li><a href="/admin/docker" >docker</a></li>
             <li><a href="/admin/frps" >frps</a></li>
             <li><a href="/admin/frpc" >frpc</a></li>
-{{/*            <li><a href="/admin/headscale" >headscale</a></li>*/}}
+            <li><a href="/admin/headscale" >headscale</a></li>
 <!--            <li><a href="/admin/UnblockNeteaseMusic">UnblockNeteaseMusic</a></li>-->
             <li><a href="/admin/term" >term</a></li>
             <li><a href="/admin/cron" >cron</a></li>

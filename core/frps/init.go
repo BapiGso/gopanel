@@ -25,7 +25,7 @@ webServer.password = "admin"	# Background login password
 	go func() {
 		time.Sleep(3 * time.Second)
 		if viper.GetBool("enable.frps") {
-			_ = RunFRPSServer()
+			_ = runFRPSServer()
 		}
 	}()
 
