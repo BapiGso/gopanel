@@ -2,11 +2,11 @@ package monitor
 
 import (
 	"github.com/labstack/gommon/log"
-	"github.com/shirou/gopsutil/cpu"
-	"github.com/shirou/gopsutil/disk"
-	"github.com/shirou/gopsutil/host"
-	"github.com/shirou/gopsutil/mem"
-	"github.com/shirou/gopsutil/net"
+	"github.com/shirou/gopsutil/v4/cpu"
+	"github.com/shirou/gopsutil/v4/disk"
+	"github.com/shirou/gopsutil/v4/host"
+	"github.com/shirou/gopsutil/v4/mem"
+	"github.com/shirou/gopsutil/v4/net"
 	"time"
 )
 
