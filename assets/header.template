@@ -53,7 +53,7 @@
                     width: 90%;
                 }
                 &>details{
-                    display: inline;
+                    display: inline-block;
                 }
             }
             &>#editorParent{
