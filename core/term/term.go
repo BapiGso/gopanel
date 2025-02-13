@@ -66,7 +66,7 @@ func NewTerm(opt TermOption) (*Term, error) {
 	config := &ssh.ClientConfig{
 		User:            opt.Username,
 		Auth:            auth,
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(), //这个地方不验证指纹非常的不安全，但是一般人和同类产品也都不验证，以后在想想更好的改善吧
 	}
 	// 处理 IPv6 地址
 	var addr string

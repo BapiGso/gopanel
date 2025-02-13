@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"net/netip"
 	"net/url"
-	"tailscale.com/tailcfg"
 	"time"
 )
 
@@ -131,12 +130,12 @@ func loadServerConfig(c *headscaleConfig) (*types.Config, error) {
 			UpdateFrequency:                    24 * time.Hour,      // DERP地图更新频率
 		},
 
-		TLS:                   types.TLSConfig{},                                // TLS配置
-		ACMEURL:               "https://acme-v02.api.letsencrypt.org/directory", // ACME服务器URL
-		ACMEEmail:             "",                                               // ACME注册邮箱
-		DNSConfig:             &tailcfg.DNSConfig{},                             // DNS配置
-		DNSUserNameInMagicDNS: false,                                            // 是否在MagicDNS中使用用户名
-		UnixSocket:            "/var/run/headscale.sock",                        // Unix套接字路径
-		UnixSocketPermission:  0600,                                             // Unix套接字权限
+		TLS:       types.TLSConfig{},                                // TLS配置
+		ACMEURL:   "https://acme-v02.api.letsencrypt.org/directory", // ACME服务器URL
+		ACMEEmail: "",                                               // ACME注册邮箱
+		DNSConfig: types.DNSConfig{},                                // DNS配置
+		//DNSUserNameInMagicDNS: false,                                            // 是否在MagicDNS中使用用户名
+		UnixSocket:           "/var/run/headscale.sock", // Unix套接字路径
+		UnixSocketPermission: 0600,                      // Unix套接字权限
 	}, nil
 }

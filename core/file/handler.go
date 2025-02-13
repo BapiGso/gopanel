@@ -76,7 +76,7 @@ func Process(c echo.Context) error {
 			}
 		}
 		if mode == "PMSN" {
-			perm, err := strconv.ParseUint(string(data), 8, 64)
+			perm, err := strconv.ParseUint(string(data), 8, 32)
 			if err != nil {
 				return err
 			}
