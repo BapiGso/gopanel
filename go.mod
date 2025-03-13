@@ -18,10 +18,9 @@ require (
 	github.com/labstack/gommon v0.4.2
 	github.com/shirou/gopsutil/v4 v4.25.1
 	github.com/spf13/viper v1.20.0-alpha.6
-	golang.org/x/crypto v0.33.0
-	golang.org/x/net v0.35.0
+	golang.org/x/crypto v0.35.0
+	golang.org/x/net v0.36.0
 	golang.org/x/sys v0.30.0
-	tailscale.com v1.80.0
 )
 
 require (
@@ -309,6 +308,7 @@ require (
 	modernc.org/sqlite v1.34.5 // indirect
 	sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
+	tailscale.com v1.80.0 // indirect
 	zgo.at/zcache/v2 v2.1.0 // indirect
 )
 
