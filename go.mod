@@ -18,8 +18,8 @@ require (
 	github.com/labstack/gommon v0.4.2
 	github.com/shirou/gopsutil/v4 v4.25.1
 	github.com/spf13/viper v1.20.0-alpha.6
-	golang.org/x/crypto v0.33.0
-	golang.org/x/net v0.35.0
+	golang.org/x/crypto v0.35.0
+	golang.org/x/net v0.36.0
 	golang.org/x/sys v0.30.0
 )
 
