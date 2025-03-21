@@ -9,7 +9,7 @@ require (
 	github.com/fatedier/frp v0.61.1
 	github.com/go-co-op/gocron/v2 v2.15.0
 	github.com/go-playground/validator/v10 v10.24.0
-	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/golang/glog v1.2.4
 	github.com/google/nftables v0.3.0
 	github.com/juanfont/headscale v0.25.0
