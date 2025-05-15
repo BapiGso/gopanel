@@ -4,7 +4,7 @@ import (
 	"embed"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
-	"panel/assets"
+	"gopanel/assets"
 )
 
 type Core struct {

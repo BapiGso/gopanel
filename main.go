@@ -1,7 +1,7 @@
 package main
 
 import (
-	"panel/core"
+	"gopanel/core"
 )
 
 func main() {

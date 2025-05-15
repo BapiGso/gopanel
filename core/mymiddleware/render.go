@@ -2,8 +2,8 @@ package mymiddleware
 
 import (
 	"github.com/labstack/echo/v4"
+	"gopanel/assets"
 	"io"
-	"panel/assets"
 	"text/template"
 )
 

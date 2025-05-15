@@ -55,15 +55,8 @@ func init() {
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Printf("read config: %v\n", err)
 	}
-	showPanelAddr()
-	fmt.Printf("Panel Port: %s\n", viper.GetString("panel.port"))
-	fmt.Printf("Panel Path: %s\n", viper.GetString("panel.path"))
-	fmt.Printf("Panel Username: %s\n", viper.GetString("panel.username"))
-	fmt.Printf("Panel Password: %s\n", viper.GetString("panel.password"))
-}
-
-func showPanelAddr() {
-	// Attempt to show IP address
+	ColorGreen := "\x1b[32m" // 绿色开始
+	ColorReset := "\x1b[0m"  // 重置颜色
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
 		return
@@ -73,14 +66,13 @@ func showPanelAddr() {
 		if !ok || ipNet.IP.IsLoopback() {
 			continue
 		} else if ipNet.IP.To4() != nil && ipNet.IP.IsGlobalUnicast() {
-			//ip := ipNet.IP.To4()
-			//if ip[0] == 10 || (ip[0] == 172 && ip[1] >= 16 && ip[1] <= 31) || (ip[0] == 192 && ip[1] == 168) {
-			//	continue
-			//}
 			fmt.Printf("gopanel started on https://%v%v/%v\n", ipNet.IP, viper.GetString("panel.port"), viper.GetString("panel.path"))
 		} else if ipNet.IP.To16() != nil && ipNet.IP.IsGlobalUnicast() {
-			// Check for IPv6 unicast addresses
 			fmt.Printf("gopanel started on https://[%v]%v/%v\n", ipNet.IP, viper.GetString("panel.port"), viper.GetString("panel.path"))
 		}
 	}
+	fmt.Printf("Panel Port: %s%s%s\n", ColorGreen, viper.GetString("panel.port"), ColorReset)
+	fmt.Printf("Panel Path: %s%s%s\n", ColorGreen, viper.GetString("panel.path"), ColorReset)
+	fmt.Printf("Panel Username: %s%s%s\n", ColorGreen, viper.GetString("panel.username"), ColorReset)
+	fmt.Printf("Panel Password: %s%s%s\n", ColorGreen, viper.GetString("panel.password"), ColorReset)
 }

@@ -2,7 +2,7 @@ package UnblockNeteaseMusic
 
 import (
 	"github.com/cnsilvan/UnblockNeteaseMusic/config"
-	_ "panel/core/UnblockNeteaseMusic/configinit" //不要修改这条依赖的引入顺序！！！
+	_ "gopanel/core/UnblockNeteaseMusic/configinit" //不要修改这条依赖的引入顺序！！！
 
 	"fmt"
 
@@ -79,6 +79,7 @@ func start() {
 	handler := proxy.HttpHandler{}
 	handler.ServeHTTP(nil, nil)
 }
+
 func restoreHosts() {
 	if *config.Mode == 1 {
 		log.Println("restoreHosts...")
