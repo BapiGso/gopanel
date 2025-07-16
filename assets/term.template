@@ -1,21 +1,42 @@
 {{template "header.template"}}
-<section id="term">
-    <h3>Term</h3>
-    <p>1. Did you know that Windows can also be managed using <a href="https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse">SSH</a> ?</p>
-    <p>2. Terminal will use the system's private key for SSH connections.</p>
-    <form action="" method="post" @submit.prevent="createSSH" x-init="memorySSH($el)">
-        <fieldset role="group">
-            <input name="host" type="text" placeholder="Host" value="127.0.0.1" required>
-            <input name="port" type="text" placeholder="Port" value="22" required>
-            <input name="user" type="text" placeholder="Username" value="root" required>
-            <input name="pwd" type="password" placeholder="Password" >
-            <button type='submit'>Connect</button>
-            <button type='button' @click.prevent="localStorage.clear();$el.remove();location.reload()" x-show="localStorage.host">Clear</button>
-        </fieldset>
-{{/*        <textarea name="key" placeholder="Private Key (optional)"></textarea>*/}}
-    </form>
-    <div id="terminal"></div>
-</section>
+    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">Terminal</h3>
+
+    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+        <p class="text-blue-800 dark:text-blue-200 mb-2">1. Did you know that Windows can also be managed using <a href="https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse" class="underline hover:text-blue-600 dark:hover:text-blue-300">SSH</a>?</p>
+        <p class="text-blue-800 dark:text-blue-200">2. Terminal will use the system's private key for SSH connections.</p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
+        <form action="" method="post" @submit.prevent="createSSH" x-init="memorySSH($el)">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <input name="host" type="text" placeholder="Host" value="127.0.0.1" required
+                       class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                <input name="port" type="text" placeholder="Port" value="22" required
+                       class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                <input name="user" type="text" placeholder="Username" value="root" required
+                       class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                <input name="pwd" type="password" placeholder="Password"
+                       class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+            <div class="flex gap-3">
+                <button type='submit'
+                        class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-button flex items-center">
+                    <i class="ri-terminal-line w-4 h-4 mr-2"></i>
+                    Connect
+                </button>
+                <button type='button' @click.prevent="localStorage.clear();$el.remove();location.reload()" x-show="localStorage.host"
+                        class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-button flex items-center">
+                    <i class="ri-delete-bin-line w-4 h-4 mr-2"></i>
+                    Clear
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-black rounded-lg overflow-hidden shadow-lg p-5">
+        <div id="terminal"></div>
+    </div>
+{{template "footer.template"}}
 
 
 <link rel="stylesheet" href="/assets/css/xterm.css" />

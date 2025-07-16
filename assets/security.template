@@ -1,40 +1,73 @@
 {{template "header.template"}}
-<section>
-    <form action="/admin/security" method="post" @submit.prevent="updateSecurity">
-        <table>
-            <thead>
-            <tr>
-                <th colspan="2"><h4>GoPanel Config</h4></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>Port</td>
-                <td><input type="text" name="port" value="{{call .getPanelConfig "panel.port"}}" required></td>
-            </tr>
-            <tr>
-                <td>Path</td>
-                <td><input type="text" name="path" value="{{call .getPanelConfig "panel.path"}}" required></td>
-            </tr>
-            <tr>
-                <td>Username</td>
-                <td><input type="text" name="username" value="{{call .getPanelConfig "panel.username"}}" required></td>
-            </tr>
-            <tr>
-                <td>Password</td>
-                <td><input type="text" name="password" value="{{call .getPanelConfig "panel.password"}}" required></td>
-            </tr>
-            <tr>
-                <td colspan="2"><button type="submit">Save</button></td>
-            </tr>
-            </tbody>
-        </table>
-    </form>
-    <h3>Update</h3>
-    <button @click="updateBinary">update gopanel</button>
-    <button @click="restartGopanel">restart gopanel</button>
-    <span x-show="showLoading" aria-busy="true">Waiting for server...</span>
-</section>
+    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+        <i class="ri-lock-line w-6 h-6 inline mr-2"></i>
+        Security Settings
+    </h3>
+
+    <!-- Panel Configuration -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
+        <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-6">GoPanel Configuration</h4>
+
+        <form action="/admin/security" method="post" @submit.prevent="updateSecurity">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Port</label>
+                    <input type="text" name="port" value="{{call .getPanelConfig "panel.port"}}" required
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Path</label>
+                    <input type="text" name="path" value="{{call .getPanelConfig "panel.path"}}" required
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Username</label>
+                    <input type="text" name="username" value="{{call .getPanelConfig "panel.username"}}" required
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
+                    <input type="password" name="password" value="{{call .getPanelConfig "panel.password"}}" required
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+            </div>
+
+            <div class="flex justify-end mt-6">
+                <button type="submit"
+                        class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-button flex items-center">
+                    <i class="ri-save-line w-3.5 h-3.5 mr-2"></i>
+                    Save Configuration
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- System Management -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-6">System Management</h4>
+
+        <div class="flex flex-wrap gap-3 mb-4">
+            <button @click="updateBinary"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-button flex items-center">
+                <i class="ri-download-line w-3.5 h-3.5 mr-2"></i>
+                Update GoPanel
+            </button>
+            <button @click="restartGopanel"
+                    class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-button flex items-center">
+                <i class="ri-restart-line w-3.5 h-3.5 mr-2"></i>
+                Restart GoPanel
+            </button>
+        </div>
+
+        <div x-show="showLoading" class="flex items-center text-blue-600 dark:text-blue-400">
+            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+            Waiting for server...
+        </div>
+    </div>
+{{template "footer.template"}}
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('panel', () => ({

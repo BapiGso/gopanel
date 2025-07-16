@@ -2,7 +2,7 @@ package UnblockNeteaseMusic
 
 import (
 	"github.com/cnsilvan/UnblockNeteaseMusic/config"
-	_ "gopanel/core/UnblockNeteaseMusic/configinit" //不要修改这条依赖的引入顺序！！！
+	//_ "gopanel/core/UnblockNeteaseMusic/configinit" //不要修改这条依赖的引入顺序！！！
 
 	"fmt"
 

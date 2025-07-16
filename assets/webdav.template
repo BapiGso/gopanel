@@ -1,45 +1,65 @@
 {{template "header.template"}}
-<section>
-    <h3>Webdav Manage</h3>
-    <h5>Windows explorer natively supports webdav (only https), execute the following command to support http</h5>
-    <code>
-        reg add "HKLM\SYSTEM\CurrentControlSet\Services\WebClient\Parameters" /v BasicAuthLevel /t REG_DWORD /d 2 /f
-        Restart-Service -Name "WebClient"
-    </code>
-    <form action="/admin/webdav" method="post" >
-        <table>
-            <thead>
-            <tr>
-                <th colspan="2">Webdav Config</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>Address</td>
-                <td x-text="`${location.origin}/webdav`"></td>
-            </tr>
-            <tr>
-                <td>Enable</td>
-                <td>
-                    <input type="checkbox" name="enable" {{if (call .getPanelConfig "webdav.enable")}}checked{{end}}>
-                </td>
-            </tr>
-            <tr>
-                <td>Username</td>
-                <td><input type="text" name="username" value="{{call .getPanelConfig "webdav.username"}}" required></td>
-            </tr>
-            <tr>
-                <td>Password</td>
-                <td><input type="text" name="password" value="{{call .getPanelConfig "webdav.password"}}" required></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td><button type="submit">Save</button></td>
-            </tr>
-            </tbody>
-        </table>
-    </form>
-</section>
+    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+        <i class="ri-cloud-line w-6 h-6 inline mr-2"></i>
+        WebDAV Manage
+    </h3>
+
+    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+        <h5 class="text-blue-800 dark:text-blue-200 font-medium mb-2">Windows Explorer Setup</h5>
+        <p class="text-blue-800 dark:text-blue-200 mb-3">Windows explorer natively supports WebDAV (only HTTPS), execute the following command to support HTTP:</p>
+        <div class="bg-gray-800 dark:bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-sm overflow-x-auto">
+            <div>reg add "HKLM\SYSTEM\CurrentControlSet\Services\WebClient\Parameters" /v BasicAuthLevel /t REG_DWORD /d 2 /f</div>
+            <div>Restart-Service -Name "WebClient"</div>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-6">WebDAV Configuration</h4>
+
+        <form action="/admin/webdav" method="post">
+            <div class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Server Address</label>
+                        <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white"
+                             x-text="`${location.origin}/webdav`"></div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Enable WebDAV</label>
+                        <div class="flex items-center">
+                            <input type="checkbox" name="enable" {{if (call .getPanelConfig "webdav.enable")}}checked{{end}}
+                                   class="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary">
+                            <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">Enable WebDAV service</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Username</label>
+                        <input type="text" name="username" value="{{call .getPanelConfig "webdav.username"}}" required
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
+                        <input type="password" name="password" value="{{call .getPanelConfig "webdav.password"}}" required
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit"
+                            class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-button flex items-center">
+                        <i class="ri-save-line w-3.5 h-3.5 mr-2"></i>
+                        Save Configuration
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+{{template "footer.template"}}
 <script>
 
     document.addEventListener('alpine:init', () => {

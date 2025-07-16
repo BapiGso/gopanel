@@ -1,69 +1,99 @@
 {{template "header.template"}}
-<section>
-    <h3>Nftables Manage(Experimental features!)</h3>
-    <p>1. nftables is described as a subsystem of the Linux kernel.</p>
-    <p>2. These capabilities apply to network packets, datagrams, and Ethernet frames.</p>
-    <form action="" @submit.prevent="createRule">
-        <fieldset role="group">
-            <select name="network" aria-label required>
-                <option selected disabled value="">Select Network Layer</option>
-                <option value="2">IPv4</option>
-                <option value="10">IPv6</option>
-            </select>
-            <select name="transport" aria-label required>
-                <option selected disabled value="">Select Transport Layer</option>
-                <option value="6">TCP</option>
-                <option value="17">UDP</option>
-            </select>
-            <select name="chainhook" aria-label="Select Chain Hook" required>
-                <option selected disabled value="">Select Chain Hook</option>
-                <option value="0">Pre-routing</option>
-                <option value="1">Input</option>
-                <option value="2">Forward</option>
-                <option value="3">Output</option>
-                <option value="4">Post-routing</option>
-                <option value="0">Ingress</option>
-            </select>
-            <select name="verdict" aria-label required>
-                <option selected disabled value="">Select Verdict</option>
-                <option value="1">Accept</option>
-                <option value="0">Drop</option>
-            </select>
-            <input name="port" aria-label required placeholder="port">
-            <input type="submit" value="save">
-        </fieldset>
-    </form>
-    <table>
-        <thead>
-        <tr>
-            <th hidden>Position</th>
-            <th hidden>Handle</th>
-            <th hidden>Flags</th>
-            <th>Network</th>
-            <th>Protocol</th>
-            <th hidden>Chain</th>
-            <th>Port</th>
-            <th>Verdict</th>
-            <th>Action</th>
-        </tr>
-        </thead>
-        <tbody>
-        {{range .}}
-            <tr>
-                <td hidden>{{.Position}}</td>
-                <td hidden>{{.Handle}}</td>
-                <td hidden>{{.Flags}}</td>
-                <td x-text="net2str(`{{.Table.Family}}`)"></td>
-                <td x-text="protocol2str(`{{.Protocol}}`)"></td>
-                <td hidden x-text="chainHook2str(`{{.Hook}}`)"></td>
-                <td>{{if .Port}}{{.Port}}{{else}}-{{end}}</td>
-                <td x-text="verdict2str(`{{.Verdict}}`)"></td>
-                <td><button @click="deleteRule(`{{.Table.Name}}`,`{{.Chain.Name}}`,`{{.Handle}}`)">🚮</button></td>
-            </tr>
-        {{end}}
-        </tbody>
-    </table>
-</section>
+    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+        <i class="ri-shield-line w-6 h-6 inline mr-2"></i>
+        Nftables Manage (Experimental features!)
+    </h3>
+
+    <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+        <p class="text-yellow-800 dark:text-yellow-200 mb-2">1. nftables is described as a subsystem of the Linux kernel.</p>
+        <p class="text-yellow-800 dark:text-yellow-200">2. These capabilities apply to network packets, datagrams, and Ethernet frames.</p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
+        <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Create New Rule</h4>
+        <form action="" @submit.prevent="createRule">
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
+                <select name="network" required
+                        class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <option selected disabled value="">Network Layer</option>
+                    <option value="2">IPv4</option>
+                    <option value="10">IPv6</option>
+                </select>
+                <select name="transport" required
+                        class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <option selected disabled value="">Transport Layer</option>
+                    <option value="6">TCP</option>
+                    <option value="17">UDP</option>
+                </select>
+                <select name="chainhook" required
+                        class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <option selected disabled value="">Chain Hook</option>
+                    <option value="0">Pre-routing</option>
+                    <option value="1">Input</option>
+                    <option value="2">Forward</option>
+                    <option value="3">Output</option>
+                    <option value="4">Post-routing</option>
+                    <option value="0">Ingress</option>
+                </select>
+                <select name="verdict" required
+                        class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <option selected disabled value="">Verdict</option>
+                    <option value="1">Accept</option>
+                    <option value="0">Drop</option>
+                </select>
+                <input name="port" required placeholder="Port"
+                       class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                <button type="submit"
+                        class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-button flex items-center justify-center">
+                    <i class="ri-save-line w-3.5 h-3.5 mr-2"></i>
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h4 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                <i class="ri-list-check w-5 h-5 mr-2"></i>
+                Firewall Rules
+            </h4>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Network</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Protocol</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Port</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Verdict</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Action</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                {{range .}}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white" x-text="net2str(`{{.Table.Family}}`)"></td>
+                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="protocol2str(`{{.Protocol}}`)"></td>
+                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">{{if .Port}}{{.Port}}{{else}}-{{end}}</td>
+                        <td class="px-6 py-4 text-sm">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                                  :class="verdict2str(`{{.Verdict}}`) === 'Accept' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'"
+                                  x-text="verdict2str(`{{.Verdict}}`)">
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm">
+                            <button @click="deleteRule(`{{.Table.Name}}`,`{{.Chain.Name}}`,`{{.Handle}}`)"
+                                    class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300" title="Delete Rule">
+                                <i class="ri-delete-bin-line w-4 h-4"></i>
+                            </button>
+                        </td>
+                    </tr>
+                {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{{template "footer.template"}}
 
 <script>
     document.addEventListener('alpine:init', () => {

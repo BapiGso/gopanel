@@ -1,26 +1,76 @@
 {{template "header.template"}}
-<section>
-    <h3>Headscale Manage(Experimental features)</h3>
-    <p>1. An open source, self-hosted implementation of the Tailscale control server</p>
+    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+        <i class="ri-hub-line w-6 h-6 inline mr-2"></i>
+        Headscale Manage (Experimental features)
+    </h3>
 
-    <p>
-{{/*        <button @click="updateConfig">Save Config</button>*/}}
-{{/*        <button @click="manageHeadscale('start')">Start frps</button>*/}}
-        <!-- <button @click="manageFrps('stop')">Stop frps</button> -->
-{{/*        <button @click="manageHeadscale('enable')">Switch Enable</button>*/}}
-    </p>
-    <form action="/admin/headscale?status=start" method="POST" @submit.prevent="startHeadscale">
-        <label>服务器URL<input name="server_url" value="https://myheadscale.example.com:443"></label>
-        <label>监听地址<input name="listen_addr" value="0.0.0.0:8080"></label>
-        <label>指标监听地址<input name="metrics_listen_addr" value="127.0.0.1:9090"></label>
-        <label>gRPC监听地址<input name="grpc_listen_addr" value="127.0.0.1:50443"></label>
-        <label>Noise私钥路径<input name="private_key_path" value="/var/lib/headscale/noise_private.key"></label>
-        <label>IPv4前缀<input name="ipv4_prefix" value="100.64.0.0/10"></label>
-        <label>IPv6前缀<input name="ipv6_prefix" value="fd7a:115c:a1e0::/48"></label>
-        <label>基础域名<input name="base_domain" value="example.com"></label>
-        <button type="submit">start</button>
-    </form>
-</section>
+    <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+        <p class="text-yellow-800 dark:text-yellow-200">1. An open source, self-hosted implementation of the Tailscale control server</p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-6">Headscale Configuration</h4>
+
+        <form action="/admin/headscale?status=start" method="POST" @submit.prevent="startHeadscale">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Server URL</label>
+                    <input name="server_url" value="https://myheadscale.example.com:443"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Listen Address</label>
+                    <input name="listen_addr" value="0.0.0.0:8080"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Metrics Listen Address</label>
+                    <input name="metrics_listen_addr" value="127.0.0.1:9090"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">gRPC Listen Address</label>
+                    <input name="grpc_listen_addr" value="127.0.0.1:50443"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Noise Private Key Path</label>
+                    <input name="private_key_path" value="/var/lib/headscale/noise_private.key"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Base Domain</label>
+                    <input name="base_domain" value="example.com"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">IPv4 Prefix</label>
+                    <input name="ipv4_prefix" value="100.64.0.0/10"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">IPv6 Prefix</label>
+                    <input name="ipv6_prefix" value="fd7a:115c:a1e0::/48"
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+            </div>
+
+            <div class="flex justify-end mt-6">
+                <button type="submit"
+                        class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-button flex items-center">
+                    <i class="ri-play-line w-3.5 h-3.5 mr-2"></i>
+                    Start Headscale
+                </button>
+            </div>
+        </form>
+    </div>
 <script type="text/javascript" src="/assets/js/ace.js"></script>
 <script>
     document.addEventListener('alpine:init', () => {
@@ -54,3 +104,4 @@
         )
     })
 </script>
+{{template "footer.template"}}

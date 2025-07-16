@@ -1,70 +1,178 @@
 {{template "header.template"}}
-<section>
-    <h3>System Monitor</h3>
-    <table>
-        <thead>
-        <tr>
-            <th x-ref="cpuUsage" style="height: 200px"></th>
-            <th x-ref="memUsage" style="height: 200px"></th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td><b>platform</b></td>
-            <td x-text="data?.HostInfo.platform"></td>
-        </tr>
-        <tr>
-            <td><b>kernelArch</b></td>
-            <td x-text="data?.HostInfo.kernelArch"></td>
-        </tr>
-        <tr>
-            <td><b>uptime</b></td>
-            <td x-text="`${Math.floor(data?.HostInfo.uptime /24/60/60)}Days ${Math.floor(data?.HostInfo.uptime/60/60%24)}Hours`"></td>
-        </tr>
-        <tr>
-            <td><b>cpu</b></td>
-            <template x-for="item in data?.CPU" :key="item.cpu">
-                <li x-text="`${item.modelName} ${item.cores}cores`"></li>
+<h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">System Monitor</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+        <div class="flex items-center justify-between mb-4">
+            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">CPU Usage</h4>
+            <i class="ri-cpu-line w-5 h-5 text-blue-500"></i>
+        </div>
+        <div class="text-center">
+            <div class="text-3xl font-bold mb-2"
+                 x-text="Math.round(data?.CPUUsage?.[0] || 0) + '%'"
+                 :class="{
+                      'text-red-500 dark:text-red-400': Math.round(data?.CPUUsage?.[0] || 0) >= 90,
+                      'text-yellow-500 dark:text-yellow-400': Math.round(data?.CPUUsage?.[0] || 0) >= 70 && Math.round(data?.CPUUsage?.[0] || 0) < 90,
+                      'text-gray-900 dark:text-white': Math.round(data?.CPUUsage?.[0] || 0) < 70
+                  }">0%
+            </div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">Current Usage</div>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+        <div class="flex items-center justify-between mb-4">
+            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Memory Usage</h4>
+            <i class="ri-database-line w-5 h-5 text-green-500"></i>
+        </div>
+        <div class="text-center">
+            <div class="text-3xl font-bold mb-2"
+                 x-text="Math.round(data?.Memory?.usedPercent || 0) + '%'"
+                 :class="{
+                      'text-red-500 dark:text-red-400': Math.round(data?.Memory?.usedPercent || 0) >= 90,
+                      'text-yellow-500 dark:text-yellow-400': Math.round(data?.Memory?.usedPercent || 0) >= 70 && Math.round(data?.Memory?.usedPercent || 0) < 90,
+                      'text-gray-900 dark:text-white': Math.round(data?.Memory?.usedPercent || 0) < 70
+                  }">0%
+            </div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">Current Usage</div>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+        <div class="flex items-center justify-between mb-4">
+            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Disk Usage</h4>
+            <div class="flex items-center">
+                <button @click="diskShowAll = !diskShowAll" x-show="data?.DiskUsage?.length > 2"
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none mr-2">
+                    <i class="w-5 h-5" :class="diskShowAll ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
+                </button>
+                <i class="ri-hard-drive-line w-5 h-5 text-purple-500"></i>
+            </div>
+        </div>
+        <div class="space-y-2 transition-all duration-300 ease-in-out"
+             :style="{
+                  'max-height': diskShowAll ? (data?.DiskUsage?.length * 45 + 10) + 'px' : (data?.DiskUsage?.length > 0 ? (Math.min(data.DiskUsage.length, 2) * 45 + (Math.min(data.DiskUsage.length, 2) > 0 ? -5 : 0) ) + 'px' : '30px'),
+                  'overflow-y': diskShowAll ? 'auto' : 'hidden'
+              }">
+            <template x-for="item in (diskShowAll ? data?.DiskUsage : (data?.DiskUsage || []).slice(0, 2))" :key="item.path">
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600 dark:text-gray-400 truncate" :title="item.path" x-text="item.path.length > 20 ? item.path.substring(0,17) + '...' : item.path"></span>
+                        <span class="text-gray-900 dark:text-white" x-text="Math.round(item.usedPercent) + '%'"></span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div class="bg-purple-500 h-2 rounded-full transition-all duration-300"
+                             :style="`width: ${item.usedPercent}%`"></div>
+                    </div>
+                </div>
             </template>
-        </tr>
-        <tr>
-            <td><b>total</b></td>
-            <td x-text="`${Math.floor(data?.Memory.total/1024/1024)}MB`"></td>
-        </tr>
-        <tr>
-            <td><b>disk</b></td>
-            <template x-for="item in data?.Diskpart" :key="item.name">
-                <li x-text="`${item.name}`"></li>
+            <template x-if="!data?.DiskUsage || data.DiskUsage.length === 0">
+                <p class="text-xs text-gray-400 dark:text-gray-500">No disk usage data available.</p>
             </template>
-        </tr>
-        <tr>
-            <td><b>network Unit: GB</b></td>
-            <template x-for="item in data?.Network" :key="item.name">
-                <li x-text="`Revc:${(item.bytesRecv/Math.pow(2, 30)).toFixed(2)} Sent:${(item.bytesSent/Math.pow(2, 30)).toFixed(2)} ${item.name}`"></li>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+        <div class="flex items-center justify-between mb-4">
+            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Network</h4>
+            <div class="flex items-center">
+                <button @click="networkShowAll = !networkShowAll" x-show="activeNetworkInterfaces.length > 2"
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none mr-2">
+                    <i class="w-5 h-5" :class="networkShowAll ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
+                </button>
+                <i class="ri-wifi-line w-5 h-5 text-orange-500"></i>
+            </div>
+        </div>
+        <div class="space-y-3 transition-all duration-300 ease-in-out"
+             :style="{
+                  'max-height': networkShowAll ? (activeNetworkInterfaces.length * 55 + 10) + 'px' : (activeNetworkInterfaces.length > 0 ? (Math.min(activeNetworkInterfaces.length, 2) * 55 + (Math.min(activeNetworkInterfaces.length, 2) > 0 ? -5 : 0)) + 'px' : '30px'),
+                  'overflow-y': networkShowAll ? 'auto' : 'hidden'
+              }">
+            <template x-for="item in (networkShowAll ? activeNetworkInterfaces : activeNetworkInterfaces.slice(0, 2))" :key="item.name">
+                <div class="text-xs">
+                    <div class="font-medium text-gray-900 dark:text-white mb-1 truncate" :title="item.name" x-text="item.name"></div>
+                    <div class="text-gray-500 dark:text-gray-400">
+                        <div>↓ <span x-text="formatBytes(item.bytesRecv)"></span></div>
+                        <div>↑ <span x-text="formatBytes(item.bytesSent)"></span></div>
+                    </div>
+                </div>
             </template>
+            <template x-if="activeNetworkInterfaces.length === 0">
+                <p class="text-xs text-gray-400 dark:text-gray-500">No active network interface.</p>
+            </template>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+    <table class="w-full">
+        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">Platform</td>
+            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="data?.HostInfo?.platform || 'N/A'"></td>
+        </tr>
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">Kernel Arch</td>
+            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="data?.HostInfo?.kernelArch || 'N/A'"></td>
+        </tr>
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">Uptime</td>
+            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="data?.HostInfo?.uptime ? `${Math.floor(data.HostInfo.uptime /24/60/60)} Days ${Math.floor(data.HostInfo.uptime/60/60%24)} Hours` : 'N/A'"></td>
+        </tr>
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">CPU</td>
+            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">
+                <template x-for="item in data?.CPU" :key="item.cpu">
+                    <div x-text="`${item.modelName} (${item.cores} cores)`"></div>
+                </template>
+                <template x-if="!data?.CPU || data.CPU.length === 0"><span x-text="'N/A'"></span></template>
+            </td>
+        </tr>
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">Total Memory</td>
+            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="data?.Memory?.total ? formatBytes(data.Memory.total) : 'N/A'"></td>
         </tr>
         </tbody>
     </table>
-</section>
-<script type="text/javascript" src="/assets/js/raphael-2.1.4.min.js"></script>
-<script type="text/javascript" src="/assets/js/justgage.js"></script>
+</div>
+
 <script>
     document.addEventListener('alpine:init', () => {
-            Alpine.data('panel', () => ({
-                init(){
-                    let cpu=new JustGage({parentNode:this.$refs.cpuUsage, value: 0, max: 100, title: "CPU usage"});
-                    let memory=new JustGage({parentNode:this.$refs.memUsage, value: 0, max: 100, title: "MEM usage"});
-                    const eventSource = new EventSource('/admin/monitor?type=info');
-                    eventSource.onmessage=(event) => {
-                        const data = JSON.parse(event.data);
-                        cpu.refresh(data.CPUUsage)
-                        memory.refresh(data.Memory.usedPercent)
-                        this.data=data;
-                    };
-                },
-                data:null,
-            })
-            )
-        }
-    )
+        Alpine.data('panel', () => ({
+            data: {},
+            diskShowAll: false,
+            networkShowAll: false,
+
+            get activeNetworkInterfaces() {
+                return (this.data?.Network || []).filter(n => n.bytesRecv > 0 || n.bytesSent > 0);
+            },
+
+            init() {
+                const eventSource = new EventSource('/admin/monitor?type=info');
+                eventSource.onmessage = (event) => {
+                    try {
+                        this.data = JSON.parse(event.data);
+                    } catch (e) {
+                        console.error("Error processing SSE data:", e, "Raw data:", event.data);
+                    }
+                };
+                eventSource.onerror = (err) => {
+                    console.error("EventSource failed:", err);
+                    eventSource.close();
+                };
+            },
+
+            formatBytes(bytes, decimals = 2) {
+                if (bytes === undefined || bytes === null) return '0 B';
+                if (bytes === 0) return '0 B';
+                if (bytes < 0) return 'N/A';
+                const k = 1024;
+                const dm = decimals < 0 ? 0 : decimals;
+                const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                const unit = sizes[i] !== undefined ? sizes[i] : sizes[sizes.length -1];
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + unit;
+            }
+        }));
+    });
 </script>
+{{template "footer.template"}}

@@ -1,28 +1,53 @@
 {{template "header.template"}}
-<section>
-    <h3>Frpc Manage</h3>
-    <p>1. This panel embed a standard frp client</p>
-    <p>2.
-        <a href="https://github.com/fatedier/frp/blob/dev/conf/frps_full_example.toml">
-            startup config according to this instruction
-        </a>
-    </p>
-    <p>3. frpc cannot be stopped after it is started unless you restart the panel.</p>
-    <p>4. The current frpc startup status with the panel: <b>{{.frpcEnable}}</b></p>
-    <p>
-        <button @click="updateConfig">Save Config</button>
-        <button @click="manageFrpc('start')">Start frpc</button>
-        <!-- <button @click="manageFrps('stop')">Stop frps</button> -->
-        <button @click="manageFrpc('enable')">Switch Enable</button>
-    </p>
-    <div id="editor"></div>
-</section>
+    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+        <i class="ri-router-line w-6 h-6 inline mr-2"></i>
+        FRPC Manage
+    </h3>
+
+    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+        <p class="text-blue-800 dark:text-blue-200 mb-2">1. This panel embeds a standard FRP client</p>
+        <p class="text-blue-800 dark:text-blue-200 mb-2">2.
+            <a href="https://github.com/fatedier/frp/blob/dev/conf/frps_full_example.toml"
+               class="underline hover:text-blue-600 dark:hover:text-blue-300">
+                Startup config according to this instruction
+            </a>
+        </p>
+        <p class="text-blue-800 dark:text-blue-200 mb-2">3. FRPC cannot be stopped after it is started unless you restart the panel.</p>
+        <p class="text-blue-800 dark:text-blue-200">4. The current FRPC startup status with the panel: <span class="font-semibold">{{.frpcEnable}}</span></p>
+    </div>
+
+    <div class="flex flex-wrap gap-3 mb-6">
+        <button @click="updateConfig"
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-button flex items-center">
+            <i class="ri-save-line w-3.5 h-3.5 mr-2"></i>
+            Save Config
+        </button>
+        <button @click="manageFrpc('start')"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-button flex items-center">
+            <i class="ri-play-line w-3.5 h-3.5 mr-2"></i>
+            Start FRPC
+        </button>
+        <button @click="manageFrpc('enable')"
+                class="px-4 py-2 bg-primary hover:bg-purple-700 text-white rounded-button flex items-center">
+            <i class="ri-toggle-line w-3.5 h-3.5 mr-2"></i>
+            Switch Enable
+        </button>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+        <div id="editor" class="h-96 w-full rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600"></div>
+    </div>
+
 <script type="text/javascript" src="/assets/js/ace.js"></script>
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('panel', () => ({
             init(){
                 window.editor = ace.edit("editor");
+                // Set the theme (optional, choose one you like or have)
+                editor.setTheme("ace/theme/chrome"); // Example theme
+                // Set the TOML mode
+                editor.session.setMode("ace/mode/toml");
                 editor.setValue(`{{.frpcConfig}}`, -1);
             },
             updateConfig(){
@@ -46,3 +71,4 @@
         )
     })
 </script>
+{{template "footer.template"}}

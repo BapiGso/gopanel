@@ -1,23 +1,48 @@
 {{template "header.template"}}
+    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">Website Manage</h3>
 
-<section>
-    <h3>Website Manage</h3>
-    <p>1. Caddy is a powerful, enterprise-ready, open source web server</p>
-    <p>2. The current Caddy startup status with the panel: <b>{{.caddyEnable}}</b></p>
-    <p>
-        <button @click="updateConfig">Save Config</button>
-        <button @click="manageCaddy('restart')">Restart Caddy</button>
-        <button @click="manageCaddy('stop')">Stop Caddy</button>
-        <button @click="manageCaddy('enable')">Switch Enable</button>
-    </p>
-    <div id="editor"></div>
-</section>
+    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+        <p class="text-blue-800 dark:text-blue-200 mb-2">1. Caddy is a powerful, enterprise-ready, open source web server</p>
+        <p class="text-blue-800 dark:text-blue-200">2. The current Caddy startup status with the panel: <span class="font-semibold">{{.caddyEnable}}</span></p>
+    </div>
+
+    <div class="flex flex-wrap gap-3 mb-6">
+        <button @click="updateConfig"
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-button flex items-center">
+            <i class="ri-save-line w-3.5 h-3.5 mr-2"></i>
+            Save Config
+        </button>
+        <button @click="manageCaddy('restart')"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-button flex items-center">
+            <i class="ri-restart-line w-3.5 h-3.5 mr-2"></i>
+            Restart Caddy
+        </button>
+        <button @click="manageCaddy('stop')"
+                class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-button flex items-center">
+            <i class="ri-stop-line w-3.5 h-3.5 mr-2"></i>
+            Stop Caddy
+        </button>
+        <button @click="manageCaddy('enable')"
+                class="px-4 py-2 bg-primary hover:bg-purple-700 text-white rounded-button flex items-center">
+            <i class="ri-toggle-line w-3.5 h-3.5 mr-2"></i>
+            Switch Enable
+        </button>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+        <div id="editor" class="h-96 w-full rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600"></div>
+    </div>
+
+
 <script type="text/javascript" src="/assets/js/ace.js"></script>
+{{/*<script src="/assets/js/mode-caddyfile.js" type="text/javascript" charset="utf-8"></script>*/}}
+
 <script>
     document.addEventListener('alpine:init', () => {
             Alpine.data('panel', () => ({
                 init(){
                     window.editor = ace.edit("editor");
+                    // editor.session.setMode("ace/mode/caddyfile");
                     editor.setValue(`{{.caddyFile}}`, -1);
                 },
                 updateConfig(){

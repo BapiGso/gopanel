@@ -1,66 +1,115 @@
 {{template "header.template"}}
-<section>
-    <h3>Cron Manage(Experimental features!)</h3>
-    <p>1. This feature is experimental</p>
-    <p>2. Your scheduled tasks are stored in memory and are destroyed when restarted</p>
-    <form action="" @submit.prevent="createCron">
-        <fieldset role="group">
-            <select aria-label required x-model="script">
-                <option selected disabled value="">📎Cron Template</option>
-                <option value="">Shell Script</option>
-                <option value="tar -czvf name.tar.gz /home/user/mydir">Backup Directory(Linux)</option>
-                <option value="curl -L https://www.example.com">Access Url(Linux)</option>
-            </select>
-            <input name="name" type="text" placeholder="name" aria-label required>
-        </fieldset>
+    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+        <i class="ri-time-line w-6 h-6 inline mr-2"></i>
+        Cron Manage (Experimental features!)
+    </h3>
 
-        <fieldset role="group">
-            <select name="frequency" aria-label required x-model="freMax">
-                <option selected disabled value="">Select Frequency</option>
-                <option value="43199">Monthly</option>
-                <option value="10079">Weekly</option>
-                <option value="1439">Daily</option>
-                <option value="43200">Every N</option>
-            </select>
+    <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+        <p class="text-yellow-800 dark:text-yellow-200 mb-2">1. This feature is experimental</p>
+        <p class="text-yellow-800 dark:text-yellow-200">2. Your scheduled tasks are stored in memory and are destroyed when restarted</p>
+    </div>
 
-            <fieldset role="group">
-                <label>
-                    <input :max="freMax" min="1" name="attime" @input="$el.setAttribute('data-tooltip', formatTimestamp($el.value))" type="range" value="30000">
-                </label>
-            </fieldset>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
+        <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Create New Cron Job</h4>
+        <form action="" @submit.prevent="createCron">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <select required x-model="script"
+                        class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <option selected disabled value="">📎 Cron Template</option>
+                    <option value="">Shell Script</option>
+                    <option value="tar -czvf name.tar.gz /home/user/mydir">Backup Directory (Linux)</option>
+                    <option value="curl -L https://www.example.com">Access URL (Linux)</option>
+                </select>
+                <input name="name" type="text" placeholder="Job Name" required
+                       class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
 
-        </fieldset>
-        <textarea name="script" aria-label rows="5" x-model="script" required></textarea>
-        <button type="submit">Creat cron</button>
-    </form>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <select name="frequency" required x-model="freMax"
+                        class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <option selected disabled value="">Select Frequency</option>
+                    <option value="43199">Monthly</option>
+                    <option value="10079">Weekly</option>
+                    <option value="1439">Daily</option>
+                    <option value="43200">Every N</option>
+                </select>
+
+                <div class="flex items-center space-x-3">
+                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Time:</label>
+                    <input :max="freMax" min="1" name="attime"
+                           @input="$el.setAttribute('title', formatTimestamp($el.value))"
+                           type="range" value="30000"
+                           class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Script:</label>
+                <textarea name="script" rows="5" x-model="script" required
+                          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
+                          placeholder="Enter your script here..."></textarea>
+            </div>
+
+            <button type="submit"
+                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-button flex items-center">
+                <i class="ri-add-line w-3.5 h-3.5 mr-2"></i>
+                Create Cron Job
+            </button>
+        </form>
+    </div>
 
 
-    <table>
-        <thead>
-        <tr>
-            <th>name</th>
-            <th>lastRun</th>
-            <th>nextRun</th>
-            <th>runNow</th>
-            <th>action</th>
-        </tr>
-        </thead>
-        <tbody>
-        {{range $k,$v:= .}}
-        <tr>
-            <td x-text=`{{$v.Name}}`></td>
-            <td x-text=`{{$v.LastRun}}`></td>
-            <td x-text=`{{$v.NextRun}}`></td>
-            <td><a @click="Action('runnow', `{{$k}}`)">▶️</a> </td>
-            <td>
-                <a x-show="{{$v.Paused}}" @click="Action('unpause', `{{$k}}`)">▶️</a>
-                <a x-show="{{not $v.Paused}}" @click="Action('pause', `{{$k}}`)"  >⏸️</a>
-                <a @click="confirm('sure to delete?') && Action('remove',`{{$k}}`)">🚮</a>
-            </td>
-        </tr>
-        {{end}}
-    </table>
-</section>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h4 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                <i class="ri-list-check w-5 h-5 mr-2"></i>
+                Scheduled Jobs
+            </h4>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Last Run</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Next Run</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Run Now</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                {{range $k,$v:= .}}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white" x-text="`{{$v.Name}}`"></td>
+                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="`{{$v.LastRun}}`"></td>
+                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="`{{$v.NextRun}}`"></td>
+                    <td class="px-6 py-4 text-sm">
+                        <button @click="Action('runnow', `{{$k}}`)"
+                                class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300" title="Run Now">
+                            <i class="ri-play-line w-4 h-4"></i>
+                        </button>
+                    </td>
+                    <td class="px-6 py-4 text-sm space-x-2">
+                        <button x-show="{{$v.Paused}}" @click="Action('unpause', `{{$k}}`)"
+                                class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300" title="Resume">
+                            <i class="ri-play-line w-4 h-4"></i>
+                        </button>
+                        <button x-show="{{not $v.Paused}}" @click="Action('pause', `{{$k}}`)"
+                                class="text-yellow-600 hover:text-yellow-800 dark:text-yellow-400 dark:hover:text-yellow-300" title="Pause">
+                            <i class="ri-pause-line w-4 h-4"></i>
+                        </button>
+                        <button @click="confirm('sure to delete?') && Action('remove',`{{$k}}`)"
+                                class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300" title="Delete">
+                            <i class="ri-delete-bin-line w-4 h-4"></i>
+                        </button>
+                    </td>
+                </tr>
+                {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{{template "footer.template"}}
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('panel', () => ({

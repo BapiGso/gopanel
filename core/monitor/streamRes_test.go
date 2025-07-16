@@ -9,7 +9,6 @@ import (
 )
 
 func TestSreamRes(t *testing.T) {
-
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
 		c.Response().Header().Set(echo.HeaderContentType, "text/event-stream")
