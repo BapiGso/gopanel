@@ -21,7 +21,7 @@
         Create New Cron Job
     </h4>
     
-    <form action="" @submit.prevent="createCron">
+    <form action="/admin/cron" @submit.prevent="createCron">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Template</label>
@@ -56,11 +56,12 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Time: <span class="text-gray-500 dark:text-gray-400" x-text="formatTimestamp($refs.timeSlider?.value || 30000)"></span>
+                    Time: <span class="text-gray-500 dark:text-gray-400" x-text="formatTimestamp(sliderValue)"></span>
                 </label>
                 <input x-ref="timeSlider" :max="freMax" min="1" name="attime"
+                       x-model="sliderValue"
                        @input="$el.setAttribute('title', formatTimestamp($el.value))"
-                       type="range" value="30000"
+                       type="range"
                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-primary">
             </div>
         </div>
@@ -159,6 +160,7 @@
         Alpine.data('panel', () => ({
             freMax: 43200,
             script: "",
+            sliderValue: 30000,
             
             formatTimestamp(timestamp) {
                 let totalSeconds = Math.floor(timestamp * 60);
@@ -172,13 +174,17 @@
             
             async createCron(e) {
                 try {
-                    const response = await fetch(e.target.action, {
+                    const response = await fetch(e.target.action || '/admin/cron', {
                         method: "POST",
                         body: new FormData(e.target)
                     });
                     const result = await response.json();
-                    alert(result.message || 'Cron job created successfully');
-                    location.reload();
+                    if (response.ok) {
+                        alert(result.message || 'Cron job created successfully');
+                        location.reload();
+                    } else {
+                        alert(result.error || 'Failed to create cron job');
+                    }
                 } catch (error) {
                     alert('Failed to create cron job: ' + error.message);
                 }

@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"fmt"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -38,8 +39,8 @@ var schedulerList []task
 func Index(c echo.Context) error {
 	req := &struct {
 		Name      string `form:"name"         json:"name"`
-		Frequency int    `form:"frequency"    json:"frequency"`
-		AtTime    int    `form:"attime"       json:"attime"`
+		Frequency string `form:"frequency"    json:"frequency"`
+		AtTime    string `form:"attime"       json:"attime"`
 		Script    string `form:"script"       json:"script"`
 		Index     int    `query:"index"`
 	}{}
@@ -48,10 +49,19 @@ func Index(c echo.Context) error {
 	}
 	switch c.Request().Method {
 	case "POST":
-		if err := addCron(req.Name, req.Script, getJobDefinition(req.Frequency, req.AtTime)); err != nil {
-			return err
+		// 转换字符串为整数
+		var frequency, atTime int
+		if _, err := fmt.Sscanf(req.Frequency, "%d", &frequency); err != nil {
+			return c.JSON(400, map[string]string{"error": "Invalid frequency value"})
 		}
-		return c.JSON(200, "success")
+		if _, err := fmt.Sscanf(req.AtTime, "%d", &atTime); err != nil {
+			return c.JSON(400, map[string]string{"error": "Invalid attime value"})
+		}
+
+		if err := addCron(req.Name, req.Script, getJobDefinition(frequency, atTime)); err != nil {
+			return c.JSON(500, map[string]string{"error": err.Error()})
+		}
+		return c.JSON(200, map[string]string{"message": "Cron job created successfully"})
 	case "PUT":
 		switch c.QueryParam("type") {
 		case "pause":
@@ -89,7 +99,9 @@ func addCron(name, cmd string, jobDefinition gocron.JobDefinition) error {
 	_, err = s.NewJob(
 		jobDefinition,
 		gocron.NewTask(
-			exec.Command(cmd).Run(),
+			func() {
+				exec.Command("sh", "-c", cmd).Run()
+			},
 		),
 		gocron.WithName(name),
 	)

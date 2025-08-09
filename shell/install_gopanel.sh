@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # 检查是否存在 wget
-if ! command -v wget &> /dev/null; then
+if ! command -v wget > /dev/null 2>&1; then
     echo "wget 未安装，请先安装 wget。"
     exit 1
 fi
@@ -172,3 +172,6 @@ else
     echo "不支持的操作系统: $OS，无法启动服务。"
     exit 1
 fi
+
+echo "gopanel 安装成功！"
+echo "服务已启动，您可以通过浏览器访问 http://localhost:8080 来使用 gopanel。"

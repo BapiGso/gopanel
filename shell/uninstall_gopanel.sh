@@ -27,13 +27,39 @@ else
 fi
 
 # 删除 gopanel 二进制文件
-sudo rm /usr/local/bin/gopanel
+if [ -f "/usr/local/bin/gopanel" ]; then
+    sudo rm /usr/local/bin/gopanel
+    echo "已删除 gopanel 二进制文件。"
+else
+    echo "gopanel 二进制文件不存在，跳过删除。"
+fi
 
 # 删除配置文件
 CONFIG_DIR="/opt/gopanel"
-sudo rm -f "$CONFIG_DIR/gopanel_config.json"
-sudo rm -f "$CONFIG_DIR/gopanel_Caddyfile"
-sudo rm -f "$CONFIG_DIR/gopanel_frps.conf"
-sudo rm -f "$CONFIG_DIR/gopanel_frpc.conf"
+if [ -d "$CONFIG_DIR" ]; then
+    echo "正在删除配置文件..."
+    sudo rm -f "$CONFIG_DIR/gopanel_config.json"
+    sudo rm -f "$CONFIG_DIR/gopanel_Caddyfile"
+    sudo rm -f "$CONFIG_DIR/gopanel_frps.conf"
+    sudo rm -f "$CONFIG_DIR/gopanel_frpc.conf"
+    
+    # 询问是否删除整个工作目录
+    echo "是否要删除整个工作目录 $CONFIG_DIR？(y/n)"
+    read -r response
+    if [ "$response" = "y" ] || [ "$response" = "Y" ]; then
+        sudo rm -rf "$CONFIG_DIR"
+        echo "已删除工作目录。"
+    else
+        echo "保留工作目录。"
+    fi
+else
+    echo "配置目录不存在，跳过删除。"
+fi
+
+# 清理日志文件（仅限 macOS）
+if [ "$OS" = "Darwin" ]; then
+    sudo rm -f /var/log/gopanel.err
+    sudo rm -f /var/log/gopanel.out
+fi
 
 echo "gopanel 已成功卸载。"

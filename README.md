@@ -1,5 +1,5 @@
 
-![preview](./assets/img/preview2.png)
+![preview](./assets/img/preview4.png)
 
 
 ![license](https://img.shields.io/github/license/BapiGso/gopanel)
