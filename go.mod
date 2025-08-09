@@ -5,7 +5,7 @@ go 1.24.5
 require (
 	github.com/caddyserver/caddy/v2 v2.10.0
 	github.com/cnsilvan/UnblockNeteaseMusic v0.0.0-20240731043907-91afd9361e8b
-	github.com/docker/docker v28.3.2+incompatible
+	github.com/docker/docker v28.3.3+incompatible
 	github.com/fatedier/frp v0.63.0
 	github.com/go-co-op/gocron/v2 v2.16.2
 	github.com/go-playground/validator/v10 v10.27.0
@@ -243,7 +243,4 @@ require (
 	sigs.k8s.io/yaml v1.5.0 // indirect
 )
 
-replace (
-	github.com/quic-go/quic-go => github.com/quic-go/quic-go v0.52.0 //等frp更新他的quic调用再把这条去掉
-
-)
+replace github.com/quic-go/quic-go => github.com/quic-go/quic-go v0.52.0 //等frp更新他的quic调用再把这条去掉
