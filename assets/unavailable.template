@@ -1,7 +1,20 @@
 {{template "header.template"}}
-<section>
-    <h3>Your operating system does not support</h3>
-</section>
+<div class="min-h-[60vh] flex items-center justify-center">
+    <div class="text-center">
+        <i class="ri-error-warning-line w-24 h-24 text-gray-300 dark:text-gray-600 mx-auto mb-6"></i>
+        <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+            Feature Unavailable
+        </h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-8">
+            Your operating system does not support this feature
+        </p>
+        <button onclick="history.back()" 
+                class="px-6 py-2 bg-primary hover:bg-purple-700 text-white rounded-lg transition-colors inline-flex items-center">
+            <i class="ri-arrow-left-line w-4 h-4 mr-2"></i>
+            Go Back
+        </button>
+    </div>
+</div>
 
 <script>
     document.addEventListener('alpine:init', () => {
@@ -9,3 +22,4 @@
         }))
     })
 </script>
+{{template "footer.template"}}

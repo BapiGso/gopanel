@@ -1,92 +1,173 @@
 {{template "header.template"}}
-    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-        <i class="ri-lock-line w-6 h-6 inline mr-2"></i>
-        Security Settings
-    </h3>
+<h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+    <i class="ri-lock-line w-6 h-6 inline mr-2"></i>
+    Security Settings
+</h3>
 
-    <!-- Panel Configuration -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
-        <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-6">GoPanel Configuration</h4>
+<!-- Panel Configuration -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
+    <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-6 flex items-center">
+        <i class="ri-settings-3-line w-5 h-5 mr-2"></i>
+        GoPanel Configuration
+    </h4>
 
-        <form action="/admin/security" method="post" @submit.prevent="updateSecurity">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Port</label>
-                    <input type="text" name="port" value="{{call .getPanelConfig "panel.port"}}" required
-                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Path</label>
-                    <input type="text" name="path" value="{{call .getPanelConfig "panel.path"}}" required
-                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Username</label>
-                    <input type="text" name="username" value="{{call .getPanelConfig "panel.username"}}" required
-                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
-                    <input type="password" name="password" value="{{call .getPanelConfig "panel.password"}}" required
-                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
-                </div>
+    <form action="/admin/security" method="post" @submit.prevent="updateSecurity">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Port
+                </label>
+                <input type="text" name="port" value="{{call .getPanelConfig "panel.port"}}" required
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Panel access port</p>
             </div>
 
-            <div class="flex justify-end mt-6">
-                <button type="submit"
-                        class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-button flex items-center">
-                    <i class="ri-save-line w-3.5 h-3.5 mr-2"></i>
-                    Save Configuration
-                </button>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Path
+                </label>
+                <input type="text" name="path" value="{{call .getPanelConfig "panel.path"}}" required
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Security entrance path</p>
             </div>
-        </form>
-    </div>
 
-    <!-- System Management -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-        <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-6">System Management</h4>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Username
+                </label>
+                <input type="text" name="username" value="{{call .getPanelConfig "panel.username"}}" required
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Login username</p>
+            </div>
 
-        <div class="flex flex-wrap gap-3 mb-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Password
+                </label>
+                <input type="password" name="password" value="{{call .getPanelConfig "panel.password"}}" required
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Login password</p>
+            </div>
+        </div>
+
+        <div class="flex justify-end mt-6">
+            <button type="submit"
+                    class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center">
+                <i class="ri-save-line w-4 h-4 mr-2"></i>
+                Save Configuration
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- System Management -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+    <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-6 flex items-center">
+        <i class="ri-computer-line w-5 h-5 mr-2"></i>
+        System Management
+    </h4>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div class="flex items-center mb-3">
+                <i class="ri-download-cloud-line w-8 h-8 text-blue-500 mr-3"></i>
+                <div>
+                    <h5 class="font-medium text-gray-900 dark:text-white">Update GoPanel</h5>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Download and install the latest version</p>
+                </div>
+            </div>
             <button @click="updateBinary"
-                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-button flex items-center">
-                <i class="ri-download-line w-3.5 h-3.5 mr-2"></i>
-                Update GoPanel
-            </button>
-            <button @click="restartGopanel"
-                    class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-button flex items-center">
-                <i class="ri-restart-line w-3.5 h-3.5 mr-2"></i>
-                Restart GoPanel
+                    class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center">
+                <i class="ri-download-line w-4 h-4 mr-2"></i>
+                Update Now
             </button>
         </div>
 
-        <div x-show="showLoading" class="flex items-center text-blue-600 dark:text-blue-400">
-            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-            Waiting for server...
+        <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div class="flex items-center mb-3">
+                <i class="ri-restart-line w-8 h-8 text-red-500 mr-3"></i>
+                <div>
+                    <h5 class="font-medium text-gray-900 dark:text-white">Restart GoPanel</h5>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Restart the panel service</p>
+                </div>
+            </div>
+            <button @click="restartGopanel"
+                    class="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center justify-center">
+                <i class="ri-restart-line w-4 h-4 mr-2"></i>
+                Restart Now
+            </button>
         </div>
     </div>
-{{template "footer.template"}}
+
+    <div x-show="showLoading" x-transition class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+        <div class="flex items-center text-blue-600 dark:text-blue-400">
+            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 dark:border-blue-400 mr-3"></div>
+            <span class="text-sm">Processing request, please wait...</span>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('panel', () => ({
-            async updateSecurity(e){
-                this.showLoading=true;
-                alert(await (await fetch(e.target.action,{method:"POST",body: new FormData(e.target)})).json())
-                location.reload()
+            showLoading: false,
+            
+            async updateSecurity(e) {
+                this.showLoading = true;
+                try {
+                    const response = await fetch(e.target.action, {
+                        method: "POST",
+                        body: new FormData(e.target)
+                    });
+                    const result = await response.json();
+                    alert(result.message || 'Configuration updated successfully');
+                    location.reload();
+                } catch (error) {
+                    alert('Failed to update configuration: ' + error.message);
+                    this.showLoading = false;
+                }
             },
-            async updateBinary(){
-                alert(await (await fetch(`/admin/security?action=update`,{method:"PUT"})).json())
-                location.reload()
+            
+            async updateBinary() {
+                if (!confirm('Are you sure you want to update GoPanel to the latest version?')) return;
+                
+                this.showLoading = true;
+                try {
+                    const response = await fetch(`/admin/security?action=update`, {
+                        method: "PUT"
+                    });
+                    const result = await response.json();
+                    alert(result.message || 'Update completed successfully');
+                    location.reload();
+                } catch (error) {
+                    alert('Update failed: ' + error.message);
+                    this.showLoading = false;
+                }
             },
-            async restartGopanel(){
-                this.showLoading=true;
-                alert(await (await fetch(`/admin/security?action=restart`,{method:"PUT"})).json())
-                location.reload()
-            },
-            showLoading:false,
-            }))
-        }
-    )
+            
+            async restartGopanel() {
+                if (!confirm('Are you sure you want to restart GoPanel? The panel will be temporarily unavailable.')) return;
+                
+                this.showLoading = true;
+                try {
+                    const response = await fetch(`/admin/security?action=restart`, {
+                        method: "PUT"
+                    });
+                    const result = await response.json();
+                    alert(result.message || 'Restart initiated');
+                    
+                    // Wait a moment then try to reload
+                    setTimeout(() => {
+                        location.reload();
+                    }, 3000);
+                } catch (error) {
+                    // Expected to fail if restart is successful
+                    setTimeout(() => {
+                        location.reload();
+                    }, 5000);
+                }
+            }
+        }))
+    })
 </script>
+{{template "footer.template"}}

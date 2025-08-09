@@ -10,10 +10,10 @@ import (
 	"gopanel/core/firewall"
 	"gopanel/core/frpc"
 	"gopanel/core/frps"
+	"gopanel/core/headscale"
 	"gopanel/core/login"
 	"gopanel/core/monitor"
 	"gopanel/core/mymiddleware"
-	"gopanel/core/netbird"
 	"gopanel/core/security"
 	"gopanel/core/term"
 	"gopanel/core/webdav"
@@ -70,8 +70,7 @@ func (c *Core) Route() {
 	admin.Any("/docker", docker.Index)
 	admin.Any("/frps", frps.Index)
 	admin.Any("/frpc", frpc.Index)
-	//admin.Any("/headscale", headscale.Index)
-	admin.Any("/netbird", netbird.Index)
+	admin.Any("/headscale", headscale.Index)
 	admin.Any("/firewall", firewall.Index)
 	//admin.Any("/UnblockNeteaseMusic", UnblockNeteaseMusic.Index)
 	c.e.StartTLS(viper.GetString("panel.port"), []byte(certPEM), []byte(keyPEM))

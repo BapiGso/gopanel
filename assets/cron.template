@@ -1,152 +1,205 @@
 {{template "header.template"}}
-    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-        <i class="ri-time-line w-6 h-6 inline mr-2"></i>
-        Cron Manage (Experimental features!)
-    </h3>
+<h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+    <i class="ri-time-line w-6 h-6 inline mr-2"></i>
+    Cron Manage
+</h3>
 
-    <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
-        <p class="text-yellow-800 dark:text-yellow-200 mb-2">1. This feature is experimental</p>
-        <p class="text-yellow-800 dark:text-yellow-200">2. Your scheduled tasks are stored in memory and are destroyed when restarted</p>
+<div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+    <div class="flex items-center mb-2">
+        <i class="ri-error-warning-line w-5 h-5 text-yellow-600 dark:text-yellow-400 mr-2"></i>
+        <span class="text-sm font-medium text-yellow-800 dark:text-yellow-200">Experimental Feature</span>
     </div>
+    <ul class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1 ml-7">
+        <li>• This feature is experimental and may have limitations</li>
+        <li>• Scheduled tasks are stored in memory and will be lost on restart</li>
+    </ul>
+</div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
-        <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Create New Cron Job</h4>
-        <form action="" @submit.prevent="createCron">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
+    <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+        <i class="ri-add-circle-line w-5 h-5 mr-2"></i>
+        Create New Cron Job
+    </h4>
+    
+    <form action="" @submit.prevent="createCron">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Template</label>
                 <select required x-model="script"
-                        class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
-                    <option selected disabled value="">📎 Cron Template</option>
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <option selected disabled value="">Select a template...</option>
                     <option value="">Shell Script</option>
                     <option value="tar -czvf name.tar.gz /home/user/mydir">Backup Directory (Linux)</option>
                     <option value="curl -L https://www.example.com">Access URL (Linux)</option>
                 </select>
-                <input name="name" type="text" placeholder="Job Name" required
-                       class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
             </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Job Name</label>
+                <input name="name" type="text" placeholder="Enter job name" required
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+        </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Frequency</label>
                 <select name="frequency" required x-model="freMax"
-                        class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
-                    <option selected disabled value="">Select Frequency</option>
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <option selected disabled value="">Select frequency...</option>
                     <option value="43199">Monthly</option>
                     <option value="10079">Weekly</option>
                     <option value="1439">Daily</option>
-                    <option value="43200">Every N</option>
+                    <option value="43200">Every N minutes</option>
                 </select>
-
-                <div class="flex items-center space-x-3">
-                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Time:</label>
-                    <input :max="freMax" min="1" name="attime"
-                           @input="$el.setAttribute('title', formatTimestamp($el.value))"
-                           type="range" value="30000"
-                           class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
-                </div>
             </div>
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Script:</label>
-                <textarea name="script" rows="5" x-model="script" required
-                          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
-                          placeholder="Enter your script here..."></textarea>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Time: <span class="text-gray-500 dark:text-gray-400" x-text="formatTimestamp($refs.timeSlider?.value || 30000)"></span>
+                </label>
+                <input x-ref="timeSlider" :max="freMax" min="1" name="attime"
+                       @input="$el.setAttribute('title', formatTimestamp($el.value))"
+                       type="range" value="30000"
+                       class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-primary">
             </div>
+        </div>
 
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Script</label>
+            <textarea name="script" rows="5" x-model="script" required
+                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm"
+                      placeholder="Enter your script here..."></textarea>
+        </div>
+
+        <div class="flex justify-end">
             <button type="submit"
-                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-button flex items-center">
-                <i class="ri-add-line w-3.5 h-3.5 mr-2"></i>
+                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center">
+                <i class="ri-add-line w-4 h-4 mr-2"></i>
                 Create Cron Job
             </button>
-        </form>
-    </div>
-
-
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h4 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
-                <i class="ri-list-check w-5 h-5 mr-2"></i>
-                Scheduled Jobs
-            </h4>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50 dark:bg-gray-700">
+    </form>
+</div>
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h4 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+            <i class="ri-list-check w-5 h-5 mr-2"></i>
+            Scheduled Jobs
+        </h4>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50 dark:bg-gray-700">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Last Run</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Next Run</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Run Now</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                 </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                 {{range $k,$v:= .}}
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white" x-text="`{{$v.Name}}`"></td>
-                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="`{{$v.LastRun}}`"></td>
-                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="`{{$v.NextRun}}`"></td>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{{$v.Name}}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">{{$v.LastRun}}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">{{$v.NextRun}}</td>
                     <td class="px-6 py-4 text-sm">
-                        <button @click="Action('runnow', `{{$k}}`)"
-                                class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300" title="Run Now">
-                            <i class="ri-play-line w-4 h-4"></i>
-                        </button>
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                              :class="{{$v.Paused}} ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'">
+                            <span x-text="{{$v.Paused}} ? 'Paused' : 'Active'"></span>
+                        </span>
                     </td>
-                    <td class="px-6 py-4 text-sm space-x-2">
-                        <button x-show="{{$v.Paused}}" @click="Action('unpause', `{{$k}}`)"
-                                class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300" title="Resume">
-                            <i class="ri-play-line w-4 h-4"></i>
-                        </button>
-                        <button x-show="{{not $v.Paused}}" @click="Action('pause', `{{$k}}`)"
-                                class="text-yellow-600 hover:text-yellow-800 dark:text-yellow-400 dark:hover:text-yellow-300" title="Pause">
-                            <i class="ri-pause-line w-4 h-4"></i>
-                        </button>
-                        <button @click="confirm('sure to delete?') && Action('remove',`{{$k}}`)"
-                                class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300" title="Delete">
-                            <i class="ri-delete-bin-line w-4 h-4"></i>
-                        </button>
+                    <td class="px-6 py-4 text-sm">
+                        <div class="flex items-center space-x-3">
+                            <button @click="Action('runnow', `{{$k}}`)"
+                                    class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                                    title="Run Now">
+                                <i class="ri-play-circle-line w-5 h-5"></i>
+                            </button>
+                            
+                            <button x-show="{{$v.Paused}}" @click="Action('unpause', `{{$k}}`)"
+                                    class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 transition-colors"
+                                    title="Resume">
+                                <i class="ri-play-line w-5 h-5"></i>
+                            </button>
+                            
+                            <button x-show="{{not $v.Paused}}" @click="Action('pause', `{{$k}}`)"
+                                    class="text-yellow-600 hover:text-yellow-800 dark:text-yellow-400 dark:hover:text-yellow-300 transition-colors"
+                                    title="Pause">
+                                <i class="ri-pause-line w-5 h-5"></i>
+                            </button>
+                            
+                            <button @click="confirm('Are you sure you want to delete this job?') && Action('remove',`{{$k}}`)"
+                                    class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                                    title="Delete">
+                                <i class="ri-delete-bin-line w-5 h-5"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 {{end}}
-                </tbody>
-            </table>
+            </tbody>
+        </table>
+        
+        {{if not .}}
+        <div class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+            <i class="ri-calendar-todo-line w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600"></i>
+            <p class="text-sm">No scheduled jobs yet</p>
         </div>
+        {{end}}
     </div>
-{{template "footer.template"}}
+</div>
+
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('panel', () => ({
+            freMax: 43200,
+            script: "",
+            
             formatTimestamp(timestamp) {
-                console.log(timestamp)
                 let totalSeconds = Math.floor(timestamp * 60);
                 let days = Math.floor(totalSeconds / (24 * 3600));
                 totalSeconds %= (24 * 3600);
                 let hours = Math.floor(totalSeconds / 3600);
                 totalSeconds %= 3600;
                 let minutes = Math.floor(totalSeconds / 60);
-                // console.log(`${days}天 ${hours}小时 ${minutes}分钟`)
                 return `${days}D ${hours}H ${minutes}M`;
             },
-            freStr(value) {
-                console.log(value);
-                if (value === 43199) return "Monthly";
-                if (value === 10079) return "Weekly";
-                if (value === 1439) return "Daily";
-                if (value === 43200) return "Every";
-            },
-            freMax:43200,
-            script:"",
-            {{/*data:JSON.parse((JSON.stringify({{.}}))),*/}}
-            async createCron(e){
-                alert(await (await fetch(e.target.action,{method:"POST",body: new FormData(e.target)})).json())
-                location.reload()
-            },
-            async Action(action, index){
-                let response = await fetch(`/admin/cron?type=${action}&index=${index}`, {method: 'PUT'});
-                if (response.ok) {
-                    alert(`${action} successful`);
-                } else {
-                    alert(await response.text());
+            
+            async createCron(e) {
+                try {
+                    const response = await fetch(e.target.action, {
+                        method: "POST",
+                        body: new FormData(e.target)
+                    });
+                    const result = await response.json();
+                    alert(result.message || 'Cron job created successfully');
+                    location.reload();
+                } catch (error) {
+                    alert('Failed to create cron job: ' + error.message);
                 }
-                location.reload()
+            },
+            
+            async Action(action, index) {
+                try {
+                    const response = await fetch(`/admin/cron?type=${action}&index=${index}`, {
+                        method: 'PUT'
+                    });
+                    if (response.ok) {
+                        alert(`${action} successful`);
+                        location.reload();
+                    } else {
+                        alert(await response.text());
+                    }
+                } catch (error) {
+                    alert('Action failed: ' + error.message);
+                }
             }
         }))
     })
 </script>
+{{template "footer.template"}}

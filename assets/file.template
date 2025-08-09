@@ -1,95 +1,109 @@
 {{template "header.template"}}
-    <!-- File Editor Modal -->
-    <div x-show="editorShow" class="fixed inset-0 z-50 overflow-y-auto" x-cloak>
-        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"></div>
-            <div class="inline-block w-full max-w-6xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-800 shadow-xl rounded-lg">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">File Editor</h3>
-                    <div class="flex space-x-2">
-                        <button @click.prevent="updateFile('update',editor.filename,editor.getSession().getValue())"
-                                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-button flex items-center">
-                            <i class="ri-save-line w-3.5 h-3.5 mr-2"></i>
-                            Save
-                        </button>
-                        <button @click="editorShow=false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                            <i class="ri-close-line w-6 h-6"></i>
-                        </button>
-                    </div>
+<!-- File Editor Modal -->
+<div x-show="editorShow" class="fixed inset-0 z-50 overflow-y-auto" x-cloak>
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" @click="editorShow=false"></div>
+        
+        <div class="inline-block w-full max-w-6xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-800 shadow-xl rounded-lg">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                    <i class="ri-edit-line w-5 h-5 mr-2"></i>
+                    File Editor
+                </h3>
+                <div class="flex items-center space-x-3">
+                    <button @click.prevent="updateFile('update',editor.filename,editor.getSession().getValue())"
+                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center">
+                        <i class="ri-save-line w-4 h-4 mr-2"></i>
+                        Save
+                    </button>
+                    <button @click="editorShow=false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        <i class="ri-close-line w-6 h-6"></i>
+                    </button>
                 </div>
-                <div id="editor" class="rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600" style="height: 500px;"></div>
             </div>
+            <div id="editor" class="rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600" style="height: 500px;"></div>
+        </div>
+    </div>
+</div>
+
+<h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+    <i class="ri-folder-line w-6 h-6 inline mr-2"></i>
+    File Manager
+</h3>
+
+<!-- Navigation and Actions -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
+    <div class="flex items-center mb-4">
+        <button @click="homeHistory" title="Return to home"
+                class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <i class="ri-home-line w-5 h-5"></i>
+        </button>
+        <div class="flex-1 ml-3">
+            <input type="text" x-bind="inputHistory"
+                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm">
         </div>
     </div>
 
-    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-        <i class="ri-file-line w-6 h-6 inline mr-2"></i>
-        File Manager
-    </h3>
-
-    <!-- Navigation and Actions -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4 mb-6">
-        <div class="flex flex-wrap items-center gap-4 mb-4">
-            <div class="flex items-center space-x-2">
-                <button @click="homeHistory" title="Return to home"
-                        class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-                    <i class="ri-home-line w-5 h-5"></i>
-                </button>
-                <input type="text" x-bind="inputHistory"
-                       class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
-            </div>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-4">
-            <div class="relative">
-                <button class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-button flex items-center"
-                        onclick="this.nextElementSibling.classList.toggle('hidden')">
-                    <i class="ri-add-line w-3.5 h-3.5 mr-2"></i>
-                    New
-                </button>
-                <div class="hidden absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
-                    <button @click.prevent="createFile('createFolder',prompt('type name', ''))"
-                            class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white flex items-center">
-                        <i class="ri-folder-line w-4 h-4 mr-2"></i>
-                        Folder
-                    </button>
-                    <button @click.prevent="createFile('createFile',prompt('type name', ''))"
-                            class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white flex items-center">
-                        <i class="ri-file-line w-4 h-4 mr-2"></i>
-                        File
-                    </button>
-                </div>
-            </div>
-
-            <label class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-button flex items-center cursor-pointer">
-                <i class="ri-upload-line w-3.5 h-3.5 mr-2"></i>
-                Upload Files
-                <input type="file" @change="oldUploadFiles($el)" multiple name="files" class="hidden">
-            </label>
-
-            <button @click="location.href='/admin/webdav'"
-                    class="px-4 py-2 bg-primary hover:bg-purple-700 text-white rounded-button flex items-center">
-                <i class="ri-cloud-line w-3.5 h-3.5 mr-2"></i>
-                WebDAV
+    <div class="flex flex-wrap gap-3">
+        <!-- New Dropdown -->
+        <div class="relative" x-data="{ open: false }">
+            <button @click="open = !open" @click.away="open = false"
+                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center">
+                <i class="ri-add-line w-4 h-4 mr-2"></i>
+                New
+                <i class="ri-arrow-down-s-line w-4 h-4 ml-1"></i>
             </button>
+            <div x-show="open" x-transition
+                 class="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 min-w-[150px]">
+                <button @click.prevent="createFile('createFolder',prompt('Enter folder name', '')); open = false"
+                        class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white flex items-center transition-colors">
+                    <i class="ri-folder-add-line w-4 h-4 mr-2"></i>
+                    Folder
+                </button>
+                <button @click.prevent="createFile('createFile',prompt('Enter file name', '')); open = false"
+                        class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white flex items-center transition-colors">
+                    <i class="ri-file-add-line w-4 h-4 mr-2"></i>
+                    File
+                </button>
+            </div>
         </div>
 
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            For complex file management, please use the WebDAV function
-        </p>
+        <label class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center cursor-pointer">
+            <i class="ri-upload-cloud-line w-4 h-4 mr-2"></i>
+            Upload Files
+            <input type="file" @change="oldUploadFiles($el)" multiple name="files" class="hidden">
+        </label>
+
+        <button @click="location.href='/admin/webdav'"
+                class="px-4 py-2 bg-primary hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center">
+            <i class="ri-cloud-line w-4 h-4 mr-2"></i>
+            WebDAV
+        </button>
     </div>
-    
-    <!-- File Browser -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+
+    <p class="text-sm text-gray-500 dark:text-gray-400 mt-3">
+        <i class="ri-information-line w-4 h-4 inline mr-1"></i>
+        For complex file management, please use the WebDAV function
+    </p>
+</div>
+
+<!-- File Browser -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between">
             <h4 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
                 <i class="ri-folder-open-line w-5 h-5 mr-2"></i>
                 Files and Folders
             </h4>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+                <span x-text="getDirectoryValue()"></span>
+            </div>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50 dark:bg-gray-700">
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50 dark:bg-gray-700">
                 <tr>
                     <th class="px-6 py-3 text-left">
                         <input type="checkbox" x-model="checkAll"
@@ -101,15 +115,17 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Modified</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                 </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                <!-- Parent Directory -->
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                     <td class="px-6 py-4">
-                        <input type="checkbox" class="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary">
+                        <input type="checkbox" disabled
+                               class="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary opacity-50">
                     </td>
                     <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                        <button @click="backHistory" class="flex items-center hover:text-primary">
-                            <i class="ri-folder-line w-4 h-4 mr-2"></i>
+                        <button @click="backHistory" class="flex items-center hover:text-primary transition-colors">
+                            <i class="ri-folder-line w-4 h-4 mr-2 text-yellow-500"></i>
                             ..
                         </button>
                     </td>
@@ -118,231 +134,207 @@
                     <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">-</td>
                     <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">-</td>
                 </tr>
+                
                 {{range .}}
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <td class="px-6 py-4">
-                            <input type="checkbox" x-init="$watch('checkAll', val => $el.checked=val)"
-                                   class="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary">
-                        </td>
-                        <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                            {{if .IsDir}}
-                                <button @click="changeDirectory($el.innerText)" class="flex items-center hover:text-primary">
-                                    <i class="ri-folder-line w-4 h-4 mr-2"></i>
-                                    {{.Name}}
-                                </button>
-                            {{else}}
-                                <a :href="`/admin/file/process?path=${getDirectoryValue()}/{{.Name}}`" class="flex items-center hover:text-primary">
-                                    <i class="ri-file-line w-4 h-4 mr-2"></i>
-                                    {{.Name}}
-                                </a>
-                            {{end}}
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">{{.Mode.Perm}}</td>
-                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="formatBytes(`{{.Size}}`)"></td>
-                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">{{.ModTime.Format "2006-01-02 15:04:05"}}</td>
-                        <td class="px-6 py-4 text-sm space-x-2">
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <td class="px-6 py-4">
+                        <input type="checkbox" x-init="$watch('checkAll', val => $el.checked=val)"
+                               class="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary">
+                    </td>
+                    <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        {{if .IsDir}}
+                            <button @click="changeDirectory($el.innerText)" class="flex items-center hover:text-primary transition-colors">
+                                <i class="ri-folder-line w-4 h-4 mr-2 text-yellow-500"></i>
+                                {{.Name}}
+                            </button>
+                        {{else}}
+                            <a :href="`/admin/file/process?path=${getDirectoryValue()}/{{.Name}}`" 
+                               class="flex items-center hover:text-primary transition-colors">
+                                <i class="ri-file-line w-4 h-4 mr-2 text-gray-400"></i>
+                                {{.Name}}
+                            </a>
+                        {{end}}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">
+                        <span class="font-mono text-xs">{{.Mode.Perm}}</span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="formatBytes(`{{.Size}}`)"></td>
+                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">{{.ModTime.Format "2006-01-02 15:04:05"}}</td>
+                    <td class="px-6 py-4 text-sm">
+                        <div class="flex items-center space-x-2">
                             {{if not .IsDir}}
                                 <button @click.prevent="newEditor(`{{.Name}}`)"
-                                        class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300" title="Edit">
+                                        class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                                        title="Edit">
                                     <i class="ri-edit-line w-4 h-4"></i>
                                 </button>
                             {{end}}
-                            <button @click.prevent="updateFile('rename', `{{.Name}}`,prompt('rename', `{{.Name}}`))"
-                                    class="text-yellow-600 hover:text-yellow-800 dark:text-yellow-400 dark:hover:text-yellow-300" title="Rename">
-                                <i class="ri-edit-2-line w-4 h-4"></i>
+                            <button @click.prevent="updateFile('rename', `{{.Name}}`,prompt('Enter new name', `{{.Name}}`))"
+                                    class="text-yellow-600 hover:text-yellow-800 dark:text-yellow-400 dark:hover:text-yellow-300 transition-colors"
+                                    title="Rename">
+                                    <i class="ri-edit-2-line w-4 h-4"></i>
                             </button>
-                            <button @click.prevent="updateFile('PMSN', `{{.Name}}`,prompt('set PMSN eg:0644', ''))"
-                                    class="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300" title="Change Permissions">
-                                <i class="ri-key-line w-4 h-4"></i>
+                            <button @click.prevent="updateFile('PMSN', `{{.Name}}`,prompt('Set permissions (e.g., 0644)', ''))"
+                                    class="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
+                                    title="Change Permissions">
+                                    <i class="ri-key-line w-4 h-4"></i>
                             </button>
                             <button @click.prevent="deleteFile(`{{.Name}}`)"
-                                    class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300" title="Delete">
-                                <i class="ri-delete-bin-line w-4 h-4"></i>
+                                    class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                                    title="Delete">
+                                    <i class="ri-delete-bin-line w-4 h-4"></i>
                             </button>
-                        </td>
-                    </tr>
+                        </div>
+                    </td>
+                </tr>
                 {{end}}
-                </tbody>
-            </table>
-        </div>
+            </tbody>
+        </table>
     </div>
+</div>
 
 <script type="text/javascript" src="/assets/js/ace.js"></script>
-{{template "footer.template"}}
 <script>
     document.addEventListener('alpine:init', () => {
-            Alpine.data('panel', () => ({
-                    formatBytes(bytes, decimals = 2) {
-                        if (bytes === '0') return '0';
-                        const k = 1024;
-                        const dm = decimals < 0 ? 0 : decimals;
-                        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-                        const i = Math.floor(Math.log(bytes) / Math.log(k));
-                        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-                    },
-                    checkAll: false,
-                    getDirectoryValue () {
-                        let directoryValue;
-                        document.cookie.split(";").forEach((cookie) => {
-                            let val = cookie.split('=')
-                            if (val[0] === 'dirHistory') {
-                                directoryValue = val[1];
-                            }
-                        });
-                        return directoryValue;
-                    },
-                    inputHistory: {
-                        'x-ref': 'inputHistory',
-                        'x-init'() {
-                            this.$refs.inputHistory.style = 'width:inherit'
-                            this.$refs.inputHistory.value = `${this.getDirectoryValue()}`
-                        },
-                        //失焦事件
-                        '@blur'() {
-                            document.cookie = `dirHistory=${this.$refs.inputHistory.value}`
-                            location.reload()
-                        },
-                        '@keydown.enter'(){
-                            document.cookie = `dirHistory=${this.$refs.inputHistory.value}`
-                            location.reload()
-                        }
-
-                    },
-                    changeDirectory (name) {
-                        document.cookie = `dirHistory=${this.getDirectoryValue()}/${name}`
-                        location.reload()
-                    },
-                    homeHistory () {
-                        document.cookie = `dirHistory=/`
-                        location.reload()
-                    },
-                    backHistory () {
-                        let i = this.getDirectoryValue().lastIndexOf('/')
-                        document.cookie = `dirHistory=${this.getDirectoryValue().substring(0, i)}`
-                        if (i === 0) this.homeHistory();//如果上一层是主页则调用返回主页
-                        location.reload()
-                    },
-                    editorShow: false,
-                    newEditor: async function (name) {
-                        const res = await fetch(`/admin/file/process?path=${this.getDirectoryValue()}/${name}&mode=edit`);
-                        if (res.status !== 200) {
-                            alert(await res.text());
-                        } else {
-                            await res.json().then(data => {
-                                window.editor = ace.edit("editor");
-                                editor.setValue(data.data, -1);
-                                editor.filename = name;
-                                editor.session.setMode(`ace/mode/${data.type}`);
-                                this.editorShow = true;
-                            });
-                        }
-                    },
-                    oldUploadFiles (el) {
-                        let formData = new FormData();
-                        for (let i = 0; i < el.files.length; i++) {
-                            formData.append('files', el.files[i])
-                        }
-                        fetch(`/admin/file/process?path=${this.getDirectoryValue()}`, {
-                            method: 'POST',
-                            body: formData
-                        })
-                            .then(res => res.text())
-                            .then(data => {
-                                alert(data);
-                                location.reload()
-                            })
-                    },
-                    updateFile (type, name, data) {
-                        if (!data) return
-                        if (type === 'rename') data = `${this.getDirectoryValue()}/${data}`
-                        fetch(`/admin/file/process?path=${this.getDirectoryValue()}/${name}&mode=${type}`, {
-                            method: 'PUT',
-                            headers: {'Content-Type': 'text/plain',},// 或者你的文件内容的实际MIME类型
-                            body: data
-                        })
-                            .then(response => response.text())
-                            .then(data => {
-                                alert(data);
-                                location.reload();
-                            })
-                    },
-                    deleteFile (name) {
-                        if (confirm("sure to delete?")) {
-                            fetch(`/admin/file/process?path=${this.getDirectoryValue()}/${name}`, {
-                                method: 'DELETE'
-                            })
-                                .then(res => res.text())
-                                .then(data => alert(data))
-                                location.reload()
-                        }
-                    },
-                    createFile (type,name) {
-                        fetch(`/admin/file/process?path=${this.getDirectoryValue()}/${name}&mode=${type}`, {
-                            method: 'PUT',
-                        }).then(res=>res.json().then(d=>{
-                            alert(d)
-                            location.reload()
-                        }))
+        Alpine.data('panel', () => ({
+            checkAll: false,
+            editorShow: false,
+            
+            formatBytes(bytes, decimals = 2) {
+                if (bytes === '0' || bytes === 0) return '0 B';
+                const k = 1024;
+                const dm = decimals < 0 ? 0 : decimals;
+                const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+            },
+            
+            getDirectoryValue() {
+                let directoryValue = '/';
+                document.cookie.split(";").forEach((cookie) => {
+                    let val = cookie.trim().split('=');
+                    if (val[0] === 'dirHistory') {
+                        directoryValue = decodeURIComponent(val[1]);
                     }
-                    // progressArray: [],
-                    // uploadFiles: function (files) {
-                    //     this.progressArray = Array(files.length).fill(0);
-                    //
-                    //     [...files].forEach((file, index) => {
-                    //         const fileSize = file.size;
-                    //         let uploadedBytes = 0;
-                    //         const stream = new ReadableStream({
-                    //             start(controller) {
-                    //                 const reader = file.stream().getReader();
-                    //                 read();
-                    //
-                    //                 function read() {
-                    //                     reader.read().then(({done, value}) => {
-                    //                         if (done) {
-                    //                             controller.close();
-                    //                             return;
-                    //                         }
-                    //                         controller.enqueue(value);
-                    //                         read();
-                    //                     }).catch(error => {
-                    //                         console.error('读取流时出现错误:', error);
-                    //                         controller.error(error);
-                    //                     });
-                    //                 }
-                    //             }
-                    //         });
-                    //
-                    //         const ts = new TransformStream({
-                    //             transform(chunk, controller) {
-                    //                 uploadedBytes += chunk.length;
-                    //                 this.progressArray[index] = +(uploadedBytes / fileSize * 100).toFixed(2);
-                    //                 this.$nextTick(() => {
-                    //                     controller.enqueue(chunk);
-                    //                 });
-                    //             }
-                    //         }, {
-                    //             // 在 Alpine 中必须更新组件内的数据
-                    //             writableStrategy: new ByteLengthQueuingStrategy({highWaterMark: 1}),
-                    //             readableStrategy: new ByteLengthQueuingStrategy({highWaterMark: 1}),
-                    //         });
-                    //
-                    //         const uploadStream = stream.pipeThrough(ts);
-                    //
-                    //         fetch(`/admin/file/process?path=${this.getDirectoryValue()}`, {
-                    //             method: 'POST',
-                    //             headers: {'Content-Type': 'application/octet-stream'},
-                    //             body: uploadStream,
-                    //             duplex: "half"      // 指定请求双工类型
-                    //         }).then(() => {
-                    //             console.log(`File ${index + 1} uploaded`);
-                    //         }).catch(error => {
-                    //             console.error('上传出错:', error);
-                    //         });
-                    //     });
-                    // }
-
-                })
-            )
-        }
-    )
+                });
+                return directoryValue;
+            },
+            
+            inputHistory: {
+                'x-ref': 'inputHistory',
+                'x-init'() {
+                    this.$refs.inputHistory.value = this.getDirectoryValue();
+                },
+                '@blur'() {
+                    document.cookie = `dirHistory=${encodeURIComponent(this.$refs.inputHistory.value)}`;
+                    location.reload();
+                },
+                '@keydown.enter'() {
+                    document.cookie = `dirHistory=${encodeURIComponent(this.$refs.inputHistory.value)}`;
+                    location.reload();
+                }
+            },
+            
+            changeDirectory(name) {
+                document.cookie = `dirHistory=${encodeURIComponent(this.getDirectoryValue() + '/' + name)}`;
+                location.reload();
+            },
+            
+            homeHistory() {
+                document.cookie = `dirHistory=/`;
+                location.reload();
+            },
+            
+            backHistory() {
+                let current = this.getDirectoryValue();
+                let i = current.lastIndexOf('/');
+                if (i === 0) {
+                    this.homeHistory();
+                } else {
+                    document.cookie = `dirHistory=${encodeURIComponent(current.substring(0, i))}`;
+                    location.reload();
+                }
+            },
+            
+            async newEditor(name) {
+                try {
+                    const res = await fetch(`/admin/file/process?path=${encodeURIComponent(this.getDirectoryValue())}/${encodeURIComponent(name)}&mode=edit`);
+                    if (res.status !== 200) {
+                        alert(await res.text());
+                    } else {
+                        const data = await res.json();
+                        window.editor = ace.edit("editor");
+                        editor.setValue(data.data, -1);
+                        editor.filename = name;
+                        editor.session.setMode(`ace/mode/${data.type}`);
+                        this.editorShow = true;
+                    }
+                } catch (error) {
+                    alert('Failed to open editor: ' + error.message);
+                }
+            },
+            
+            async oldUploadFiles(el) {
+                let formData = new FormData();
+                for (let i = 0; i < el.files.length; i++) {
+                    formData.append('files', el.files[i]);
+                }
+                try {
+                    const res = await fetch(`/admin/file/process?path=${encodeURIComponent(this.getDirectoryValue())}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    alert(await res.text());
+                    location.reload();
+                } catch (error) {
+                    alert('Upload failed: ' + error.message);
+                }
+            },
+            
+            async updateFile(type, name, data) {
+                if (!data) return;
+                if (type === 'rename') data = `${this.getDirectoryValue()}/${data}`;
+                try {
+                    const res = await fetch(`/admin/file/process?path=${encodeURIComponent(this.getDirectoryValue())}/${encodeURIComponent(name)}&mode=${type}`, {
+                        method: 'PUT',
+                        headers: {'Content-Type': 'text/plain'},
+                        body: data
+                    });
+                    alert(await res.text());
+                    location.reload();
+                } catch (error) {
+                    alert('Update failed: ' + error.message);
+                }
+            },
+            
+            async deleteFile(name) {
+                if (confirm("Are you sure you want to delete this file?")) {
+                    try {
+                        const res = await fetch(`/admin/file/process?path=${encodeURIComponent(this.getDirectoryValue())}/${encodeURIComponent(name)}`, {
+                            method: 'DELETE'
+                        });
+                        alert(await res.text());
+                        location.reload();
+                    } catch (error) {
+                        alert('Delete failed: ' + error.message);
+                    }
+                }
+            },
+            
+            async createFile(type, name) {
+                if (!name) return;
+                try {
+                    const res = await fetch(`/admin/file/process?path=${encodeURIComponent(this.getDirectoryValue())}/${encodeURIComponent(name)}&mode=${type}`, {
+                        method: 'PUT'
+                    });
+                    const data = await res.json();
+                    alert(data.message || 'Created successfully');
+                    location.reload();
+                } catch (error) {
+                    alert('Create failed: ' + error.message);
+                }
+            }
+        }))
+    })
 </script>
+{{template "footer.template"}}

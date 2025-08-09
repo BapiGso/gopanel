@@ -1,69 +1,127 @@
 {{template "header.template"}}
-    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">Website Manage</h3>
+<h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+    <i class="ri-global-line w-6 h-6 inline mr-2"></i>
+    Website Manage
+</h3>
 
-    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
-        <p class="text-blue-800 dark:text-blue-200 mb-2">1. Caddy is a powerful, enterprise-ready, open source web server</p>
-        <p class="text-blue-800 dark:text-blue-200">2. The current Caddy startup status with the panel: <span class="font-semibold">{{.caddyEnable}}</span></p>
+<div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+    <div class="flex items-center mb-2">
+        <i class="ri-information-line w-5 h-5 text-blue-600 dark:text-blue-400 mr-2"></i>
+        <span class="text-sm font-medium text-blue-800 dark:text-blue-200">Caddy Server Information</span>
     </div>
+    <ul class="text-sm text-blue-700 dark:text-blue-300 space-y-1 ml-7">
+        <li>• Caddy is a powerful, enterprise-ready, open source web server</li>
+        <li>• Current Caddy startup status: 
+            <span class="font-semibold px-2 py-0.5 rounded text-xs"
+                  :class="{{.caddyEnable}} ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'">
+                {{.caddyEnable}}
+            </span>
+        </li>
+    </ul>
+</div>
 
-    <div class="flex flex-wrap gap-3 mb-6">
-        <button @click="updateConfig"
-                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-button flex items-center">
-            <i class="ri-save-line w-3.5 h-3.5 mr-2"></i>
-            Save Config
-        </button>
-        <button @click="manageCaddy('restart')"
-                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-button flex items-center">
-            <i class="ri-restart-line w-3.5 h-3.5 mr-2"></i>
-            Restart Caddy
-        </button>
-        <button @click="manageCaddy('stop')"
-                class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-button flex items-center">
-            <i class="ri-stop-line w-3.5 h-3.5 mr-2"></i>
-            Stop Caddy
-        </button>
-        <button @click="manageCaddy('enable')"
-                class="px-4 py-2 bg-primary hover:bg-purple-700 text-white rounded-button flex items-center">
-            <i class="ri-toggle-line w-3.5 h-3.5 mr-2"></i>
-            Switch Enable
-        </button>
+<div class="flex flex-wrap gap-3 mb-6">
+    <button @click="updateConfig"
+            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center">
+        <i class="ri-save-line w-4 h-4 mr-2"></i>
+        Save Config
+    </button>
+    <button @click="manageCaddy('restart')"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center">
+        <i class="ri-restart-line w-4 h-4 mr-2"></i>
+        Restart Caddy
+    </button>
+    <button @click="manageCaddy('stop')"
+            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center">
+        <i class="ri-stop-circle-line w-4 h-4 mr-2"></i>
+        Stop Caddy
+    </button>
+    <button @click="manageCaddy('enable')"
+            class="px-4 py-2 bg-primary hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center">
+        <i class="ri-toggle-line w-4 h-4 mr-2"></i>
+        Toggle Auto-Start
+    </button>
+</div>
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+    <div class="flex items-center justify-between mb-4">
+        <h4 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+            <i class="ri-code-s-slash-line w-5 h-5 mr-2"></i>
+            Caddyfile Configuration
+        </h4>
+        <div class="flex items-center space-x-3">
+            <span class="text-xs text-gray-500 dark:text-gray-400">Caddyfile Format</span>
+            <a href="https://caddyserver.com/docs/caddyfile" target="_blank"
+               class="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center">
+                <i class="ri-external-link-line w-3 h-3 mr-1"></i>
+                Docs
+            </a>
+        </div>
     </div>
-
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4">
-        <div id="editor" class="h-96 w-full rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600"></div>
+    <div id="editor" class="h-96 w-full rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600"></div>
+    
+    <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+        <p class="text-xs text-gray-600 dark:text-gray-400">
+            <i class="ri-lightbulb-line w-3 h-3 inline mr-1"></i>
+            Tip: Use Ctrl+S (Cmd+S on Mac) to save quickly
+        </p>
     </div>
-
+</div>
 
 <script type="text/javascript" src="/assets/js/ace.js"></script>
-{{/*<script src="/assets/js/mode-caddyfile.js" type="text/javascript" charset="utf-8"></script>*/}}
-
 <script>
     document.addEventListener('alpine:init', () => {
-            Alpine.data('panel', () => ({
-                init(){
-                    window.editor = ace.edit("editor");
-                    // editor.session.setMode("ace/mode/caddyfile");
-                    editor.setValue(`{{.caddyFile}}`, -1);
-                },
-                updateConfig(){
-                    fetch(`/admin/website`, {
-                        method:'PUT',
+        Alpine.data('panel', () => ({
+            init() {
+                window.editor = ace.edit("editor");
+                editor.setTheme("ace/theme/monokai");
+                // editor.session.setMode("ace/mode/caddyfile"); // If you have Caddyfile mode
+                editor.setOptions({
+                    fontSize: "14px",
+                    showPrintMargin: false,
+                    showGutter: true,
+                    highlightActiveLine: true,
+                    wrap: false
+                });
+                editor.setValue(`{{.caddyFile}}`, -1);
+                
+                // Add keyboard shortcut for save
+                editor.commands.addCommand({
+                    name: 'save',
+                    bindKey: {win: 'Ctrl-S', mac: 'Command-S'},
+                    exec: () => {
+                        this.updateConfig();
+                    }
+                });
+            },
+            
+            async updateConfig() {
+                try {
+                    const response = await fetch(`/admin/website`, {
+                        method: 'PUT',
                         body: editor.getSession().getValue(),
-                    }).then(res=>res.text()).then(data=>{
-                            alert(data);
-                            location.reload();
-                    })
-                },
-                manageCaddy(status){
-                    fetch(`/admin/website?status=${status}`,{
-                        method:"POST"
-                    }).then(res=>res.text()).then(data=>{
-                            alert(data);
-                            location.reload();
-                    })
+                    });
+                    const result = await response.text();
+                    alert(result);
+                    location.reload();
+                } catch (error) {
+                    alert('Failed to update config: ' + error.message);
                 }
-                })
-            )
-        }
-    )
+            },
+            
+            async manageCaddy(status) {
+                try {
+                    const response = await fetch(`/admin/website?status=${status}`, {
+                        method: "POST"
+                    });
+                    const result = await response.text();
+                    alert(result);
+                    location.reload();
+                } catch (error) {
+                    alert('Operation failed: ' + error.message);
+                }
+            }
+        }))
+    })
 </script>
+{{template "footer.template"}}

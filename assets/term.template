@@ -1,43 +1,69 @@
 {{template "header.template"}}
-    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">Terminal</h3>
+<h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+    <i class="ri-terminal-box-line w-6 h-6 inline mr-2"></i>
+    Terminal
+</h3>
 
-    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
-        <p class="text-blue-800 dark:text-blue-200 mb-2">1. Did you know that Windows can also be managed using <a href="https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse" class="underline hover:text-blue-600 dark:hover:text-blue-300">SSH</a>?</p>
-        <p class="text-blue-800 dark:text-blue-200">2. Terminal will use the system's private key for SSH connections.</p>
-    </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
-        <form action="" method="post" @submit.prevent="createSSH" x-init="memorySSH($el)">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <input name="host" type="text" placeholder="Host" value="127.0.0.1" required
-                       class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
-                <input name="port" type="text" placeholder="Port" value="22" required
-                       class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
-                <input name="user" type="text" placeholder="Username" value="root" required
-                       class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
-                <input name="pwd" type="password" placeholder="Password"
-                       class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
+    <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+        <i class="ri-link-line w-5 h-5 mr-2"></i>
+        SSH Connection
+    </h4>
+    
+    <form action="" method="post" @submit.prevent="createSSH" x-init="memorySSH($el)">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Host</label>
+                <input name="host" type="text" placeholder="127.0.0.1" value="127.0.0.1" required
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
             </div>
-            <div class="flex gap-3">
-                <button type='submit'
-                        class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-button flex items-center">
-                    <i class="ri-terminal-line w-4 h-4 mr-2"></i>
-                    Connect
-                </button>
-                <button type='button' @click.prevent="localStorage.clear();$el.remove();location.reload()" x-show="localStorage.host"
-                        class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-button flex items-center">
-                    <i class="ri-delete-bin-line w-4 h-4 mr-2"></i>
-                    Clear
-                </button>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Port</label>
+                <input name="port" type="number" placeholder="22" value="22" required
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
             </div>
-        </form>
-    </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Username</label>
+                <input name="user" type="text" placeholder="root" value="root" required
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
+                <input name="pwd" type="password" placeholder="Optional"
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+        </div>
+        
+        <div class="flex gap-3">
+            <button type='submit'
+                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center">
+                <i class="ri-terminal-line w-4 h-4 mr-2"></i>
+                Connect
+            </button>
+            <button type='button' @click.prevent="clearSavedConnection" x-show="localStorage.host"
+                    class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center">
+                <i class="ri-delete-bin-line w-4 h-4 mr-2"></i>
+                Clear Saved
+            </button>
+        </div>
+    </form>
+</div>
 
-    <div class="bg-black rounded-lg overflow-hidden shadow-lg p-5">
-        <div id="terminal"></div>
+<div class="bg-black rounded-lg overflow-hidden shadow-lg border border-gray-700">
+    <div class="bg-gray-900 px-4 py-2 border-b border-gray-700">
+        <div class="flex items-center space-x-2">
+            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+            <span class="ml-4 text-xs text-gray-400">Terminal</span>
+        </div>
     </div>
-{{template "footer.template"}}
-
+    <div id="terminal" class="p-4"></div>
+</div>
 
 <link rel="stylesheet" href="/assets/css/xterm.css" />
 <script src="/assets/js/xterm.js"></script>
@@ -46,76 +72,123 @@
 <script src="/assets/js/xterm-addon-web-links.js"></script>
 <script>
     document.addEventListener('alpine:init', () => {
-            Alpine.data('panel', () => ({
-                init() {
-                     debounce=function (f, timeout){
-                        let t;
-                        return (...args) => {
-                            clearTimeout(t);
-                            t = setTimeout(() => { f.apply(this, args); }, timeout);
-                        };
-                    }
-                },
-                memorySSH(el){
-                    if (localStorage.host){
-                        el.host.value=localStorage.host;
-                        el.port.value=localStorage.port;
-                        el.user.value=localStorage.user;
-                        el.pwd.value=localStorage.pwd;
-                        // el.key.value=localStorage.key;
-                        fetch(el.action,{
-                            method: 'POST',
-                            body: new FormData(el)
-                        })
-                            .then(res=>res.json())
-                            .then(data=>{
-                                this.linkSSH(data.id)
-                            })
-                    }
-                },
-                linkSSH(id){
-                    let attachAddon = new AttachAddon.AttachAddon(
-                        new WebSocket(((window.location.protocol === "https:") ? "wss://" : "ws://") + window.location.host + `/admin/term/${id}/data`), { bidirectional: true });
-                    let fitAddon = new FitAddon.FitAddon();
-                    let webLinksAddon = new WebLinksAddon.WebLinksAddon();
-                    let term = new Terminal({
-                        'fontFamily': 'monospace, "Lucida Console", "Courier New"',
-                        'fontSize': 14,
-                        'rows': 40,
-                        'cols': 100,
-                    });
-                    term.loadAddon(webLinksAddon);
-                    term.loadAddon(fitAddon);
-                    term.loadAddon(attachAddon);
-                    term.open(document.getElementById('terminal'));
-                    term.onResize(({cols, rows}) => {
-                        console.log(`Resize to: ${cols}, ${rows}`);
-                        fetch(`./term/resize?id=${id}&cols=${cols}&rows=${rows}`)
-                            .then(resp => resp.json())
-                            .then(term => console.log('Okay', term));
+        Alpine.data('panel', () => ({
+            init() {
+                window.debounce = function(f, timeout) {
+                    let t;
+                    return (...args) => {
+                        clearTimeout(t);
+                        t = setTimeout(() => { f.apply(this, args); }, timeout);
+                    };
+                }
+            },
+            
+            memorySSH(el) {
+                if (localStorage.host) {
+                    el.host.value = localStorage.host;
+                    el.port.value = localStorage.port;
+                    el.user.value = localStorage.user;
+                    el.pwd.value = localStorage.pwd;
+                    
+                    fetch(el.action, {
+                        method: 'POST',
+                        body: new FormData(el)
                     })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data && data.id) {
+                            this.linkSSH(data.id);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Auto-connect failed:', error);
+                    });
+                }
+            },
+            
+            linkSSH(id) {
+                const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+                const wsUrl = `${protocol}${window.location.host}/admin/term/${id}/data`;
+                
+                const attachAddon = new AttachAddon.AttachAddon(
+                    new WebSocket(wsUrl), 
+                    { bidirectional: true }
+                );
+                const fitAddon = new FitAddon.FitAddon();
+                const webLinksAddon = new WebLinksAddon.WebLinksAddon();
+                
+                const term = new Terminal({
+                    fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+                    fontSize: 14,
+                    theme: {
+                        background: '#000000',
+                        foreground: '#ffffff',
+                        cursor: '#ffffff',
+                        selection: 'rgba(255, 255, 255, 0.3)',
+                    },
+                    cursorBlink: true,
+                    cursorStyle: 'block',
+                    scrollback: 1000,
+                });
+                
+                term.loadAddon(webLinksAddon);
+                term.loadAddon(fitAddon);
+                term.loadAddon(attachAddon);
+                term.open(document.getElementById('terminal'));
+                
+                term.onResize(({cols, rows}) => {
+                    fetch(`/admin/term/resize?id=${id}&cols=${cols}&rows=${rows}`)
+                        .then(resp => resp.json())
+                        .then(result => console.log('Terminal resized:', cols, rows))
+                        .catch(error => console.error('Resize failed:', error));
+                });
+                
+                fitAddon.fit();
+                term.focus();
+                
+                window.addEventListener('resize', debounce(() => {
                     fitAddon.fit();
                     term.focus();
-                    window.addEventListener('resize', debounce(() => {
-                        fitAddon.fit();
-                        term.focus();
-                    }, 250))
-                },
-                async createSSH(e) {
-                    const res = await fetch(e.target.action, {method: 'POST', body: new FormData(e.target)})
+                }, 250));
+            },
+            
+            async createSSH(e) {
+                try {
+                    const res = await fetch(e.target.action, {
+                        method: 'POST',
+                        body: new FormData(e.target)
+                    });
+                    
                     if (res.status === 400) {
-                        alert(await res.text())
+                        alert(await res.text());
+                        return;
                     }
-                    const data = await res.json()
-                    if (data === null) return
+                    
+                    const data = await res.json();
+                    if (!data || !data.id) return;
+                    
+                    // Save connection info
                     localStorage.host = e.target.host.value;
                     localStorage.port = e.target.port.value;
                     localStorage.user = e.target.user.value;
                     localStorage.pwd = e.target.pwd.value;
-                    // localStorage.key = e.target.key.value;
-                    this.linkSSH(data.id)
+                    
+                    this.linkSSH(data.id);
+                } catch (error) {
+                    alert('Connection failed: ' + error.message);
                 }
-            }))
-        }
-    )
+            },
+            
+            clearSavedConnection() {
+                if (confirm('Clear saved connection information?')) {
+                    localStorage.removeItem('host');
+                    localStorage.removeItem('port');
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('pwd');
+                    location.reload();
+                }
+            }
+        }))
+    })
 </script>
+{{template "footer.template"}}

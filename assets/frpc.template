@@ -1,74 +1,104 @@
 {{template "header.template"}}
-    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-        <i class="ri-router-line w-6 h-6 inline mr-2"></i>
-        FRPC Manage
-    </h3>
+<h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+    <i class="ri-router-line w-6 h-6 inline mr-2"></i>
+    FRPC Manage
+</h3>
 
-    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
-        <p class="text-blue-800 dark:text-blue-200 mb-2">1. This panel embeds a standard FRP client</p>
-        <p class="text-blue-800 dark:text-blue-200 mb-2">2.
-            <a href="https://github.com/fatedier/frp/blob/dev/conf/frps_full_example.toml"
-               class="underline hover:text-blue-600 dark:hover:text-blue-300">
-                Startup config according to this instruction
-            </a>
-        </p>
-        <p class="text-blue-800 dark:text-blue-200 mb-2">3. FRPC cannot be stopped after it is started unless you restart the panel.</p>
-        <p class="text-blue-800 dark:text-blue-200">4. The current FRPC startup status with the panel: <span class="font-semibold">{{.frpcEnable}}</span></p>
+<div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+    <div class="flex items-center mb-2">
+        <i class="ri-information-line w-5 h-5 text-blue-600 dark:text-blue-400 mr-2"></i>
+        <span class="text-sm font-medium text-blue-800 dark:text-blue-200">FRP Client Information</span>
     </div>
+    <ul class="text-sm text-blue-700 dark:text-blue-300 space-y-1 ml-7">
+        <li>• This panel embeds a standard FRP client</li>
+        <li>• <a href="https://github.com/fatedier/frp/blob/dev/conf/frpc_full_example.toml" 
+                 class="underline hover:text-blue-600 dark:hover:text-blue-400">
+            View configuration documentation
+        </a></li>
+        <li>• FRPC cannot be stopped after it is started unless you restart the panel</li>
+        <li>• Current FRPC startup status: 
+            <span class="font-semibold px-2 py-0.5 rounded text-xs"
+                  :class="{{.frpcEnable}} ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'">
+                {{.frpcEnable}}
+            </span>
+        </li>
+    </ul>
+</div>
 
-    <div class="flex flex-wrap gap-3 mb-6">
-        <button @click="updateConfig"
-                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-button flex items-center">
-            <i class="ri-save-line w-3.5 h-3.5 mr-2"></i>
-            Save Config
-        </button>
-        <button @click="manageFrpc('start')"
-                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-button flex items-center">
-            <i class="ri-play-line w-3.5 h-3.5 mr-2"></i>
-            Start FRPC
-        </button>
-        <button @click="manageFrpc('enable')"
-                class="px-4 py-2 bg-primary hover:bg-purple-700 text-white rounded-button flex items-center">
-            <i class="ri-toggle-line w-3.5 h-3.5 mr-2"></i>
-            Switch Enable
-        </button>
-    </div>
+<div class="flex flex-wrap gap-3 mb-6">
+    <button @click="updateConfig"
+            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center">
+        <i class="ri-save-line w-4 h-4 mr-2"></i>
+        Save Config
+    </button>
+    <button @click="manageFrpc('start')"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center">
+        <i class="ri-play-circle-line w-4 h-4 mr-2"></i>
+        Start FRPC
+    </button>
+    <button @click="manageFrpc('enable')"
+            class="px-4 py-2 bg-primary hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center">
+        <i class="ri-toggle-line w-4 h-4 mr-2"></i>
+        Toggle Auto-Start
+    </button>
+</div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4">
-        <div id="editor" class="h-96 w-full rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600"></div>
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+    <div class="flex items-center justify-between mb-4">
+        <h4 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+            <i class="ri-code-s-slash-line w-5 h-5 mr-2"></i>
+            Configuration Editor
+        </h4>
+        <span class="text-xs text-gray-500 dark:text-gray-400">TOML Format</span>
     </div>
+    <div id="editor" class="h-96 w-full rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600"></div>
+</div>
 
 <script type="text/javascript" src="/assets/js/ace.js"></script>
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('panel', () => ({
-            init(){
+            init() {
                 window.editor = ace.edit("editor");
-                // Set the theme (optional, choose one you like or have)
-                editor.setTheme("ace/theme/chrome"); // Example theme
-                // Set the TOML mode
+                editor.setTheme("ace/theme/monokai");
                 editor.session.setMode("ace/mode/toml");
+                editor.setOptions({
+                    fontSize: "14px",
+                    showPrintMargin: false,
+                    showGutter: true,
+                    highlightActiveLine: true,
+                    wrap: false
+                });
                 editor.setValue(`{{.frpcConfig}}`, -1);
             },
-            updateConfig(){
-                fetch(`/admin/frpc`, {
-                    method:'PUT',
-                    body: editor.getSession().getValue(),
-                }).then(res=>res.text()).then(data=>{
-                    alert(data);
+            
+            async updateConfig() {
+                try {
+                    const response = await fetch(`/admin/frpc`, {
+                        method: 'PUT',
+                        body: editor.getSession().getValue(),
+                    });
+                    const result = await response.text();
+                    alert(result);
                     location.reload();
-                })
+                } catch (error) {
+                    alert('Failed to update config: ' + error.message);
+                }
             },
-            manageFrpc(status){
-                fetch(`/admin/frpc?status=${status}`,{
-                    method:"POST"
-                }).then(res=>res.text()).then(data=>{
-                    alert(data);
+            
+            async manageFrpc(status) {
+                try {
+                    const response = await fetch(`/admin/frpc?status=${status}`, {
+                        method: "POST"
+                    });
+                    const result = await response.text();
+                    alert(result);
                     location.reload();
-                })
+                } catch (error) {
+                    alert('Operation failed: ' + error.message);
+                }
             }
-            })
-        )
+        }))
     })
 </script>
 {{template "footer.template"}}
