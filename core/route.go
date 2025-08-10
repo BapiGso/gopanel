@@ -70,7 +70,8 @@ func (c *Core) Route() {
 	admin.Any("/docker", docker.Index)
 	admin.Any("/frps", frps.Index)
 	admin.Any("/frpc", frpc.Index)
-	admin.Any("/headscale", headscale.Index)
+	// Headscale RESTful 路由
+	admin.GET("/headscale", headscale.Index) // 获取页面
 	admin.Any("/firewall", firewall.Index)
 	//admin.Any("/UnblockNeteaseMusic", UnblockNeteaseMusic.Index)
 	c.e.StartTLS(viper.GetString("panel.port"), []byte(certPEM), []byte(keyPEM))

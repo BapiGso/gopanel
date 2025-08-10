@@ -20,7 +20,7 @@
 
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
     <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-6 flex items-center">
-        <i class="ri-settings-3-line w-5 h-5 mr-2"></i>
+        <i class="ri-settings-3-line mr-2 text-base"></i>
         WebDAV Configuration
     </h4>
 
@@ -72,9 +72,9 @@
 
         <div class="flex justify-end">
             <button type="submit"
-                    class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center">
-                <i class="ri-save-line w-4 h-4 mr-2"></i>
-                Save Configuration
+                    class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center">
+                <i class="ri-save-line mr-2 text-base"></i>
+                <span class="text-sm font-medium">Save Configuration</span>
             </button>
         </div>
     </form>
@@ -82,14 +82,14 @@
 
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6 mt-6">
     <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
-        <i class="ri-device-line w-5 h-5 mr-2"></i>
+        <i class="ri-device-line mr-2 text-base"></i>
         Client Configuration
     </h4>
     
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
             <h5 class="font-medium text-gray-900 dark:text-white mb-2 flex items-center">
-                <i class="ri-windows-line w-4 h-4 mr-2"></i>
+                <i class="ri-windows-line mr-2 text-base"></i>
                 Windows
             </h5>
             <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -99,7 +99,7 @@
         
         <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
             <h5 class="font-medium text-gray-900 dark:text-white mb-2 flex items-center">
-                <i class="ri-apple-line w-4 h-4 mr-2"></i>
+                <i class="ri-apple-line mr-2 text-base"></i>
                 macOS
             </h5>
             <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -109,7 +109,7 @@
         
         <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
             <h5 class="font-medium text-gray-900 dark:text-white mb-2 flex items-center">
-                <i class="ri-ubuntu-line w-4 h-4 mr-2"></i>
+                <i class="ri-ubuntu-line mr-2 text-base"></i>
                 Linux
             </h5>
             <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -119,7 +119,7 @@
         
         <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
             <h5 class="font-medium text-gray-900 dark:text-white mb-2 flex items-center">
-                <i class="ri-smartphone-line w-4 h-4 mr-2"></i>
+                <i class="ri-smartphone-line mr-2 text-base"></i>
                 Mobile
             </h5>
             <p class="text-sm text-gray-600 dark:text-gray-400">

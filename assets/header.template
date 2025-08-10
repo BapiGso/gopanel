@@ -103,71 +103,71 @@
                 <div class="flex items-center space-x-2">
                     <button onclick="toggleDarkMode()"
                             class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                        <i class="ri-sun-line dark:hidden w-5 h-5 flex items-center justify-center"></i>
-                        <i class="ri-moon-line hidden dark:block w-5 h-5 flex items-center justify-center"></i>
+                        <i class="ri-sun-line dark:hidden text-base flex items-center justify-center"></i>
+                        <i class="ri-moon-line hidden dark:block text-base flex items-center justify-center"></i>
                     </button>
                 </div>
             </div>
             <nav class="flex-1 p-4 space-y-2">
                 <a href="/admin/monitor"
-                   class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-button">
-                    <i class="ri-computer-line w-5 h-5 flex items-center justify-center mr-3"></i>
+                   class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                    <i class="ri-computer-line text-base flex items-center justify-center mr-3"></i>
                     monitor
                 </a>
                 <a href="/admin/website"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-button">
-                    <i class="ri-global-line w-5 h-5 flex items-center justify-center mr-3"></i>
+                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                    <i class="ri-global-line text-base flex items-center justify-center mr-3"></i>
                     website
                 </a>
                 <a href="/admin/file"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-button">
-                    <i class="ri-file-line w-5 h-5 flex items-center justify-center mr-3"></i>
+                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                    <i class="ri-file-line text-base flex items-center justify-center mr-3"></i>
                     file
                 </a>
                 <a href="/admin/webdav"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-button">
-                    <i class="ri-cloud-line w-5 h-5 flex items-center justify-center mr-3"></i>
+                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                    <i class="ri-cloud-line text-base flex items-center justify-center mr-3"></i>
                     webdav
                 </a>
                 <a href="/admin/docker"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-button">
-                    <i class="ri-stack-line w-5 h-5 flex items-center justify-center mr-3"></i>
+                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                    <i class="ri-stack-line text-base flex items-center justify-center mr-3"></i>
                     docker
                 </a>
                 <a href="/admin/frps"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-button">
-                    <i class="ri-router-line w-5 h-5 flex items-center justify-center mr-3"></i>
+                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                    <i class="ri-router-line text-base flex items-center justify-center mr-3"></i>
                     frps
                 </a>
                 <a href="/admin/frpc"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-button">
-                    <i class="ri-router-line w-5 h-5 flex items-center justify-center mr-3"></i>
+                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                    <i class="ri-router-line text-base flex items-center justify-center mr-3"></i>
                     frpc
                 </a>
                 <a href="/admin/headscale"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-button">
-                    <i class="ri-hub-line w-5 h-5 flex items-center justify-center mr-3"></i>
+                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                    <i class="ri-hub-line text-base flex items-center justify-center mr-3"></i>
                     headscale
                 </a>
 <!--            <li><a href="/admin/UnblockNeteaseMusic">UnblockNeteaseMusic</a></li>-->
                 <a href="/admin/term"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-button">
-                    <i class="ri-terminal-box-line w-5 h-5 flex items-center justify-center mr-3"></i>
+                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                    <i class="ri-terminal-box-line text-base flex items-center justify-center mr-3"></i>
                     term
                 </a>
                 <a href="/admin/cron"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-button">
-                    <i class="ri-time-line w-5 h-5 flex items-center justify-center mr-3"></i>
+                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                    <i class="ri-time-line text-base flex items-center justify-center mr-3"></i>
                     cron
                 </a>
                 <a href="/admin/firewall"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-button">
-                    <i class="ri-shield-line w-5 h-5 flex items-center justify-center mr-3"></i>
+                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                    <i class="ri-shield-line text-base flex items-center justify-center mr-3"></i>
                     firewall
                 </a>
                 <a href="/admin/security"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-button">
-                    <i class="ri-lock-line w-5 h-5 flex items-center justify-center mr-3"></i>
+                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                    <i class="ri-lock-line text-base flex items-center justify-center mr-3"></i>
                     security
                 </a>
             </nav>

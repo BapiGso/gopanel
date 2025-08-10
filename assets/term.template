@@ -40,14 +40,14 @@
         
         <div class="flex gap-3">
             <button type='submit'
-                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center">
-                <i class="ri-terminal-line w-4 h-4 mr-2"></i>
-                Connect
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center">
+                <i class="ri-terminal-line mr-2 text-base"></i>
+                <span class="text-sm font-medium">Connect</span>
             </button>
             <button type='button' @click.prevent="clearSavedConnection" x-show="localStorage.host"
                     class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center">
-                <i class="ri-delete-bin-line w-4 h-4 mr-2"></i>
-                Clear Saved
+                <i class="ri-delete-bin-line mr-2 text-base"></i>
+                <span class="text-sm font-medium">Clear Saved</span>
             </button>
         </div>
     </form>

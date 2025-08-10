@@ -1,9 +1,9 @@
 #!/bin/sh
 
-# 检查操作系统
+# Check operating system
 OS=$(uname -s)
 
-# 停止并禁用 gopanel 服务
+# Stop and disable gopanel service
 if [ "$OS" = "Linux" ]; then
     sudo systemctl stop gopanel
     sudo systemctl disable gopanel
@@ -19,47 +19,47 @@ elif [ "$OS" = "Darwin" ]; then
         sudo launchctl unload -w "$PLIST_PATH"
         sudo rm "$PLIST_PATH"
     else
-        echo "找不到 LaunchDaemon 配置文件：$PLIST_PATH"
+        echo "LaunchDaemon configuration file not found: $PLIST_PATH"
     fi
 else
-    echo "不支持的操作系统: $OS，无法停止服务。"
+    echo "Unsupported operating system: $OS, unable to stop service."
     exit 1
 fi
 
-# 删除 gopanel 二进制文件
+# Remove gopanel binary
 if [ -f "/usr/local/bin/gopanel" ]; then
     sudo rm /usr/local/bin/gopanel
-    echo "已删除 gopanel 二进制文件。"
+    echo "Gopanel binary removed."
 else
-    echo "gopanel 二进制文件不存在，跳过删除。"
+    echo "Gopanel binary does not exist, skipping removal."
 fi
 
-# 删除配置文件
+# Remove configuration files
 CONFIG_DIR="/opt/gopanel"
 if [ -d "$CONFIG_DIR" ]; then
-    echo "正在删除配置文件..."
+    echo "Removing configuration files..."
     sudo rm -f "$CONFIG_DIR/gopanel_config.json"
     sudo rm -f "$CONFIG_DIR/gopanel_Caddyfile"
     sudo rm -f "$CONFIG_DIR/gopanel_frps.conf"
     sudo rm -f "$CONFIG_DIR/gopanel_frpc.conf"
     
-    # 询问是否删除整个工作目录
-    echo "是否要删除整个工作目录 $CONFIG_DIR？(y/n)"
+    # Ask whether to remove the entire working directory
+    echo "Do you want to remove the entire working directory $CONFIG_DIR? (y/n)"
     read -r response
     if [ "$response" = "y" ] || [ "$response" = "Y" ]; then
         sudo rm -rf "$CONFIG_DIR"
-        echo "已删除工作目录。"
+        echo "Working directory removed."
     else
-        echo "保留工作目录。"
+        echo "Working directory retained."
     fi
 else
-    echo "配置目录不存在，跳过删除。"
+    echo "Configuration directory does not exist, skipping removal."
 fi
 
-# 清理日志文件（仅限 macOS）
+# Clean up log files (macOS only)
 if [ "$OS" = "Darwin" ]; then
     sudo rm -f /var/log/gopanel.err
     sudo rm -f /var/log/gopanel.out
 fi
 
-echo "gopanel 已成功卸载。"
+echo "Gopanel has been successfully uninstalled."

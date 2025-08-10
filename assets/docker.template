@@ -62,15 +62,16 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            <template x-for="port in d.Ports" :key="port.PublicPort">
+                            <template x-for="(port, index) in (d.Ports ? d.Ports.filter(p => p.IP !== '::') : [])" :key="`${d.Id}-port-${index}`">
                                 <div>
                                     <a class="text-blue-600 dark:text-blue-400 hover:underline text-xs"
                                        title="Click to visit (may not be HTTP service)"
-                                       :href="`http://${port.IP || 'localhost'}:${port.PublicPort}`"
-                                       x-text="`${port.PublicPort}→${port.PrivatePort}`"></a>
+                                       :href="`http://${port.IP === '0.0.0.0' ? 'localhost' : (port.IP || 'localhost')}:${port.PublicPort}`"
+                                       target="_blank"
+                                       x-text="`${port.PublicPort}→${port.PrivatePort}/${port.Type}`"></a>
                                 </div>
                             </template>
-                            <span x-show="!d.Ports || d.Ports.length === 0" class="text-gray-400 text-xs">No ports</span>
+                            <span x-show="!d.Ports || d.Ports.filter(p => p.IP !== '::').length === 0" class="text-gray-400 text-xs">No ports</span>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="timeAgo(d.Created)"></td>
                         <td class="px-6 py-4 text-sm">

@@ -14,13 +14,33 @@
     </p>
 </div>
 
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6" x-data="headscalePanel">
+    <!-- Status Display -->
+    <div class="mb-6 p-4 rounded-lg" :class="status === 'running' ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-800'">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="ri-information-line w-5 h-5 mr-2" :class="status === 'running' ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'"></i>
+                <span class="text-sm font-medium" :class="status === 'running' ? 'text-green-800 dark:text-green-200' : 'text-gray-800 dark:text-gray-200'">
+                    Status: <span x-text="status === 'running' ? 'Running' : 'Stopped'"></span>
+                </span>
+            </div>
+            <div class="flex gap-2">
+                <button @click="checkStatus" type="button" class="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors">
+                    <i class="ri-refresh-line w-4 h-4"></i>
+                </button>
+                <button x-show="status === 'running'" @click="stopHeadscale" type="button" class="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded transition-colors">
+                    <i class="ri-stop-circle-line w-4 h-4 mr-1"></i> Stop
+                </button>
+            </div>
+        </div>
+    </div>
+
     <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-6 flex items-center">
         <i class="ri-settings-3-line w-5 h-5 mr-2"></i>
         Headscale Configuration
     </h4>
 
-    <form action="/admin/headscale?status=start" method="POST" @submit.prevent="startHeadscale">
+    <form @submit.prevent="saveConfig">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -95,8 +115,13 @@
             </div>
         </div>
 
-        <div class="flex justify-end mt-6">
+        <div class="flex justify-end mt-6 gap-3">
             <button type="submit"
+                    class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center">
+                <i class="ri-save-line w-4 h-4 mr-2"></i>
+                Save Configuration
+            </button>
+            <button x-show="status !== 'running'" @click="startHeadscale" type="button"
                     class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center">
                 <i class="ri-play-circle-line w-4 h-4 mr-2"></i>
                 Start Headscale
@@ -107,18 +132,75 @@
 
 <script>
     document.addEventListener('alpine:init', () => {
-        Alpine.data('panel', () => ({
-            async startHeadscale(e) {
+        Alpine.data('headscalePanel', () => ({
+            status: 'stopped',
+            
+            async init() {
+                await this.checkStatus();
+            },
+            
+            async checkStatus() {
                 try {
-                    const response = await fetch(e.target.action, {
-                        method: "POST",
-                        body: new FormData(e.target)
+                    const response = await fetch('/admin/headscale/status');
+                    const result = await response.json();
+                    this.status = result.status || 'stopped';
+                } catch (error) {
+                    console.error('Failed to check status:', error);
+                    this.status = 'stopped';
+                }
+            },
+            
+            async saveConfig(e) {
+                try {
+                    const formData = new FormData(e.target);
+                    const response = await fetch('/admin/headscale/config', {
+                        method: 'POST',
+                        body: formData
                     });
                     const result = await response.json();
-                    alert(result.message || 'Headscale started successfully');
-                    location.reload();
+                    if (result.success) {
+                        alert('Configuration saved successfully');
+                    } else {
+                        alert('Failed to save configuration: ' + (result.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    alert('Failed to save configuration: ' + error.message);
+                }
+            },
+            
+            async startHeadscale() {
+                try {
+                    const response = await fetch('/admin/headscale/start', {
+                        method: 'POST'
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Headscale started successfully');
+                        this.status = 'running';
+                    } else {
+                        alert('Failed to start Headscale: ' + (result.message || 'Unknown error'));
+                    }
                 } catch (error) {
                     alert('Failed to start Headscale: ' + error.message);
+                }
+            },
+            
+            async stopHeadscale() {
+                if (!confirm('Are you sure you want to stop Headscale?')) return;
+                
+                try {
+                    const response = await fetch('/admin/headscale/stop', {
+                        method: 'POST'
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Headscale stopped successfully');
+                        this.status = 'stopped';
+                    } else {
+                        alert('Failed to stop Headscale: ' + (result.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    alert('Failed to stop Headscale: ' + error.message);
                 }
             }
         }))

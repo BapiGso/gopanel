@@ -22,24 +22,24 @@
 
 <div class="flex flex-wrap gap-3 mb-6">
     <button @click="updateConfig"
-            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center">
-        <i class="ri-save-line w-4 h-4 mr-2"></i>
-        Save Config
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center">
+        <i class="ri-save-line mr-2 text-base"></i>
+        <span class="text-sm font-medium">Save Config</span>
     </button>
     <button @click="manageCaddy('restart')"
             class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center">
-        <i class="ri-restart-line w-4 h-4 mr-2"></i>
-        Restart Caddy
+        <i class="ri-refresh-line mr-2 text-base"></i>
+        <span class="text-sm font-medium">Restart Caddy</span>
     </button>
     <button @click="manageCaddy('stop')"
             class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center">
-        <i class="ri-stop-circle-line w-4 h-4 mr-2"></i>
-        Stop Caddy
+        <i class="ri-stop-circle-line mr-2 text-base"></i>
+        <span class="text-sm font-medium">Stop Caddy</span>
     </button>
     <button @click="manageCaddy('enable')"
-            class="px-4 py-2 bg-primary hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center">
-        <i class="ri-toggle-line w-4 h-4 mr-2"></i>
-        Toggle Auto-Start
+            class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center">
+        <i class="ri-toggle-line mr-2 text-base"></i>
+        <span class="text-sm font-medium">Toggle Auto-Start</span>
     </button>
 </div>
 

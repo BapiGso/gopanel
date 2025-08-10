@@ -9,9 +9,9 @@
             Your operating system does not support this feature
         </p>
         <button onclick="history.back()" 
-                class="px-6 py-2 bg-primary hover:bg-purple-700 text-white rounded-lg transition-colors inline-flex items-center">
-            <i class="ri-arrow-left-line w-4 h-4 mr-2"></i>
-            Go Back
+                class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors inline-flex items-center">
+            <i class="ri-arrow-left-line mr-2 text-base"></i>
+            <span class="text-sm font-medium">Go Back</span>
         </button>
     </div>
 </div>
