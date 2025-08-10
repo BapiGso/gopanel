@@ -7,7 +7,7 @@
 <!-- Panel Configuration -->
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
     <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-6 flex items-center">
-        <i class="ri-settings-3-line w-5 h-5 mr-2"></i>
+        <i class="ri-settings-3-line mr-2 text-base"></i>
         GoPanel Configuration
     </h4>
 
@@ -52,9 +52,9 @@
 
         <div class="flex justify-end mt-6">
             <button type="submit"
-                    class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center">
-                <i class="ri-save-line w-4 h-4 mr-2"></i>
-                Save Configuration
+                    class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center">
+                <i class="ri-save-line mr-2 text-base"></i>
+                <span class="text-sm font-medium">Save Configuration</span>
             </button>
         </div>
     </form>
@@ -63,14 +63,14 @@
 <!-- System Management -->
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
     <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-6 flex items-center">
-        <i class="ri-computer-line w-5 h-5 mr-2"></i>
+        <i class="ri-computer-line mr-2 text-base"></i>
         System Management
     </h4>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
             <div class="flex items-center mb-3">
-                <i class="ri-download-cloud-line w-8 h-8 text-blue-500 mr-3"></i>
+                <i class="ri-download-cloud-line text-blue-500 mr-3 text-base"></i>
                 <div>
                     <h5 class="font-medium text-gray-900 dark:text-white">Update GoPanel</h5>
                     <p class="text-sm text-gray-500 dark:text-gray-400">Download and install the latest version</p>
@@ -78,14 +78,14 @@
             </div>
             <button @click="updateBinary"
                     class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center">
-                <i class="ri-download-line w-4 h-4 mr-2"></i>
-                Update Now
+                <i class="ri-download-line mr-2 "></i>
+                <span class="text-sm font-medium">Update Now</span>
             </button>
         </div>
 
         <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
             <div class="flex items-center mb-3">
-                <i class="ri-restart-line w-8 h-8 text-red-500 mr-3"></i>
+                <i class="ri-restart-line text-red-500 mr-3 text-base"></i>
                 <div>
                     <h5 class="font-medium text-gray-900 dark:text-white">Restart GoPanel</h5>
                     <p class="text-sm text-gray-500 dark:text-gray-400">Restart the panel service</p>
@@ -93,8 +93,8 @@
             </div>
             <button @click="restartGopanel"
                     class="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center justify-center">
-                <i class="ri-restart-line w-4 h-4 mr-2"></i>
-                Restart Now
+                <i class="ri-restart-line mr-2 "></i>
+                <span class="text-sm font-medium">Restart Now</span>
             </button>
         </div>
     </div>
