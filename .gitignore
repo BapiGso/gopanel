@@ -4,5 +4,6 @@ gopanel_frps.conf
 gopanel_frpc.conf
 access.log
 /.idea
+/.claude
 server.crt
 server.key
