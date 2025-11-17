@@ -1,138 +1,219 @@
 {{template "header.template"}}
-<h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">System Monitor</h3>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-        <div class="flex items-center justify-between mb-4">
-            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">CPU Usage</h4>
-            <i class="ri-cpu-line w-5 h-5 text-blue-500"></i>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" x-data="panel">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+        <div>
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">System Monitor</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Real-time server metrics & health status</p>
         </div>
-        <div class="text-center">
-            <div class="text-3xl font-bold mb-2"
-                 x-text="Math.round(data?.CPUUsage?.[0] || 0) + '%'"
-                 :class="{
-                      'text-red-500 dark:text-red-400': Math.round(data?.CPUUsage?.[0] || 0) >= 90,
-                      'text-yellow-500 dark:text-yellow-400': Math.round(data?.CPUUsage?.[0] || 0) >= 70 && Math.round(data?.CPUUsage?.[0] || 0) < 90,
-                      'text-gray-900 dark:text-white': Math.round(data?.CPUUsage?.[0] || 0) < 70
-                  }">0%
-            </div>
-            <div class="text-xs text-gray-500 dark:text-gray-400">Current Usage</div>
+        <div class="inline-flex items-center px-3 py-1 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
+            <span class="relative flex h-2.5 w-2.5 mr-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            <span class="text-xs font-medium text-gray-600 dark:text-gray-300">System Live</span>
         </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-        <div class="flex items-center justify-between mb-4">
-            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Memory Usage</h4>
-            <i class="ri-database-line w-5 h-5 text-green-500"></i>
-        </div>
-        <div class="text-center">
-            <div class="text-3xl font-bold mb-2"
-                 x-text="Math.round(data?.Memory?.usedPercent || 0) + '%'"
-                 :class="{
-                      'text-red-500 dark:text-red-400': Math.round(data?.Memory?.usedPercent || 0) >= 90,
-                      'text-yellow-500 dark:text-yellow-400': Math.round(data?.Memory?.usedPercent || 0) >= 70 && Math.round(data?.Memory?.usedPercent || 0) < 90,
-                      'text-gray-900 dark:text-white': Math.round(data?.Memory?.usedPercent || 0) < 70
-                  }">0%
-            </div>
-            <div class="text-xs text-gray-500 dark:text-gray-400">Current Usage</div>
-        </div>
-    </div>
+    <!-- Grid Layout -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 
-    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-        <div class="flex items-center justify-between mb-4">
-            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Disk Usage</h4>
-            <div class="flex items-center">
-                <button @click="diskShowAll = !diskShowAll" x-show="data?.DiskUsage?.length > 2"
-                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none mr-2">
-                    <i class="w-5 h-5" :class="diskShowAll ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
-                </button>
-                <i class="ri-hard-drive-line w-5 h-5 text-purple-500"></i>
-            </div>
-        </div>
-        <div class="space-y-2 transition-all duration-300 ease-in-out"
-             :style="{
-                  'max-height': diskShowAll ? (data?.DiskUsage?.length * 45 + 10) + 'px' : (data?.DiskUsage?.length > 0 ? (Math.min(data.DiskUsage.length, 2) * 45 + (Math.min(data.DiskUsage.length, 2) > 0 ? -5 : 0) ) + 'px' : '30px'),
-                  'overflow-y': diskShowAll ? 'auto' : 'hidden'
-              }">
-            <template x-for="item in (diskShowAll ? data?.DiskUsage : (data?.DiskUsage || []).slice(0, 2))" :key="item.path">
+        <!-- 1. CPU Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 dark:border-gray-700">
+            <div class="flex justify-between items-start mb-4">
                 <div>
-                    <div class="flex justify-between text-sm mb-1">
-                        <span class="text-gray-600 dark:text-gray-400 truncate" :title="item.path" x-text="item.path.length > 20 ? item.path.substring(0,17) + '...' : item.path"></span>
-                        <span class="text-gray-900 dark:text-white" x-text="Math.round(item.usedPercent) + '%'"></span>
-                    </div>
-                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div class="bg-purple-500 h-2 rounded-full transition-all duration-300"
-                             :style="`width: ${item.usedPercent}%`"></div>
-                    </div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">CPU Usage</p>
+                    <h4 class="text-3xl font-bold mt-1"
+                        :class="{
+                            'text-red-500': getCpuUsage() >= 90,
+                            'text-yellow-500': getCpuUsage() >= 70 && getCpuUsage() < 90,
+                            'text-gray-900 dark:text-white': getCpuUsage() < 70
+                        }"
+                        x-text="getCpuUsage() + '%'">0%</h4>
                 </div>
-            </template>
-            <template x-if="!data?.DiskUsage || data.DiskUsage.length === 0">
-                <p class="text-xs text-gray-400 dark:text-gray-500">No disk usage data available.</p>
-            </template>
-        </div>
-    </div>
-
-    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-        <div class="flex items-center justify-between mb-4">
-            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Network</h4>
-            <div class="flex items-center">
-                <button @click="networkShowAll = !networkShowAll" x-show="activeNetworkInterfaces.length > 2"
-                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none mr-2">
-                    <i class="w-5 h-5" :class="networkShowAll ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
-                </button>
-                <i class="ri-wifi-line w-5 h-5 text-orange-500"></i>
+                <!-- Icon Container: Fixed size, Circle, Centered -->
+                <div class="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                    <i class="ri-cpu-line text-xl text-blue-600 dark:text-blue-400"></i>
+                </div>
+            </div>
+            <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
+                <div class="h-2 rounded-full transition-all duration-500 ease-out"
+                     :class="{
+                        'bg-red-500': getCpuUsage() >= 90,
+                        'bg-yellow-500': getCpuUsage() >= 70 && getCpuUsage() < 90,
+                        'bg-blue-500': getCpuUsage() < 70
+                     }"
+                     :style="`width: ${getCpuUsage()}%`"></div>
             </div>
         </div>
-        <div class="space-y-3 transition-all duration-300 ease-in-out"
-             :style="{
-                  'max-height': networkShowAll ? (activeNetworkInterfaces.length * 55 + 10) + 'px' : (activeNetworkInterfaces.length > 0 ? (Math.min(activeNetworkInterfaces.length, 2) * 55 + (Math.min(activeNetworkInterfaces.length, 2) > 0 ? -5 : 0)) + 'px' : '30px'),
-                  'overflow-y': networkShowAll ? 'auto' : 'hidden'
-              }">
-            <template x-for="item in (networkShowAll ? activeNetworkInterfaces : activeNetworkInterfaces.slice(0, 2))" :key="item.name">
-                <div class="text-xs">
-                    <div class="font-medium text-gray-900 dark:text-white mb-1 truncate" :title="item.name" x-text="item.name"></div>
-                    <div class="text-gray-500 dark:text-gray-400">
-                        <div>↓ <span x-text="formatBytes(item.bytesRecv)"></span></div>
-                        <div>↑ <span x-text="formatBytes(item.bytesSent)"></span></div>
-                    </div>
+
+        <!-- 2. Memory Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 dark:border-gray-700">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Memory Usage</p>
+                    <h4 class="text-3xl font-bold mt-1"
+                        :class="{
+                            'text-red-500': getMemUsage() >= 90,
+                            'text-yellow-500': getMemUsage() >= 70 && getMemUsage() < 90,
+                            'text-gray-900 dark:text-white': getMemUsage() < 70
+                        }"
+                        x-text="getMemUsage() + '%'">0%</h4>
                 </div>
-            </template>
-            <template x-if="activeNetworkInterfaces.length === 0">
-                <p class="text-xs text-gray-400 dark:text-gray-500">No active network interface.</p>
-            </template>
+                <!-- Icon Container -->
+                <div class="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+                    <i class="ri-database-2-line text-xl text-emerald-600 dark:text-emerald-400"></i>
+                </div>
+            </div>
+            <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
+                <div class="h-2 rounded-full transition-all duration-500 ease-out"
+                     :class="{
+                        'bg-red-500': getMemUsage() >= 90,
+                        'bg-yellow-500': getMemUsage() >= 70 && getMemUsage() < 90,
+                        'bg-emerald-500': getMemUsage() < 70
+                     }"
+                     :style="`width: ${getMemUsage()}%`"></div>
+            </div>
+        </div>
+
+        <!-- 3. Disk Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 dark:border-gray-700 flex flex-col">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Disk Usage</p>
+                        <!-- Toggle Button Moved Here -->
+                        <button @click="diskShowAll = !diskShowAll" x-show="data?.DiskUsage?.length > 2"
+                                class="text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors focus:outline-none">
+                            <i class="text-base" :class="diskShowAll ? 'ri-arrow-up-circle-line' : 'ri-arrow-down-circle-line'"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1" x-text="(data?.DiskUsage?.length || 0) + ' Partitions'"></p>
+                </div>
+                <!-- Icon Container -->
+                <div class="w-12 h-12 rounded-full bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                    <i class="ri-hard-drive-2-line text-xl text-purple-600 dark:text-purple-400"></i>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-hidden transition-all duration-300"
+                 :style="{ 'max-height': diskShowAll ? '500px' : '80px' }">
+                <div class="space-y-3">
+                    <template x-for="item in (diskShowAll ? data?.DiskUsage : (data?.DiskUsage || []).slice(0, 2))" :key="item.path">
+                        <div class="group">
+                            <div class="flex justify-between text-xs mb-1.5">
+                                <span class="font-medium text-gray-700 dark:text-gray-300 truncate max-w-[70%]" :title="item.path" x-text="item.path"></span>
+                                <span class="text-gray-500 dark:text-gray-400 font-mono" x-text="Math.round(item.usedPercent) + '%'"></span>
+                            </div>
+                            <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5">
+                                <div class="bg-purple-500 h-1.5 rounded-full transition-all duration-500 group-hover:bg-purple-600"
+                                     :style="`width: ${item.usedPercent}%`">
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                <template x-if="!data?.DiskUsage || data.DiskUsage.length === 0">
+                    <div class="text-xs text-gray-400 italic">No disk data available</div>
+                </template>
+            </div>
+        </div>
+
+        <!-- 4. Network Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 dark:border-gray-700 flex flex-col">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Network</p>
+                        <button @click="networkShowAll = !networkShowAll" x-show="activeNetworkInterfaces.length > 2"
+                                class="text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors focus:outline-none">
+                            <i class="text-base" :class="networkShowAll ? 'ri-arrow-up-circle-line' : 'ri-arrow-down-circle-line'"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1" x-text="activeNetworkInterfaces.length + ' Active Interfaces'"></p>
+                </div>
+                <!-- Icon Container -->
+                <div class="w-12 h-12 rounded-full bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
+                    <i class="ri-global-line text-xl text-orange-600 dark:text-orange-400"></i>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-hidden transition-all duration-300"
+                 :style="{ 'max-height': networkShowAll ? '500px' : '80px' }">
+                <div class="space-y-3">
+                    <template x-for="item in (networkShowAll ? activeNetworkInterfaces : activeNetworkInterfaces.slice(0, 2))" :key="item.name">
+                        <div class="flex items-center justify-between text-xs">
+                            <div class="font-medium text-gray-700 dark:text-gray-300 truncate max-w-[40%]" :title="item.name" x-text="item.name"></div>
+                            <div class="flex items-center space-x-3">
+                                <div class="flex items-center space-x-1 text-emerald-600 dark:text-emerald-400">
+                                    <i class="ri-download-line"></i>
+                                    <span class="font-mono" x-text="formatBytes(item.bytesRecv)"></span>
+                                </div>
+                                <div class="flex items-center space-x-1 text-blue-600 dark:text-blue-400">
+                                    <i class="ri-upload-line"></i>
+                                    <span class="font-mono" x-text="formatBytes(item.bytesSent)"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                <template x-if="activeNetworkInterfaces.length === 0">
+                    <div class="text-xs text-gray-400 italic">No active interfaces</div>
+                </template>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-    <table class="w-full">
-        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-            <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">Platform</td>
-            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="data?.HostInfo?.platform || 'N/A'"></td>
-        </tr>
-        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-            <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">Kernel Arch</td>
-            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="data?.HostInfo?.kernelArch || 'N/A'"></td>
-        </tr>
-        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-            <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">Uptime</td>
-            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="data?.HostInfo?.uptime ? `${Math.floor(data.HostInfo.uptime /24/60/60)} Days ${Math.floor(data.HostInfo.uptime/60/60%24)} Hours` : 'N/A'"></td>
-        </tr>
-        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-            <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">CPU</td>
-            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">
-                <template x-for="item in data?.CPU" :key="item.cpu">
-                    <div x-text="`${item.modelName} (${item.cores} cores)`"></div>
-                </template>
-                <template x-if="!data?.CPU || data.CPU.length === 0"><span x-text="'N/A'"></span></template>
-            </td>
-        </tr>
-        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-            <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">Total Memory</td>
-            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="data?.Memory?.total ? formatBytes(data.Memory.total) : 'N/A'"></td>
-        </tr>
-        </tbody>
-    </table>
+    <!-- System Info Section -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <i class="ri-server-line text-gray-400"></i> Host Information
+            </h3>
+        </div>
+        <div class="p-6">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-6">
+                <div class="group">
+                    <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Platform</dt>
+                    <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white" x-text="data?.HostInfo?.platform || 'N/A'"></dd>
+                </div>
+
+                <div class="group">
+                    <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Architecture</dt>
+                    <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white" x-text="data?.HostInfo?.kernelArch || 'N/A'"></dd>
+                </div>
+
+                <div class="group">
+                    <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Uptime</dt>
+                    <dd class="mt-1">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300"
+                              x-text="formatUptime(data?.HostInfo?.uptime)">
+                            loading...
+                        </span>
+                    </dd>
+                </div>
+
+                <div class="group">
+                    <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Total Memory</dt>
+                    <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white" x-text="data?.Memory?.total ? formatBytes(data.Memory.total) : 'N/A'"></dd>
+                </div>
+
+                <div class="sm:col-span-2 lg:col-span-4 pt-4 border-t border-gray-50 dark:border-gray-700/50 mt-2">
+                    <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">CPU Model</dt>
+                    <dd class="text-sm text-gray-700 dark:text-gray-300 grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <template x-for="item in data?.CPU" :key="item.cpu">
+                            <div class="flex items-center bg-gray-50 dark:bg-gray-700/30 px-3 py-2 rounded-lg">
+                                <i class="ri-cpu-line mr-2 text-gray-400"></i>
+                                <span class="font-mono text-xs" x-text="`${item.modelName} (${item.cores} cores)`"></span>
+                            </div>
+                        </template>
+                        <template x-if="!data?.CPU || data.CPU.length === 0"><span x-text="'N/A'"></span></template>
+                    </dd>
+                </div>
+            </dl>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -146,19 +227,38 @@
                 return (this.data?.Network || []).filter(n => n.bytesRecv > 0 || n.bytesSent > 0);
             },
 
+            getCpuUsage() {
+                return Math.round(this.data?.CPUUsage?.[0] || 0);
+            },
+
+            getMemUsage() {
+                return Math.round(this.data?.Memory?.usedPercent || 0);
+            },
+
             init() {
                 const eventSource = new EventSource('/admin/monitor?type=info');
                 eventSource.onmessage = (event) => {
                     try {
                         this.data = JSON.parse(event.data);
                     } catch (e) {
-                        console.error("Error processing SSE data:", e, "Raw data:", event.data);
+                        console.error("Error processing SSE data:", e);
                     }
                 };
                 eventSource.onerror = (err) => {
-                    console.error("EventSource failed:", err);
-                    eventSource.close();
+                    // Close purely to prevent browser console spam during dev if server restarts
+                    // In prod, you might want auto-reconnect logic (EventSource does this natively usually)
+                    // eventSource.close();
+                    console.log("SSE Connection lost, retrying...");
                 };
+            },
+
+            formatUptime(seconds) {
+                if (!seconds) return 'N/A';
+                const days = Math.floor(seconds / (3600 * 24));
+                const hours = Math.floor((seconds % (3600 * 24)) / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+                return `${hours}h ${minutes}m`;
             },
 
             formatBytes(bytes, decimals = 2) {

@@ -95,81 +95,61 @@
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 min-h-screen" x-data="panel">
     <div class="flex h-screen">
-        <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-            <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                <h2 class="font-['Pacifico'] text-2xl text-primary dark:text-purple-400 cursor-pointer"
-                    @click="localStorage.title=prompt('new name', 'GoPanel');location.reload()"
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-colors duration-300"
+               x-data="{
+           menu: [
+               { name: 'monitor',   href: '/admin/monitor',   icon: 'ri-dashboard-3-line' },
+               { name: 'website',   href: '/admin/website',   icon: 'ri-earth-line' },
+               { name: 'file',      href: '/admin/file',      icon: 'ri-folder-3-line' },
+               { name: 'webdav',    href: '/admin/webdav',    icon: 'ri-cloud-windy-line' },
+               { name: 'docker',    href: '/admin/docker',    icon: 'ri-box-3-line' },
+               { name: 'frps',      href: '/admin/frps',      icon: 'ri-server-line' },
+               { name: 'frpc',      href: '/admin/frpc',      icon: 'ri-links-line' },
+               { name: 'headscale', href: '/admin/headscale', icon: 'ri-node-tree' },
+               { name: 'term',      href: '/admin/term',      icon: 'ri-terminal-box-line' },
+               { name: 'cron',      href: '/admin/cron',      icon: 'ri-alarm-line' },
+               { name: 'firewall',  href: '/admin/firewall',  icon: 'ri-shield-check-line' },
+               { name: 'security',  href: '/admin/security',  icon: 'ri-lock-2-line' }
+           ],
+           isActive(path) {
+               return window.location.pathname.startsWith(path);
+           }
+       }">
+
+            <!-- Sidebar Header -->
+            <div class="h-16 px-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between shrink-0">
+                <h2 class="font-['Pacifico'] text-2xl text-primary dark:text-purple-400 cursor-pointer hover:scale-105 transition-transform"
+                    @click="localStorage.title=prompt('New dashboard name', localStorage.title || 'GoPanel') || localStorage.title; location.reload()"
                     x-text="localStorage.title||'GoPanel'"></h2>
-                <div class="flex items-center space-x-2">
-                    <button onclick="toggleDarkMode()"
-                            class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                        <i class="ri-sun-line dark:hidden text-base flex items-center justify-center"></i>
-                        <i class="ri-moon-line hidden dark:block text-base flex items-center justify-center"></i>
-                    </button>
-                </div>
+
+                <!-- Dark Mode Toggle -->
+                <button onclick="toggleDarkMode()"
+                        class="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors focus:outline-none">
+                    <i class="ri-sun-line dark:hidden text-lg"></i>
+                    <i class="ri-moon-line hidden dark:block text-lg"></i>
+                </button>
             </div>
-            <nav class="flex-1 p-4 space-y-2">
-                <a href="/admin/monitor"
-                   class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                    <i class="ri-computer-line text-base flex items-center justify-center mr-3"></i>
-                    monitor
-                </a>
-                <a href="/admin/website"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                    <i class="ri-global-line text-base flex items-center justify-center mr-3"></i>
-                    website
-                </a>
-                <a href="/admin/file"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                    <i class="ri-file-line text-base flex items-center justify-center mr-3"></i>
-                    file
-                </a>
-                <a href="/admin/webdav"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                    <i class="ri-cloud-line text-base flex items-center justify-center mr-3"></i>
-                    webdav
-                </a>
-                <a href="/admin/docker"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                    <i class="ri-stack-line text-base flex items-center justify-center mr-3"></i>
-                    docker
-                </a>
-                <a href="/admin/frps"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                    <i class="ri-router-line text-base flex items-center justify-center mr-3"></i>
-                    frps
-                </a>
-                <a href="/admin/frpc"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                    <i class="ri-router-line text-base flex items-center justify-center mr-3"></i>
-                    frpc
-                </a>
-                <a href="/admin/headscale"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                    <i class="ri-hub-line text-base flex items-center justify-center mr-3"></i>
-                    headscale
-                </a>
-<!--            <li><a href="/admin/UnblockNeteaseMusic">UnblockNeteaseMusic</a></li>-->
-                <a href="/admin/term"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                    <i class="ri-terminal-box-line text-base flex items-center justify-center mr-3"></i>
-                    term
-                </a>
-                <a href="/admin/cron"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                    <i class="ri-time-line text-base flex items-center justify-center mr-3"></i>
-                    cron
-                </a>
-                <a href="/admin/firewall"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                    <i class="ri-shield-line text-base flex items-center justify-center mr-3"></i>
-                    firewall
-                </a>
-                <a href="/admin/security"
-                   class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                    <i class="ri-lock-line text-base flex items-center justify-center mr-3"></i>
-                    security
-                </a>
+
+            <!-- Navigation Menu -->
+            <nav class="flex-1 overflow-y-auto p-4 space-y-1 custom-scrollbar">
+                <template x-for="item in menu" :key="item.name">
+                    <a :href="item.href"
+                       class="flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 group"
+                       :class="isActive(item.href)
+                   ? 'bg-primary/10 text-primary dark:bg-purple-500/20 dark:text-purple-300 font-medium shadow-sm'
+                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-200'">
+
+                        <i :class="[item.icon, isActive(item.href) ? 'text-primary dark:text-purple-400' : 'text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300']"
+                           class="text-lg mr-3 transition-colors"></i>
+
+                        <span class="capitalize tracking-wide text-sm" x-text="item.name"></span>
+
+                        <!-- Active Indicator (Optional Dot) -->
+                        <div x-show="isActive(item.href)" class="ml-auto w-1.5 h-1.5 rounded-full bg-primary dark:bg-purple-400"></div>
+                    </a>
+                </template>
             </nav>
+
         </aside>
         <section class="flex-1 overflow-y-auto p-8 bg-gray-50 dark:bg-gray-900">

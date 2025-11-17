@@ -1,16 +1,12 @@
 package core
 
 import (
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"github.com/spf13/viper"
 	"gopanel/core/cron"
 	"gopanel/core/docker"
 	"gopanel/core/file"
 	"gopanel/core/firewall"
 	"gopanel/core/frpc"
 	"gopanel/core/frps"
-	"gopanel/core/headscale"
 	"gopanel/core/login"
 	"gopanel/core/monitor"
 	"gopanel/core/mymiddleware"
@@ -19,6 +15,10 @@ import (
 	"gopanel/core/webdav"
 	"gopanel/core/website"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/spf13/viper"
 )
 
 func (c *Core) Route() {
@@ -71,7 +71,7 @@ func (c *Core) Route() {
 	admin.Any("/frps", frps.Index)
 	admin.Any("/frpc", frpc.Index)
 	// Headscale RESTful 路由
-	admin.GET("/headscale", headscale.Index) // 获取页面
+	//admin.GET("/headscale", headscale.Index) // 获取页面
 	admin.Any("/firewall", firewall.Index)
 	//admin.Any("/UnblockNeteaseMusic", UnblockNeteaseMusic.Index)
 	c.e.StartTLS(viper.GetString("panel.port"), []byte(certPEM), []byte(keyPEM))

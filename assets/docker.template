@@ -1,167 +1,192 @@
 {{template "header.template"}}
-<h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-    <i class="ri-stack-line w-6 h-6 inline mr-2"></i>
-    Docker Manage
-</h3>
 
-<div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
-    <div class="flex items-center mb-2">
-        <i class="ri-information-line w-5 h-5 text-blue-600 dark:text-blue-400 mr-2"></i>
-        <span class="text-sm font-medium text-blue-800 dark:text-blue-200">Docker Management</span>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header & Info -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center">
+                <i class="ri-docker-line text-blue-500 mr-3 text-3xl"></i>
+                Docker Manager
+            </h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-11">Manage local containers and images</p>
+        </div>
+
+        <!-- Info Banner -->
+        <div class="flex items-center bg-blue-50 dark:bg-blue-900/20 px-4 py-3 rounded-xl border border-blue-100 dark:border-blue-800 text-sm text-blue-700 dark:text-blue-300 max-w-xl">
+            <i class="ri-information-fill text-xl mr-3 text-blue-500"></i>
+            <span>
+                Interacting with system Docker API. For advanced features, use
+                <a href="https://www.docker.com/products/docker-desktop/" target="_blank" class="font-semibold underline hover:text-blue-800 dark:hover:text-blue-200 transition-colors">Docker Desktop</a>.
+            </span>
+        </div>
     </div>
-    <ul class="text-sm text-blue-700 dark:text-blue-300 space-y-1 ml-7">
-        <li>• This function calls the Docker API installed on the system</li>
-        <li>• For more complex management, use <a href="https://www.docker.com/products/docker-desktop/" class="underline hover:text-blue-600 dark:hover:text-blue-400">Docker Desktop</a></li>
-    </ul>
-</div>
 
-<div class="mb-6" x-show="false">
-    <button @click="dockerRunModal=true"
-            class="px-4 py-2 bg-primary hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center">
-        <i class="ri-add-line w-4 h-4 mr-2"></i>
-        Docker Run
-    </button>
-</div>
-
-<!-- Container List -->
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-6">
-    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h4 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
-            <i class="ri-server-line w-5 h-5 mr-2"></i>
-            Container List
-        </h4>
+    <!-- Action Bar -->
+    <div class="mb-6 flex justify-end" x-show="false"> <!-- Hidden by default as per original logic, but styled if shown -->
+        <button @click="dockerRunModal=true"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm shadow-blue-200 dark:shadow-none transition-all flex items-center font-medium text-sm">
+            <i class="ri-terminal-window-line mr-2 text-lg"></i>
+            Run Command
+        </button>
     </div>
-    
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead class="bg-gray-50 dark:bg-gray-700">
+
+    <!-- Containers Section -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-8">
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
+            <h4 class="text-base font-semibold text-gray-900 dark:text-white flex items-center">
+                <i class="ri-server-line text-gray-400 mr-2"></i>
+                Containers
+            </h4>
+            <span class="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-md text-xs font-mono text-gray-600 dark:text-gray-300" x-text="data?.containers?.length || 0">0</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full whitespace-nowrap">
+                <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Image</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ports</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Created</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Image</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ports</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
+                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                 </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                 <template x-for="d in data?.containers" :key="d.Id">
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                        <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white" x-text="d.Names"></td>
-                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            <span class="font-mono text-xs" x-text="d.Image"></span>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-bold text-gray-900 dark:text-white" x-text="d.Names"></div>
+                            <div class="text-xs text-gray-400 font-mono mt-0.5 truncate max-w-[150px]" x-text="d.Id.substring(0,12)"></div>
                         </td>
-                        <td class="px-6 py-4 text-sm">
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                                  :class="{
-                                      'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': d.State === 'running',
-                                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': d.State === 'paused',
-                                      'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': d.State === 'exited'
-                                  }"
-                                  x-text="d.State">
-                            </span>
+                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                            <div class="flex items-center">
+                                <i class="ri-disc-line text-gray-400 mr-2"></i>
+                                <span class="font-mono text-xs" x-text="d.Image"></span>
+                            </div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            <template x-for="(port, index) in (d.Ports ? d.Ports.filter(p => p.IP !== '::') : [])" :key="`${d.Id}-port-${index}`">
-                                <div>
-                                    <a class="text-blue-600 dark:text-blue-400 hover:underline text-xs"
-                                       title="Click to visit (may not be HTTP service)"
-                                       :href="`http://${port.IP === '0.0.0.0' ? 'localhost' : (port.IP || 'localhost')}:${port.PublicPort}`"
+                        <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
+                                      :class="{
+                                          'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800': d.State === 'running',
+                                          'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800': d.State === 'paused',
+                                          'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-700/50 dark:text-gray-400 dark:border-gray-600': d.State === 'exited'
+                                      }">
+                                    <span class="w-1.5 h-1.5 rounded-full mr-1.5"
+                                          :class="{
+                                              'bg-green-500 animate-pulse': d.State === 'running',
+                                              'bg-yellow-500': d.State === 'paused',
+                                              'bg-gray-400': d.State === 'exited'
+                                          }"></span>
+                                    <span x-text="d.State" class="capitalize"></span>
+                                </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-wrap gap-1.5 max-w-xs">
+                                <template x-for="(port, index) in (d.Ports ? d.Ports.filter(p => p.IP !== '::') : [])" :key="`${d.Id}-port-${index}`">
+                                    <a :href="`http://${port.IP === '0.0.0.0' ? 'localhost' : (port.IP || 'localhost')}:${port.PublicPort}`"
                                        target="_blank"
-                                       x-text="`${port.PublicPort}→${port.PrivatePort}/${port.Type}`"></a>
-                                </div>
-                            </template>
-                            <span x-show="!d.Ports || d.Ports.filter(p => p.IP !== '::').length === 0" class="text-gray-400 text-xs">No ports</span>
+                                       class="inline-flex items-center px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors border border-blue-100 dark:border-blue-800"
+                                       title="Open Service">
+                                        <span class="font-mono font-semibold" x-text="port.PublicPort"></span>
+                                        <i class="ri-arrow-right-line mx-1 text-[10px] opacity-50"></i>
+                                        <span class="font-mono" x-text="port.PrivatePort"></span>
+                                    </a>
+                                </template>
+                                <span x-show="!d.Ports || d.Ports.filter(p => p.IP !== '::').length === 0" class="text-gray-400 text-xs italic">No exposed ports</span>
+                            </div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="timeAgo(d.Created)"></td>
-                        <td class="px-6 py-4 text-sm">
-                            <div class="flex items-center space-x-2">
+                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 tabular-nums" x-text="timeAgo(d.Created)"></td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end space-x-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                                <!-- Control Buttons -->
                                 <button x-show="d.State !== 'running'" @click="Action('unpause', d.Id)"
-                                        class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 transition-colors"
-                                        title="Start">
-                                    <i class="ri-play-circle-line w-5 h-5"></i>
+                                        class="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors" title="Start">
+                                    <i class="ri-play-fill text-lg"></i>
                                 </button>
                                 <button x-show="d.State === 'running'" @click="Action('pause', d.Id)"
-                                        class="text-yellow-600 hover:text-yellow-800 dark:text-yellow-400 dark:hover:text-yellow-300 transition-colors"
-                                        title="Pause">
-                                    <i class="ri-pause-circle-line w-5 h-5"></i>
+                                        class="p-1.5 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-lg transition-colors" title="Pause">
+                                    <i class="ri-pause-fill text-lg"></i>
                                 </button>
                                 <button x-show="d.State !== 'exited'" @click="Action('stop', d.Id)"
-                                        class="text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-300 transition-colors"
-                                        title="Stop">
-                                    <i class="ri-stop-circle-line w-5 h-5"></i>
+                                        class="p-1.5 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition-colors" title="Stop">
+                                    <i class="ri-stop-fill text-lg"></i>
                                 </button>
                                 <button @click="Action('restart', d.Id)"
-                                        class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-                                        title="Restart">
-                                    <i class="ri-restart-line w-5 h-5"></i>
+                                        class="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="Restart">
+                                    <i class="ri-restart-line text-lg"></i>
                                 </button>
+                                <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1"></div>
                                 <button @click="confirm('Are you sure you want to delete this container?') && Action('remove', d.Id)"
-                                        class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors"
-                                        title="Delete">
-                                    <i class="ri-delete-bin-line w-5 h-5"></i>
+                                        class="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Delete">
+                                    <i class="ri-delete-bin-5-line text-lg"></i>
                                 </button>
                             </div>
                         </td>
                     </tr>
                 </template>
-            </tbody>
-        </table>
-        
-        <div x-show="!data?.containers || data.containers.length === 0" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-            <i class="ri-inbox-line w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600"></i>
-            <p class="text-sm">No containers found</p>
+                </tbody>
+            </table>
+
+            <!-- Empty State -->
+            <div x-show="!data?.containers || data.containers.length === 0" class="px-6 py-12 text-center">
+                <div class="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="ri-inbox-archive-line text-2xl text-gray-400"></i>
+                </div>
+                <p class="text-gray-500 dark:text-gray-400 font-medium">No active containers found</p>
+                <p class="text-gray-400 text-sm mt-1">Containers you create will appear here</p>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Image List -->
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h4 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
-            <i class="ri-image-line w-5 h-5 mr-2"></i>
-            Image List
-        </h4>
-    </div>
-    
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead class="bg-gray-50 dark:bg-gray-700">
+    <!-- Images Section -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
+            <h4 class="text-base font-semibold text-gray-900 dark:text-white flex items-center">
+                <i class="ri-album-line text-gray-400 mr-2"></i>
+                Images
+            </h4>
+            <span class="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-md text-xs font-mono text-gray-600 dark:text-gray-300" x-text="data?.images?.length || 0">0</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full whitespace-nowrap">
+                <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Repository</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tag</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Created</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Size</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Repository</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tag</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Size</th>
+                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                 </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                 <template x-for="d in data?.images" :key="d.Id">
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                        <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                            <span class="font-mono text-xs" x-text="d.RepoTags?.[0]?.split(':')[0] || 'none'"></span>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <td class="px-6 py-4">
+                            <span class="font-mono text-sm font-medium text-gray-900 dark:text-white" x-text="d.RepoTags?.[0]?.split(':')[0] || 'none'"></span>
                         </td>
-                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            <span class="inline-flex px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded"
-                                  x-text="d.RepoTags?.[0]?.split(':')[1] || 'latest'"></span>
+                        <td class="px-6 py-4">
+                                <span class="inline-flex px-2 py-1 text-xs font-bold font-mono bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded"
+                                      x-text="d.RepoTags?.[0]?.split(':')[1] || 'latest'"></span>
                         </td>
-                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="new Date(d.Created * 1000).toLocaleDateString()"></td>
-                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300" x-text="formatBytes(d.Size)"></td>
-                        <td class="px-6 py-4 text-sm">
+                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400" x-text="new Date(d.Created * 1000).toLocaleDateString()"></td>
+                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 font-mono" x-text="formatBytes(d.Size)"></td>
+                        <td class="px-6 py-4 text-right">
                             <button @click="confirm('Are you sure you want to delete this image?') && Action('ImageRemove', d.Id)"
-                                    class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors"
-                                    title="Delete">
-                                <i class="ri-delete-bin-line w-5 h-5"></i>
+                                    class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                    title="Delete Image">
+                                <i class="ri-delete-bin-line text-lg"></i>
                             </button>
                         </td>
                     </tr>
                 </template>
-            </tbody>
-        </table>
-        
-        <div x-show="!data?.images || data.images.length === 0" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-            <i class="ri-image-2-line w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600"></i>
-            <p class="text-sm">No images found</p>
+                </tbody>
+            </table>
+
+            <div x-show="!data?.images || data.images.length === 0" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                <p class="text-sm italic">No images locally available</p>
+            </div>
         </div>
     </div>
 </div>
@@ -169,27 +194,38 @@
 <!-- Docker Run Modal -->
 <div x-show="dockerRunModal" class="fixed inset-0 z-50 overflow-y-auto" x-cloak>
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" @click="dockerRunModal=false"></div>
-        
-        <div class="inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-800 shadow-xl rounded-lg">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Docker Run Command</h3>
-                <button @click="dockerRunModal=false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                    <i class="ri-close-line w-6 h-6"></i>
+        <div class="fixed inset-0 transition-opacity bg-gray-900/75 backdrop-blur-sm" @click="dockerRunModal=false"></div>
+
+        <div class="inline-block w-full max-w-2xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-800 shadow-2xl rounded-2xl border border-gray-200 dark:border-gray-700">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center">
+                    <i class="ri-terminal-box-line mr-2 text-blue-500"></i>
+                    Docker Run
+                </h3>
+                <button @click="dockerRunModal=false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                    <i class="ri-close-line text-xl"></i>
                 </button>
             </div>
-            
-            <textarea rows="10"
-                      class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm"
-                      placeholder="docker run -d --name my-container nginx:latest"></textarea>
-            
-            <div class="flex justify-end mt-4 space-x-3">
+
+            <div class="p-6">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Command</label>
+                <div class="relative">
+                    <textarea rows="6"
+                              class="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm leading-relaxed shadow-inner"
+                              placeholder="docker run -d --name my-container -p 8080:80 nginx:latest"></textarea>
+                    <div class="absolute bottom-3 right-3 text-xs text-gray-400">Bash</div>
+                </div>
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Enter the full docker run command to execute.</p>
+            </div>
+
+            <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3">
                 <button @click="dockerRunModal=false"
-                        class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-lg transition-colors">
+                        class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-lg transition-colors text-sm font-medium shadow-sm">
                     Cancel
                 </button>
-                <button class="px-4 py-2 bg-primary hover:bg-purple-700 text-white rounded-lg transition-colors">
-                    Run
+                <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium shadow-sm flex items-center">
+                    <i class="ri-play-line mr-1.5"></i>
+                    Execute Run
                 </button>
             </div>
         </div>
@@ -201,7 +237,7 @@
         Alpine.data('panel', () => ({
             data: null,
             dockerRunModal: false,
-            
+
             init() {
                 const eventSource = new EventSource('/admin/docker?type=info');
                 eventSource.onmessage = (event) => {
@@ -216,7 +252,7 @@
                     eventSource.close();
                 };
             },
-            
+
             async Action(action, id) {
                 try {
                     const response = await fetch(`/admin/docker?type=${action}&id=${id}`, {
@@ -231,7 +267,7 @@
                     alert('Action failed: ' + error.message);
                 }
             },
-            
+
             formatBytes(bytes, decimals = 2) {
                 if (bytes === 0) return '0 B';
                 const k = 1024;
@@ -240,23 +276,23 @@
                 const i = Math.floor(Math.log(bytes) / Math.log(k));
                 return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
             },
-            
+
             timeAgo(timestamp) {
                 const now = new Date();
                 const past = new Date(timestamp * 1000);
                 const diffInSeconds = Math.floor((now - past) / 1000);
-                
+
                 if (diffInSeconds < 60) {
-                    return `${diffInSeconds} seconds ago`;
+                    return `${diffInSeconds}s ago`;
                 } else if (diffInSeconds < 3600) {
                     const minutes = Math.floor(diffInSeconds / 60);
-                    return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+                    return `${minutes}m ago`;
                 } else if (diffInSeconds < 86400) {
                     const hours = Math.floor(diffInSeconds / 3600);
-                    return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+                    return `${hours}h ago`;
                 } else {
                     const days = Math.floor(diffInSeconds / 86400);
-                    return `${days} day${days > 1 ? 's' : ''} ago`;
+                    return `${days}d ago`;
                 }
             }
         }))

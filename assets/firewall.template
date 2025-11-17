@@ -1,149 +1,166 @@
 {{template "header.template"}}
-<h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-    <i class="ri-shield-line w-6 h-6 inline mr-2"></i>
-    Nftables Manage
-</h3>
 
-<div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
-    <div class="flex items-center mb-2">
-        <i class="ri-error-warning-line w-5 h-5 text-yellow-600 dark:text-yellow-400 mr-2"></i>
-        <span class="text-sm font-medium text-yellow-800 dark:text-yellow-200">Experimental Feature</span>
-    </div>
-    <ul class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1 ml-7">
-        <li>• nftables is a subsystem of the Linux kernel</li>
-        <li>• These capabilities apply to network packets, datagrams, and Ethernet frames</li>
-    </ul>
-</div>
-
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
-    <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
-        <i class="ri-add-circle-line w-5 h-5 mr-2"></i>
-        Create New Rule
-    </h4>
-    
-    <form action="" @submit.prevent="createRule">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Network Layer</label>
-                <select name="network" required
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
-                    <option selected disabled value="">Select network layer...</option>
-                    <option value="2">IPv4</option>
-                    <option value="10">IPv6</option>
-                </select>
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Transport Layer</label>
-                <select name="transport" required
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
-                    <option selected disabled value="">Select transport layer...</option>
-                    <option value="6">TCP</option>
-                    <option value="17">UDP</option>
-                </select>
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Chain Hook</label>
-                <select name="chainhook" required
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
-                    <option selected disabled value="">Select chain hook...</option>
-                    <option value="0">Pre-routing</option>
-                    <option value="1">Input</option>
-                    <option value="2">Forward</option>
-                    <option value="3">Output</option>
-                    <option value="4">Post-routing</option>
-                </select>
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Verdict</label>
-                <select name="verdict" required
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
-                    <option selected disabled value="">Select verdict...</option>
-                    <option value="1">Accept</option>
-                    <option value="0">Drop</option>
-                </select>
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Port</label>
-                <input name="port" type="number" required placeholder="Enter port number"
-                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
-            </div>
-            
-            <div class="flex items-end">
-                <button type="submit"
-                        class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center">
-                    <i class="ri-save-line mr-2 text-base"></i>
-                    <span class="text-sm font-medium">Save Rule</span>
-                </button>
-            </div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center">
+                <i class="ri-shield-keyhole-line text-blue-600 dark:text-blue-400 mr-3"></i>
+                Nftables Firewall
+            </h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-9">Linux kernel packet classification subsystem</p>
         </div>
-    </form>
-</div>
-
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h4 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
-            <i class="ri-list-check w-5 h-5 mr-2"></i>
-            Firewall Rules
-        </h4>
     </div>
-    
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead class="bg-gray-50 dark:bg-gray-700">
+
+    <!-- Info Banner -->
+    <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 mb-6 flex items-start">
+        <div class="p-2 bg-amber-100 dark:bg-amber-800 rounded-lg mr-4 shrink-0">
+            <i class="ri-error-warning-line text-amber-600 dark:text-amber-400 text-xl"></i>
+        </div>
+        <div>
+            <h4 class="text-sm font-bold text-amber-900 dark:text-amber-100">Advanced Feature</h4>
+            <p class="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                Directly manipulating nftables rules can affect network connectivity. Ensure you understand the rule implications.
+            </p>
+        </div>
+    </div>
+
+    <!-- Creation Toolbar -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-8">
+        <div class="flex items-center space-x-2 mb-4">
+            <i class="ri-add-box-line text-blue-500"></i>
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Add New Rule</h4>
+        </div>
+
+        <form action="" @submit.prevent="createRule">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+                <div class="lg:col-span-1">
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Network</label>
+                    <select name="network" required
+                            class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option selected disabled value="">Select...</option>
+                        <option value="2">IPv4</option>
+                        <option value="10">IPv6</option>
+                    </select>
+                </div>
+
+                <div class="lg:col-span-1">
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Transport</label>
+                    <select name="transport" required
+                            class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option selected disabled value="">Select...</option>
+                        <option value="6">TCP</option>
+                        <option value="17">UDP</option>
+                    </select>
+                </div>
+
+                <div class="lg:col-span-1">
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Chain Hook</label>
+                    <select name="chainhook" required
+                            class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option selected disabled value="">Select...</option>
+                        <option value="1">Input</option>
+                        <option value="3">Output</option>
+                        <option value="2">Forward</option>
+                        <option value="0">Pre-routing</option>
+                        <option value="4">Post-routing</option>
+                    </select>
+                </div>
+
+                <div class="lg:col-span-1">
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Port</label>
+                    <input name="port" type="number" required placeholder="e.g. 80"
+                           class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
+                <div class="lg:col-span-1">
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Verdict</label>
+                    <select name="verdict" required
+                            class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option selected disabled value="">Select...</option>
+                        <option value="1">Accept</option>
+                        <option value="0">Drop</option>
+                    </select>
+                </div>
+
+                <div class="lg:col-span-1">
+                    <button type="submit"
+                            class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm transition-all flex items-center justify-center text-sm font-medium h-[38px]">
+                        <i class="ri-add-line mr-1"></i>
+                        Add Rule
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Rules List -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+            <h4 class="text-base font-semibold text-gray-900 dark:text-white flex items-center">
+                <i class="ri-list-settings-line text-gray-400 mr-2"></i>
+                Active Rules
+            </h4>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full whitespace-nowrap">
+                <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Network</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Protocol</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Port</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Verdict</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Network</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Protocol</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Port</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Verdict</th>
+                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                 </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                 {{range .}}
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                        <span class="font-mono text-xs" x-text="net2str(`{{.Table.Family}}`)"></span>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        <span x-text="protocol2str(`{{.Protocol}}`)"></span>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        {{if .Port}}
-                            <span class="font-mono">{{.Port}}</span>
-                        {{else}}
-                            <span class="text-gray-400">-</span>
-                        {{end}}
-                    </td>
-                    <td class="px-6 py-4 text-sm">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                              :class="verdict2str(`{{.Verdict}}`) === 'Accept' ? 
-                                      'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
-                                      'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'"
-                              x-text="verdict2str(`{{.Verdict}}`)">
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 text-sm">
-                        <button @click="deleteRule(`{{.Table.Name}}`,`{{.Chain.Name}}`,`{{.Handle}}`)"
-                                class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors"
-                                title="Delete Rule">
-                            <i class="ri-delete-bin-line text-base"></i>
-                        </button>
-                    </td>
-                </tr>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                            <span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono" x-text="net2str(`{{.Table.Family}}`)"></span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                            <span x-text="protocol2str(`{{.Protocol}}`)"></span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                            {{if .Port}}
+                                <span class="font-mono font-bold">{{.Port}}</span>
+                            {{else}}
+                                <span class="text-gray-400 text-xs">ALL</span>
+                            {{end}}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
+                                  :class="verdict2str(`{{.Verdict}}`) === 'Accept' ?
+                                      'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800' :
+                                      'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'">
+                                <span class="w-1.5 h-1.5 rounded-full mr-1.5"
+                                      :class="verdict2str(`{{.Verdict}}`) === 'Accept' ? 'bg-green-500' : 'bg-red-500'"></span>
+                                <span x-text="verdict2str(`{{.Verdict}}`)"></span>
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button @click="deleteRule(`{{.Table.Name}}`,`{{.Chain.Name}}`,`{{.Handle}}`)"
+                                    class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                    title="Delete Rule">
+                                <i class="ri-delete-bin-line text-lg"></i>
+                            </button>
+                        </td>
+                    </tr>
                 {{end}}
-            </tbody>
-        </table>
-        
-        {{if not .}}
-        <div class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-            <i class="ri-shield-check-line w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600"></i>
-            <p class="text-sm">No firewall rules configured</p>
+                </tbody>
+            </table>
+
+            {{if not .}}
+                <div class="px-6 py-12 text-center">
+                    <div class="w-12 h-12 bg-gray-50 dark:bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="ri-shield-check-line text-2xl text-gray-400"></i>
+                    </div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">No firewall rules configured</p>
+                </div>
+            {{end}}
         </div>
-        {{end}}
     </div>
 </div>
 
@@ -151,47 +168,17 @@
     document.addEventListener('alpine:init', () => {
         Alpine.data('panel', () => ({
             net2str(val) {
-                const tableFamilyMap = {
-                    0: "Unspecified",
-                    1: "INet",
-                    2: "IPv4",
-                    10: "IPv6",
-                    3: "ARP",
-                    5: "Netdev",
-                    7: "Bridge"
-                };
-                return tableFamilyMap[val] || "Unknown";
+                const map = {0:"Unspecified",1:"INet",2:"IPv4",10:"IPv6",3:"ARP",5:"Netdev",7:"Bridge"};
+                return map[val] || "Unknown";
             },
-            
             protocol2str(val) {
-                const protocolMap = {
-                    1: "ICMP",
-                    6: "TCP",
-                    17: "UDP",
-                    58: "ICMPv6",
-                    132: "SCTP",
-                    136: "UDPLite"
-                };
-                return protocolMap[val] || "Unknown";
+                const map = {1:"ICMP",6:"TCP",17:"UDP",58:"ICMPv6",132:"SCTP",136:"UDPLite"};
+                return map[val] || "Unknown";
             },
-            
             verdict2str(val) {
-                const verdictMap = {
-                    "-5": "Return",
-                    "-4": "Goto",
-                    "-3": "Jump",
-                    "-2": "Break",
-                    "-1": "Continue",
-                    0: "Drop",
-                    1: "Accept",
-                    2: "Stolen",
-                    3: "Queue",
-                    4: "Repeat",
-                    5: "Stop"
-                };
-                return verdictMap[val] || "Unknown";
+                const map = {"-5":"Return","-4":"Goto","-3":"Jump","-2":"Break","-1":"Continue",0:"Drop",1:"Accept",2:"Stolen",3:"Queue",4:"Repeat",5:"Stop"};
+                return map[val] || "Unknown";
             },
-            
             async createRule(e) {
                 try {
                     const response = await fetch(e.target.action, {
@@ -204,7 +191,6 @@
                     alert('Failed to create rule: ' + error.message);
                 }
             },
-            
             async deleteRule(tablename, chainname, handle) {
                 if (confirm("Are you sure you want to delete this rule?")) {
                     try {

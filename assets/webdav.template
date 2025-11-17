@@ -1,130 +1,156 @@
 {{template "header.template"}}
-<h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-    <i class="ri-cloud-line w-6 h-6 inline mr-2"></i>
-    WebDAV Manage
-</h3>
 
-<div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
-    <div class="flex items-center mb-2">
-        <i class="ri-information-line w-5 h-5 text-blue-600 dark:text-blue-400 mr-2"></i>
-        <span class="text-sm font-medium text-blue-800 dark:text-blue-200">Windows Explorer Setup</span>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center">
+                <i class="ri-hard-drive-2-line text-blue-600 dark:text-blue-400 mr-3"></i>
+                WebDAV Manager
+            </h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-9">Access your files remotely via WebDAV protocol</p>
+        </div>
     </div>
-    <p class="text-sm text-blue-700 dark:text-blue-300 mb-3 ml-7">
-        Windows Explorer natively supports WebDAV (only HTTPS). To support HTTP, execute the following commands:
-    </p>
-    <div class="bg-gray-800 dark:bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-xs overflow-x-auto ml-7">
-        <div class="mb-1">reg add "HKLM\SYSTEM\CurrentControlSet\Services\WebClient\Parameters" /v BasicAuthLevel /t REG_DWORD /d 2 /f</div>
-        <div>Restart-Service -Name "WebClient"</div>
-    </div>
-</div>
 
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-    <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-6 flex items-center">
-        <i class="ri-settings-3-line mr-2 text-base"></i>
-        WebDAV Configuration
-    </h4>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column: Configuration -->
+        <div class="lg:col-span-2 space-y-6">
 
-    <form action="/admin/webdav" method="post" @submit.prevent="saveConfig">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Server Address
-                </label>
-                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white font-mono text-sm"
-                     x-text="`${location.origin}/webdav`"></div>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Use this address to connect to WebDAV</p>
+            <!-- Settings Card -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 flex items-center justify-between">
+                    <h4 class="text-base font-semibold text-gray-900 dark:text-white flex items-center">
+                        <i class="ri-settings-4-line mr-2 text-gray-400"></i>
+                        Service Configuration
+                    </h4>
+                </div>
+
+                <div class="p-6">
+                    <form action="/admin/webdav" method="post" @submit.prevent="saveConfig">
+                        <!-- Enable Switch -->
+                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-700 mb-6">
+                            <div>
+                                <span class="text-sm font-medium text-gray-900 dark:text-white block">Enable WebDAV</span>
+                                <span class="text-xs text-gray-500 dark:text-gray-400">Turn the service on or off</span>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="enable" {{if (call .getPanelConfig "webdav.enable")}}checked{{end}} class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+
+                        <div class="space-y-5">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Username</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="ri-user-3-line text-gray-400"></i>
+                                    </div>
+                                    <input type="text" name="username" value="{{call .getPanelConfig "webdav.username"}}" required
+                                           class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow sm:text-sm">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="ri-lock-password-line text-gray-400"></i>
+                                    </div>
+                                    <input type="password" name="password" value="{{call .getPanelConfig "webdav.password"}}" required
+                                           class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow sm:text-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 flex justify-end">
+                            <button type="submit"
+                                    class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow transition-all flex items-center font-medium text-sm">
+                                <i class="ri-save-3-line mr-2 text-lg"></i>
+                                Save Configuration
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Service Status
-                </label>
-                <div class="flex items-center">
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" name="enable" {{if (call .getPanelConfig "webdav.enable")}}checked{{end}}
-                               class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/25 dark:peer-focus:ring-primary/25 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                        <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Enable WebDAV service</span>
-                    </label>
+            <!-- Windows Specific Fix -->
+            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-5 border border-blue-100 dark:border-blue-800">
+                <div class="flex items-start mb-3">
+                    <i class="ri-windows-fill text-blue-600 dark:text-blue-400 text-xl mr-3 mt-0.5"></i>
+                    <div>
+                        <h5 class="text-sm font-bold text-blue-900 dark:text-blue-100">Windows Explorer Native Support</h5>
+                        <p class="text-sm text-blue-700 dark:text-blue-300 mt-1 leading-relaxed">
+                            Windows only supports HTTPS WebDAV by default. To allow HTTP connections, you must modify the registry.
+                        </p>
+                    </div>
+                </div>
+                <div class="bg-[#1e1e1e] rounded-lg p-3 mt-2 border border-gray-700 shadow-inner group relative">
+                    <code class="font-mono text-xs text-green-400 block overflow-x-auto whitespace-pre-wrap select-all">reg add "HKLM\SYSTEM\CurrentControlSet\Services\WebClient\Parameters" /v BasicAuthLevel /t REG_DWORD /d 2 /f
+                        Restart-Service -Name "WebClient"</code>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Username
-                </label>
-                <input type="text" name="username" value="{{call .getPanelConfig "webdav.username"}}" required
-                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">WebDAV authentication username</p>
+        <!-- Right Column: Connection Info -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Server Address -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <h5 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Server Address</h5>
+                <div class="relative group">
+                    <div class="p-3 bg-gray-100 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 font-mono text-sm text-gray-700 dark:text-gray-300 break-all"
+                         x-text="`${location.origin}/webdav`">
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    Use this URL to connect your WebDAV clients.
+                </p>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Password
-                </label>
-                <input type="password" name="password" value="{{call .getPanelConfig "webdav.password"}}" required
-                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent">
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">WebDAV authentication password</p>
+            <!-- Client Guide -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                    <h4 class="text-base font-semibold text-gray-900 dark:text-white">Connection Guide</h4>
+                </div>
+                <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors flex items-start">
+                        <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg mr-3">
+                            <i class="ri-windows-line text-blue-600 dark:text-blue-400"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900 dark:text-white">Windows</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">This PC > Map network drive</p>
+                        </div>
+                    </div>
+                    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors flex items-start">
+                        <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg mr-3">
+                            <i class="ri-apple-line text-gray-800 dark:text-white"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900 dark:text-white">macOS</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Finder > Go > Connect to Server</p>
+                        </div>
+                    </div>
+                    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors flex items-start">
+                        <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg mr-3">
+                            <i class="ri-ubuntu-line text-orange-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900 dark:text-white">Linux</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">File Manager > Other Locations</p>
+                        </div>
+                    </div>
+                    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors flex items-start">
+                        <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg mr-3">
+                            <i class="ri-smartphone-line text-purple-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900 dark:text-white">Mobile</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Use Apps like Documents/FE File Explorer</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-
-        <div class="flex justify-end">
-            <button type="submit"
-                    class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center">
-                <i class="ri-save-line mr-2 text-base"></i>
-                <span class="text-sm font-medium">Save Configuration</span>
-            </button>
-        </div>
-    </form>
-</div>
-
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6 mt-6">
-    <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
-        <i class="ri-device-line mr-2 text-base"></i>
-        Client Configuration
-    </h4>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-            <h5 class="font-medium text-gray-900 dark:text-white mb-2 flex items-center">
-                <i class="ri-windows-line mr-2 text-base"></i>
-                Windows
-            </h5>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-                Map network drive using the server address above
-            </p>
-        </div>
-        
-        <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-            <h5 class="font-medium text-gray-900 dark:text-white mb-2 flex items-center">
-                <i class="ri-apple-line mr-2 text-base"></i>
-                macOS
-            </h5>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-                Finder → Go → Connect to Server
-            </p>
-        </div>
-        
-        <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-            <h5 class="font-medium text-gray-900 dark:text-white mb-2 flex items-center">
-                <i class="ri-ubuntu-line mr-2 text-base"></i>
-                Linux
-            </h5>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-                Use file manager or mount via davfs2
-            </p>
-        </div>
-        
-        <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-            <h5 class="font-medium text-gray-900 dark:text-white mb-2 flex items-center">
-                <i class="ri-smartphone-line mr-2 text-base"></i>
-                Mobile
-            </h5>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-                Use apps like Documents, FE File Explorer
-            </p>
         </div>
     </div>
 </div>
@@ -134,19 +160,37 @@
         Alpine.data('panel', () => ({
             async saveConfig(e) {
                 try {
+                    // Add loading state visual feedback if desired
+                    const btn = e.target.querySelector('button[type="submit"]');
+                    const originalContent = btn.innerHTML;
+                    btn.innerHTML = '<i class="ri-loader-4-line animate-spin mr-2"></i> Saving...';
+                    btn.disabled = true;
+
                     const response = await fetch(e.target.action, {
                         method: 'POST',
                         body: new FormData(e.target)
                     });
-                    
+
                     if (response.ok) {
-                        alert('Configuration saved successfully');
-                        location.reload();
+                        // Small visual success indicator before reload
+                        btn.innerHTML = '<i class="ri-check-line mr-2"></i> Saved';
+                        btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                        btn.classList.add('bg-green-600', 'hover:bg-green-700');
+
+                        setTimeout(() => {
+                            alert('Configuration saved successfully');
+                            location.reload();
+                        }, 500);
                     } else {
                         alert('Failed to save configuration');
+                        btn.innerHTML = originalContent;
+                        btn.disabled = false;
                     }
                 } catch (error) {
                     alert('Error: ' + error.message);
+                    const btn = e.target.querySelector('button[type="submit"]');
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
                 }
             }
         }))
