@@ -7,6 +7,7 @@ import (
 	"gopanel/core/firewall"
 	"gopanel/core/frpc"
 	"gopanel/core/frps"
+	"gopanel/core/headscale"
 	"gopanel/core/login"
 	"gopanel/core/monitor"
 	"gopanel/core/mymiddleware"
@@ -71,7 +72,7 @@ func (c *Core) Route() {
 	admin.Any("/frps", frps.Index)
 	admin.Any("/frpc", frpc.Index)
 	// Headscale RESTful 路由
-	//admin.GET("/headscale", headscale.Index) // 获取页面
+	admin.GET("/headscale", headscale.Index) // 获取页面
 	admin.Any("/firewall", firewall.Index)
 	//admin.Any("/UnblockNeteaseMusic", UnblockNeteaseMusic.Index)
 	c.e.StartTLS(viper.GetString("panel.port"), []byte(certPEM), []byte(keyPEM))
