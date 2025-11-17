@@ -295,4 +295,4 @@ require (
 )
 
 //github.com/quic-go/quic-go => github.com/quic-go/quic-go v0.52.0 //等frp更新他的quic调用再把这条去掉
-//replace gvisor.dev/gvisor => gvisor.dev/gvisor v0.0.0-20240722211153-64c016c92987 // indirect
+replace gvisor.dev/gvisor => gvisor.dev/gvisor v0.0.0-20240722211153-64c016c92987 // indirect
