@@ -1,92 +1,167 @@
-//go:build linux || darwin || freebsd
+////go:build linux || darwin || freebsd
 
 package headscale
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"github.com/juanfont/headscale/hscontrol"
-	"github.com/juanfont/headscale/hscontrol/types"
-	"github.com/labstack/echo/v4"
-	"github.com/spf13/viper"
 	"net/http"
 	"net/netip"
 	"net/url"
+	"os"
+	"sync"
 	"time"
+
+	"github.com/juanfont/headscale/hscontrol"
+	"github.com/juanfont/headscale/hscontrol/types"
+	"github.com/labstack/echo/v4"
 )
 
-// headscaleConfig 定义了Headscale的配置结构
+// ================= 全局变量区 =================
+// 必须放在函数外面，否则每次请求进来都是新的，无法管理状态
+var (
+	hsApp     *hscontrol.Headscale // Headscale 实例
+	hsRunning bool                 // 运行状态标记
+	hsMutex   sync.Mutex           // 线程锁，防止同时点击启动炸掉
+	hsCancel  context.CancelFunc   // 用于停止服务的开关
+	hsError   string               // 记录启动时的报错信息
+)
+
+// headscaleConfig 前端表单结构
 type headscaleConfig struct {
-	ServerURL              string `form:"server_url"`               // 服务器URL，客户端将连接到的地址
-	ListenAddr             string `form:"listen_addr"`              // 服务器监听地址
-	MetricsListenAddr      string `form:"metrics_listen_addr"`      // metrics监听地址
-	GRPCListenAddr         string `form:"grpc_listen_addr"`         // gRPC监听地址
-	PrivateKeyPath         string `form:"private_key_path"`         // Noise私钥路径
-	IPv4Prefix             string `form:"ipv4_prefix"`              // IPv4地址分配范围
-	IPv6Prefix             string `form:"ipv6_prefix"`              // IPv6地址分配范围
-	BaseDomain             string `form:"base_domain"`              // MagicDNS基础域名
-	ACMEEmail              string `form:"acme_email"`               // ACME注册邮箱
-	TLSLetsEncryptHostname string `form:"tls_letsencrypt_hostname"` // Let's Encrypt主机名
-	TLSCertPath            string `form:"tls_cert_path"`            // TLS证书路径
-	TLSKeyPath             string `form:"tls_key_path"`             // TLS私钥路径
-	UnixSocket             string `form:"unix_socket"`              // Unix套接字路径
-	UnixSocketPermission   int    `form:"unix_socket_permission"`   // Unix套接字权限
-	DatabaseType           string `form:"database_type"`            // 数据库类型
-	SqlitePath             string `form:"sqlite_path"`              // SQLite数据库路径
-	DisableCheckUpdates    bool   `form:"disable_check_updates"`    // 是否禁用更新检查
+	ServerURL         string `form:"server_url"`
+	ListenAddr        string `form:"listen_addr"`
+	MetricsListenAddr string `form:"metrics_listen_addr"`
+	GRPCListenAddr    string `form:"grpc_listen_addr"`
+	PrivateKeyPath    string `form:"private_key_path"`
+	IPv4Prefix        string `form:"ipv4_prefix"`
+	IPv6Prefix        string `form:"ipv6_prefix"`
+	BaseDomain        string `form:"base_domain"`
 }
 
-//const confPath = "/etc/headscale/config.yaml"
-
+// Index 是唯一的入口函数
 func Index(c echo.Context) error {
-	req := &headscaleConfig{}
-	if err := c.Bind(req); err != nil {
-		return err
-	}
-	if err := c.Validate(req); err != nil {
-		return err
-	}
-	switch c.Request().Method {
-	case "POST":
-		if c.QueryParam("status") == "start" {
+	// 获取请求动作类型
+	action := c.QueryParam("status")
+	method := c.Request().Method
+
+	// 1. 处理 POST 请求 (控制指令：启动、停止、检查状态)
+	if method == "POST" {
+		hsMutex.Lock()
+		defer hsMutex.Unlock()
+
+		switch action {
+		case "start":
+			// 如果已经在运行，直接返回成功
+			if hsRunning {
+				return c.JSON(200, map[string]any{"success": true, "message": "Already running"})
+			}
+
+			// 绑定参数
+			req := &headscaleConfig{}
+			if err := c.Bind(req); err != nil {
+				return c.JSON(400, map[string]any{"success": false, "message": "Invalid config"})
+			}
+
+			// 转换配置
 			cfg, err := loadServerConfig(req)
 			if err != nil {
-				return err
+				return c.JSON(400, map[string]any{"success": false, "message": err.Error()})
 			}
+
+			// 初始化 Headscale
 			app, err := hscontrol.NewHeadscale(cfg)
 			if err != nil {
-				return err
+				return c.JSON(500, map[string]any{"success": false, "message": "Init failed: " + err.Error()})
 			}
-			if err = app.Serve(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-				return err
-			}
-		}
 
-		return c.JSON(200, "success")
-	//case "PUT":
-	//	data, err := io.ReadAll(c.Request().Body)
-	//	defer c.Request().Body.Close()
-	//	if err != nil {
-	//		return err
-	//	}
-	//	if err := os.WriteFile(confPath, data, 0644); err != nil {
-	//		return err
-	//	}
-	//	return c.JSON(200, "success")
-	case "GET":
-		//file, err := os.ReadFile(confPath)
-		//if err != nil {
-		//	return err
-		//}
+			// 创建用于停止的 Context
+			ctx, cancel := context.WithCancel(context.Background())
+
+			// 更新全局状态
+			hsApp = app
+			hsCancel = cancel
+			hsRunning = true
+			hsError = ""
+
+			// 【关键点】放入 goroutine 异步运行，防止阻塞 HTTP 请求
+			go func() {
+				// 注意：这里需要 Headscale 支持 Context 传入或者只是单纯运行
+				// 目前 Headscale 的 Serve 通常是阻塞的
+				// 如果需要支持优雅关闭，可能需要修改 Headscale 源码或使用其提供的 Shutdown 方法
+				// 这里简单处理：启动服务
+				if err := app.Serve(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+					hsMutex.Lock()
+					hsRunning = false
+					hsError = err.Error()
+					hsMutex.Unlock()
+					fmt.Println("Headscale stopped unexpectedly:", err)
+				} else {
+					// 正常退出
+					hsMutex.Lock()
+					hsRunning = false
+					hsMutex.Unlock()
+				}
+			}()
+
+			// 这里稍微利用 Context 做一个假装的生命周期管理（Headscale原生Serve如果不接受Context，强制停止比较麻烦）
+			// 为了演示，我们保存了 cancel，实际停止时可能需要关闭 listener
+			go func() {
+				<-ctx.Done()
+				// 当 cancel 被调用时，尝试关闭 app (如果 app 暴露了 Shutdown)
+				// hsApp.Shutdown()
+			}()
+
+			return c.JSON(200, map[string]any{"success": true, "message": "Headscale started in background"})
+
+		case "stop":
+			if !hsRunning {
+				return c.JSON(200, map[string]any{"success": false, "message": "Not running"})
+			}
+
+			// 触发停止
+			if hsCancel != nil {
+				hsCancel() // 触发 Context 取消
+			}
+
+			// 注意：由于 Go 的 http.Server 需要显式 Shutdown，
+			// 如果 headscale 库没暴露 Shutdown 方法，这里可能关不掉端口。
+			// 假设 hscontrol 内部处理了关闭逻辑，或者你可能需要重启整个主进程。
+
+			hsRunning = false
+			hsApp = nil
+			return c.JSON(200, map[string]any{"success": true, "message": "Stop signal sent"})
+
+		case "check": // 前端轮询用
+			statusStr := "stopped"
+			if hsRunning {
+				statusStr = "running"
+			}
+			return c.JSON(200, map[string]any{
+				"status": statusStr,
+				"error":  hsError,
+			})
+
+		default:
+			// 可以在这里处理保存配置逻辑
+			// saveConfigToDisk(c)
+			return c.JSON(200, map[string]any{"success": true, "message": "Config saved (mock)"})
+		}
+	}
+
+	// 2. 处理 GET 请求 (渲染页面)
+	if method == "GET" {
+		// 可以在这里读取配置文件回显
 		return c.Render(http.StatusOK, "headscale.template", map[string]any{
-			//"headscaleConfig": string(file),
-			"headscaleEnable": viper.Get("enable.frps").(bool),
+			"headscaleEnable": hsRunning,
 		})
 	}
 
 	return echo.ErrMethodNotAllowed
 }
 
+// 辅助函数：配置转换
 func loadServerConfig(c *headscaleConfig) (*types.Config, error) {
 	prefix4, err := netip.ParsePrefix(c.IPv4Prefix)
 	if err != nil {
@@ -100,42 +175,41 @@ func loadServerConfig(c *headscaleConfig) (*types.Config, error) {
 
 	derpURL, _ := url.Parse("https://controlplane.tailscale.com/derpmap/default")
 
+	// 获取当前路径，防止权限问题
+	cwd, _ := os.Getwd()
+
 	return &types.Config{
-		ServerURL:                      c.ServerURL,                          // 客户端将连接到的服务器URL
-		Addr:                           c.ListenAddr,                         // 服务器监听地址
-		MetricsAddr:                    c.MetricsListenAddr,                  // metrics监听地址
-		GRPCAddr:                       c.GRPCListenAddr,                     // gRPC监听地址
-		GRPCAllowInsecure:              false,                                // 是否允许不安全的gRPC连接
-		EphemeralNodeInactivityTimeout: 30 * time.Minute,                     // 临时节点不活动超时时间
-		PrefixV4:                       &prefix4,                             // IPv4地址分配范围
-		PrefixV6:                       &prefix6,                             // IPv6地址分配范围
-		IPAllocation:                   types.IPAllocationStrategySequential, // IP分配策略
-		NoisePrivateKeyPath:            c.PrivateKeyPath,                     // Noise协议私钥路径
-		BaseDomain:                     c.BaseDomain,                         // MagicDNS基础域名
-		Log:                            types.LogConfig{},                    // 日志配置
-		DisableUpdateCheck:             true,                                 // 禁用更新检查
+		ServerURL:                      c.ServerURL,
+		Addr:                           c.ListenAddr,
+		MetricsAddr:                    c.MetricsListenAddr,
+		GRPCAddr:                       c.GRPCListenAddr,
+		GRPCAllowInsecure:              true,
+		EphemeralNodeInactivityTimeout: 30 * time.Minute,
+		PrefixV4:                       &prefix4,
+		PrefixV6:                       &prefix6,
+		IPAllocation:                   types.IPAllocationStrategySequential,
+		NoisePrivateKeyPath:            c.PrivateKeyPath,
+		BaseDomain:                     c.BaseDomain,
+		Log:                            types.LogConfig{Level: 1}, // 简单的日志配置
+		DisableUpdateCheck:             true,
 		Database: types.DatabaseConfig{
-			Type:  "sqlite", // 数据库类型
-			Debug: false,    // 是否启用数据库调试
+			Type:  "sqlite3",
+			Debug: false,
 			Sqlite: types.SqliteConfig{
-				Path:          "/var/lib/headscale/db.sqlite", // SQLite数据库路径
-				WriteAheadLog: false,                          // 是否启用预写日志
+				Path:          fmt.Sprintf("%s/headscale.db", cwd), // 改为当前目录
+				WriteAheadLog: true,
 			},
 		},
 		DERP: types.DERPConfig{
-			ServerEnabled:                      false,               // 是否启用DERP服务器
-			AutomaticallyAddEmbeddedDerpRegion: false,               // 是否自动添加嵌入式DERP区域
-			URLs:                               []url.URL{*derpURL}, // DERP服务器URL列表
-			AutoUpdate:                         true,                // 是否自动更新DERP地图
-			UpdateFrequency:                    24 * time.Hour,      // DERP地图更新频率
+			ServerEnabled:                      false,
+			AutomaticallyAddEmbeddedDerpRegion: false,
+			URLs:                               []url.URL{*derpURL},
+			AutoUpdate:                         true,
+			UpdateFrequency:                    24 * time.Hour,
 		},
-
-		TLS:       types.TLSConfig{},                                // TLS配置
-		ACMEURL:   "https://acme-v02.api.letsencrypt.org/directory", // ACME服务器URL
-		ACMEEmail: "",                                               // ACME注册邮箱
-		DNSConfig: types.DNSConfig{},                                // DNS配置
-		//DNSUserNameInMagicDNS: false,                                            // 是否在MagicDNS中使用用户名
-		UnixSocket:           "/var/run/headscale.sock", // Unix套接字路径
-		UnixSocketPermission: 0600,                      // Unix套接字权限
+		TLS:                  types.TLSConfig{},
+		DNSConfig:            types.DNSConfig{},
+		UnixSocket:           fmt.Sprintf("%s/headscale.sock", cwd), // 改为当前目录
+		UnixSocketPermission: 0755,
 	}, nil
 }

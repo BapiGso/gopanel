@@ -8,3 +8,7 @@ access.log
 /.vscode
 server.crt
 server.key
+
+headscale.db
+headscale.db-shm
+headscale.db-wal
