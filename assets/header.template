@@ -4,11 +4,13 @@
     <meta charset="utf-8">
     <title x-text="localStorage.title||'GoPanel Dashboard'"></title>
     <link rel="manifest" href="/manifest.webmanifest">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/assets/js/tailwind.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+    <link rel="icon" type="image/jpg" href="/assets/img/avatar.webp" />
+    <script type="text/javascript" src="/assets/js/alpine.min.js" defer></script>
     <script>
         tailwind.config = {
             darkMode: "class",
@@ -17,18 +19,6 @@
                     colors: {
                         primary: "#943DA5",
                         secondary: "#10B981",
-                    },
-                    borderRadius: {
-                        none: "0px",
-                        sm: "4px",
-                        DEFAULT: "8px",
-                        md: "12px",
-                        lg: "16px",
-                        xl: "20px",
-                        "2xl": "24px",
-                        "3xl": "32px",
-                        full: "9999px",
-                        button: "8px",
                     },
                 },
             },
@@ -62,8 +52,7 @@
             visibility: hidden !important;
         }
     </style>
-    <link rel="icon" type="image/jpg" href="/assets/img/favicon.jpg" />
-    <script type="text/javascript" src="/assets/js/alpine.min.js" defer></script>
+
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker
@@ -104,8 +93,7 @@
                { name: 'file',      href: '/admin/file',      icon: 'ri-folder-3-line' },
                { name: 'webdav',    href: '/admin/webdav',    icon: 'ri-cloud-windy-line' },
                { name: 'docker',    href: '/admin/docker',    icon: 'ri-box-3-line' },
-               { name: 'frps',      href: '/admin/frps',      icon: 'ri-server-line' },
-               { name: 'frpc',      href: '/admin/frpc',      icon: 'ri-links-line' },
+               { name: 'frp',       href: '/admin/frp',       icon: 'ri-server-line' },
                { name: 'headscale', href: '/admin/headscale', icon: 'ri-node-tree' },
                { name: 'term',      href: '/admin/term',      icon: 'ri-terminal-box-line' },
                { name: 'cron',      href: '/admin/cron',      icon: 'ri-alarm-line' },

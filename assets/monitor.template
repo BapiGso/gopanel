@@ -1,217 +1,221 @@
 {{template "header.template"}}
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" x-data="panel">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-        <div>
-            <h3 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">System Monitor</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Real-time server metrics & health status</p>
-        </div>
-        <div class="inline-flex items-center px-3 py-1 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
-            <span class="relative flex h-2.5 w-2.5 mr-2">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
-            <span class="text-xs font-medium text-gray-600 dark:text-gray-300">System Live</span>
-        </div>
-    </div>
+<div class="min-h-screen bg-gray-50/50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans pb-20" x-data="panel">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-    <!-- Grid Layout -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-
-        <!-- 1. CPU Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 dark:border-gray-700">
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">CPU Usage</p>
-                    <h4 class="text-3xl font-bold mt-1"
-                        :class="{
-                            'text-red-500': getCpuUsage() >= 90,
-                            'text-yellow-500': getCpuUsage() >= 70 && getCpuUsage() < 90,
-                            'text-gray-900 dark:text-white': getCpuUsage() < 70
-                        }"
-                        x-text="getCpuUsage() + '%'">0%</h4>
-                </div>
-                <!-- Icon Container: Fixed size, Circle, Centered -->
-                <div class="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                    <i class="ri-cpu-line text-xl text-blue-600 dark:text-blue-400"></i>
-                </div>
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-10">
+            <div>
+                <h3 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">System Monitor</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Real-time server metrics</p>
             </div>
-            <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
-                <div class="h-2 rounded-full transition-all duration-500 ease-out"
-                     :class="{
-                        'bg-red-500': getCpuUsage() >= 90,
-                        'bg-yellow-500': getCpuUsage() >= 70 && getCpuUsage() < 90,
-                        'bg-blue-500': getCpuUsage() < 70
-                     }"
-                     :style="`width: ${getCpuUsage()}%`"></div>
+
+            <!-- 动态状态指示器 -->
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-md border shadow-sm transition-colors duration-300"
+                 :class="isConnected ? 'bg-emerald-50/50 border-emerald-200/50 dark:bg-emerald-900/10 dark:border-emerald-800/30' : 'bg-rose-50/50 border-rose-200/50 dark:bg-rose-900/10 dark:border-rose-800/30'">
+
+        <span class="relative flex h-2.5 w-2.5">
+            <!-- Ping 动画：仅在连接时显示 -->
+            <span class="absolute inline-flex h-full w-full rounded-full opacity-75 transition-colors duration-300"
+                  :class="isConnected ? 'animate-ping bg-emerald-400' : 'bg-transparent'"></span>
+
+            <!-- 实心圆点：连接绿，断开红 -->
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 transition-colors duration-300"
+                  :class="isConnected ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+        </span>
+
+                <!-- 状态文字 -->
+                <span class="text-xs font-medium transition-colors duration-300"
+                      :class="isConnected ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'"
+                      x-text="isConnected ? 'System Live' : 'Offline'">
+        </span>
             </div>
         </div>
 
-        <!-- 2. Memory Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 dark:border-gray-700">
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Memory Usage</p>
-                    <h4 class="text-3xl font-bold mt-1"
-                        :class="{
-                            'text-red-500': getMemUsage() >= 90,
-                            'text-yellow-500': getMemUsage() >= 70 && getMemUsage() < 90,
-                            'text-gray-900 dark:text-white': getMemUsage() < 70
-                        }"
-                        x-text="getMemUsage() + '%'">0%</h4>
-                </div>
-                <!-- Icon Container -->
-                <div class="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
-                    <i class="ri-database-2-line text-xl text-emerald-600 dark:text-emerald-400"></i>
-                </div>
-            </div>
-            <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
-                <div class="h-2 rounded-full transition-all duration-500 ease-out"
-                     :class="{
-                        'bg-red-500': getMemUsage() >= 90,
-                        'bg-yellow-500': getMemUsage() >= 70 && getMemUsage() < 90,
-                        'bg-emerald-500': getMemUsage() < 70
-                     }"
-                     :style="`width: ${getMemUsage()}%`"></div>
-            </div>
-        </div>
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 
-        <!-- 3. Disk Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 dark:border-gray-700 flex flex-col">
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <div class="flex items-center gap-2">
-                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Disk Usage</p>
-                        <!-- Toggle Button Moved Here -->
+            <!-- 1. CPU Card -->
+            <div class="group p-6 rounded-2xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-700/50">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">CPU Load</span>
+                        <span class="text-3xl font-bold mt-1 font-mono tracking-tight transition-colors duration-300"
+                              :class="getColorClass(getCpuUsage())"
+                              x-text="getCpuUsage() + '%'">0%</span>
+                    </div>
+                    <!-- 优化：移除图标包裹 div，直接样式上移 -->
+                    <i class="ri-cpu-line text-xl p-2.5 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400"></i>
+                </div>
+                <div class="h-1.5 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-500 ease-out"
+                         :class="getBgClass(getCpuUsage())"
+                         :style="`width: ${getCpuUsage()}%`"></div>
+                </div>
+            </div>
+
+            <!-- 2. Memory Card -->
+            <div class="group p-6 rounded-2xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-700/50">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">RAM Usage</span>
+                        <span class="text-3xl font-bold mt-1 font-mono tracking-tight transition-colors duration-300"
+                              :class="getColorClass(getMemUsage())"
+                              x-text="getMemUsage() + '%'">0%</span>
+                    </div>
+                    <i class="ri-database-2-line text-xl p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"></i>
+                </div>
+                <div class="h-1.5 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-500 ease-out"
+                         :class="getBgClass(getMemUsage())"
+                         :style="`width: ${getMemUsage()}%`"></div>
+                </div>
+            </div>
+
+            <!-- 3. Disk Card -->
+            <div class="group p-6 rounded-2xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-700/50 flex flex-col">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Disk</span>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-2xl font-bold font-mono text-gray-900 dark:text-white" x-text="data?.DiskUsage?.length || 0">0</span>
+                            <span class="text-xs text-gray-400 font-medium">Partitions</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
                         <button @click="diskShowAll = !diskShowAll" x-show="data?.DiskUsage?.length > 2"
-                                class="text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors focus:outline-none">
-                            <i class="text-base" :class="diskShowAll ? 'ri-arrow-up-circle-line' : 'ri-arrow-down-circle-line'"></i>
+                                class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-400 hover:text-purple-500">
+                            <i class="text-lg transition-transform duration-300" :class="diskShowAll ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
                         </button>
+                        <i class="ri-hard-drive-2-line text-xl p-2.5 rounded-xl bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400"></i>
                     </div>
-                    <p class="text-xs text-gray-400 mt-1" x-text="(data?.DiskUsage?.length || 0) + ' Partitions'"></p>
                 </div>
-                <!-- Icon Container -->
-                <div class="w-12 h-12 rounded-full bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
-                    <i class="ri-hard-drive-2-line text-xl text-purple-600 dark:text-purple-400"></i>
-                </div>
-            </div>
 
-            <div class="flex-1 overflow-hidden transition-all duration-300"
-                 :style="{ 'max-height': diskShowAll ? '500px' : '80px' }">
-                <div class="space-y-3">
-                    <template x-for="item in (diskShowAll ? data?.DiskUsage : (data?.DiskUsage || []).slice(0, 2))" :key="item.path">
-                        <div class="group">
-                            <div class="flex justify-between text-xs mb-1.5">
-                                <span class="font-medium text-gray-700 dark:text-gray-300 truncate max-w-[70%]" :title="item.path" x-text="item.path"></span>
-                                <span class="text-gray-500 dark:text-gray-400 font-mono" x-text="Math.round(item.usedPercent) + '%'"></span>
-                            </div>
-                            <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5">
-                                <div class="bg-purple-500 h-1.5 rounded-full transition-all duration-500 group-hover:bg-purple-600"
-                                     :style="`width: ${item.usedPercent}%`">
+                <div class="flex-1 overflow-hidden transition-all duration-500 ease-in-out"
+                     :style="diskShowAll ? 'max-height: 300px' : 'max-height: 80px'">
+                    <div class="space-y-4 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700" :style="diskShowAll ? 'max-height: 300px' : ''">
+                        <template x-for="item in data?.DiskUsage || []" :key="item.path">
+                            <div class="group/item">
+                                <div class="flex justify-between text-xs mb-1.5">
+                                    <div class="flex items-center gap-1.5 truncate w-3/4">
+                                        <i class="ri-save-line text-gray-300 dark:text-gray-600"></i>
+                                        <span class="font-medium text-gray-700 dark:text-gray-300 truncate" :title="item.path" x-text="item.path"></span>
+                                    </div>
+                                    <span class="font-mono text-gray-500 dark:text-gray-400" x-text="Math.round(item.usedPercent) + '%'"></span>
                                 </div>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-                <template x-if="!data?.DiskUsage || data.DiskUsage.length === 0">
-                    <div class="text-xs text-gray-400 italic">No disk data available</div>
-                </template>
-            </div>
-        </div>
-
-        <!-- 4. Network Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 dark:border-gray-700 flex flex-col">
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <div class="flex items-center gap-2">
-                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Network</p>
-                        <button @click="networkShowAll = !networkShowAll" x-show="activeNetworkInterfaces.length > 2"
-                                class="text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors focus:outline-none">
-                            <i class="text-base" :class="networkShowAll ? 'ri-arrow-up-circle-line' : 'ri-arrow-down-circle-line'"></i>
-                        </button>
-                    </div>
-                    <p class="text-xs text-gray-400 mt-1" x-text="activeNetworkInterfaces.length + ' Active Interfaces'"></p>
-                </div>
-                <!-- Icon Container -->
-                <div class="w-12 h-12 rounded-full bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
-                    <i class="ri-global-line text-xl text-orange-600 dark:text-orange-400"></i>
-                </div>
-            </div>
-
-            <div class="flex-1 overflow-hidden transition-all duration-300"
-                 :style="{ 'max-height': networkShowAll ? '500px' : '80px' }">
-                <div class="space-y-3">
-                    <template x-for="item in (networkShowAll ? activeNetworkInterfaces : activeNetworkInterfaces.slice(0, 2))" :key="item.name">
-                        <div class="flex items-center justify-between text-xs">
-                            <div class="font-medium text-gray-700 dark:text-gray-300 truncate max-w-[40%]" :title="item.name" x-text="item.name"></div>
-                            <div class="flex items-center space-x-3">
-                                <div class="flex items-center space-x-1 text-emerald-600 dark:text-emerald-400">
-                                    <i class="ri-download-line"></i>
-                                    <span class="font-mono" x-text="formatBytes(item.bytesRecv)"></span>
+                                <div class="h-1.5 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full transition-all duration-500 group-hover/item:bg-purple-500"
+                                         :class="getDiskColor(item.usedPercent)"
+                                         :style="`width: ${item.usedPercent}%`"></div>
                                 </div>
-                                <div class="flex items-center space-x-1 text-blue-600 dark:text-blue-400">
-                                    <i class="ri-upload-line"></i>
-                                    <span class="font-mono" x-text="formatBytes(item.bytesSent)"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-                <template x-if="activeNetworkInterfaces.length === 0">
-                    <div class="text-xs text-gray-400 italic">No active interfaces</div>
-                </template>
-            </div>
-        </div>
-    </div>
-
-    <!-- System Info Section -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800">
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                <i class="ri-server-line text-gray-400"></i> Host Information
-            </h3>
-        </div>
-        <div class="p-6">
-            <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-6">
-                <div class="group">
-                    <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Platform</dt>
-                    <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white" x-text="data?.HostInfo?.platform || 'N/A'"></dd>
-                </div>
-
-                <div class="group">
-                    <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Architecture</dt>
-                    <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white" x-text="data?.HostInfo?.kernelArch || 'N/A'"></dd>
-                </div>
-
-                <div class="group">
-                    <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Uptime</dt>
-                    <dd class="mt-1">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300"
-                              x-text="formatUptime(data?.HostInfo?.uptime)">
-                            loading...
-                        </span>
-                    </dd>
-                </div>
-
-                <div class="group">
-                    <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Total Memory</dt>
-                    <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white" x-text="data?.Memory?.total ? formatBytes(data.Memory.total) : 'N/A'"></dd>
-                </div>
-
-                <div class="sm:col-span-2 lg:col-span-4 pt-4 border-t border-gray-50 dark:border-gray-700/50 mt-2">
-                    <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">CPU Model</dt>
-                    <dd class="text-sm text-gray-700 dark:text-gray-300 grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <template x-for="item in data?.CPU" :key="item.cpu">
-                            <div class="flex items-center bg-gray-50 dark:bg-gray-700/30 px-3 py-2 rounded-lg">
-                                <i class="ri-cpu-line mr-2 text-gray-400"></i>
-                                <span class="font-mono text-xs" x-text="`${item.modelName} (${item.cores} cores)`"></span>
                             </div>
                         </template>
-                        <template x-if="!data?.CPU || data.CPU.length === 0"><span x-text="'N/A'"></span></template>
-                    </dd>
+                        <div x-show="!data?.DiskUsage?.length" class="text-xs text-gray-400 italic">No disk data</div>
+                    </div>
                 </div>
-            </dl>
+            </div>
+
+            <!-- 4. Network Card -->
+            <div class="group p-6 rounded-2xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-700/50 flex flex-col">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Network</span>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-2xl font-bold font-mono text-gray-900 dark:text-white" x-text="activeNetworkInterfaces.length">0</span>
+                            <span class="text-xs text-gray-400 font-medium">Interfaces</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button @click="networkShowAll = !networkShowAll" x-show="activeNetworkInterfaces.length > 2"
+                                class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-400 hover:text-orange-500">
+                            <i class="text-lg transition-transform duration-300" :class="networkShowAll ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
+                        </button>
+                        <i class="ri-global-line text-xl p-2.5 rounded-xl bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400"></i>
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-hidden transition-all duration-500 ease-in-out"
+                     :style="networkShowAll ? 'max-height: 300px' : 'max-height: 80px'">
+                    <div class="space-y-3 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700" :style="networkShowAll ? 'max-height: 300px' : ''">
+                        <template x-for="item in activeNetworkInterfaces" :key="item.name">
+                            <div class="flex items-center justify-between text-xs p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-700">
+                                <span class="font-bold text-gray-600 dark:text-gray-300 truncate w-1/3" :title="item.name" x-text="item.name"></span>
+                                <div class="flex items-center gap-3 font-mono text-[10px]">
+                                    <div class="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                                        <i class="ri-download-line"></i><span x-text="formatBytes(item.bytesRecv)"></span>
+                                    </div>
+                                    <div class="flex items-center gap-1 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded">
+                                        <i class="ri-upload-line"></i><span x-text="formatBytes(item.bytesSent)"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="!activeNetworkInterfaces.length" class="text-xs text-gray-400 italic">No data</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Host Info Section (Flattened Structure) -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 overflow-hidden">
+            <!-- 优化：合并 Header 容器与 Flex 布局 -->
+            <div class="flex items-center gap-3 px-6 py-5 border-b border-gray-100 dark:border-gray-700/50 bg-white dark:bg-gray-800">
+                <i class="ri-server-line text-gray-500 dark:text-gray-400 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg"></i>
+                <h3 class="text-base font-bold text-gray-900 dark:text-white">Host Specifications</h3>
+            </div>
+
+            <!-- 优化：合并 Padding 容器与 Grid 布局 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+                <!-- Column 1: OS & Runtime -->
+                <div class="space-y-4">
+                    <div class="flex items-start gap-4 p-4 rounded-xl bg-gray-50/50 dark:bg-gray-700/20 border border-gray-100 dark:border-gray-700/30">
+                        <i class="ri-terminal-window-line mt-1 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm text-indigo-500"></i>
+                        <div>
+                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Platform</p>
+                            <p class="text-sm font-bold text-gray-900 dark:text-white mt-0.5" x-text="data?.HostInfo?.platform || 'N/A'"></p>
+                            <p class="text-xs text-gray-400 mt-0.5 font-mono" x-text="data?.HostInfo?.kernelArch || 'Unknown Arch'"></p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4 p-4 rounded-xl bg-gray-50/50 dark:bg-gray-700/20 border border-gray-100 dark:border-gray-700/30">
+                        <i class="ri-time-line mt-1 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm text-emerald-500"></i>
+                        <div>
+                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">System Uptime</p>
+                            <p class="text-sm font-bold text-emerald-700 dark:text-emerald-400 mt-0.5 font-mono" x-text="formatUptime(data?.HostInfo?.uptime)">loading...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column 2: Memory -->
+                <div class="flex flex-col p-4 rounded-xl bg-gray-50/50 dark:bg-gray-700/20 border border-gray-100 dark:border-gray-700/30">
+                    <div class="flex items-center gap-3 mb-3">
+                        <i class="ri-cpu-line p-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm text-amber-500"></i>
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Memory Capacity</p>
+                    </div>
+                    <div class="mt-auto">
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white font-mono" x-text="data?.Memory?.total ? formatBytes(data.Memory.total) : 'N/A'"></p>
+                        <p class="text-xs text-gray-400 mt-1">Total Physical RAM</p>
+                    </div>
+                </div>
+
+                <!-- Column 3: Processors -->
+                <div class="p-4 rounded-xl bg-gray-50/50 dark:bg-gray-700/20 border border-gray-100 dark:border-gray-700/30 md:col-span-1">
+                    <div class="flex items-center gap-3 mb-3">
+                        <i class="ri-microchip-line p-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm text-rose-500"></i>
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Processor Units</p>
+                    </div>
+
+                    <div class="space-y-2 max-h-[120px] overflow-y-auto scrollbar-hide">
+                        <template x-for="item in data?.CPU" :key="item.cpu">
+                            <div class="flex items-center justify-between text-xs bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700/50">
+                                <span class="font-medium text-gray-700 dark:text-gray-300 truncate max-w-[70%]" x-text="item.modelName"></span>
+                                <span class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-gray-500 font-mono text-[10px]" x-text="item.cores + ' Cores'"></span>
+                            </div>
+                        </template>
+                        <div x-show="!data?.CPU?.length" class="text-sm text-gray-400 italic">Loading CPU info...</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -222,57 +226,76 @@
             data: {},
             diskShowAll: false,
             networkShowAll: false,
+            isConnected: false, // 新增：追踪连接状态
 
             get activeNetworkInterfaces() {
                 return (this.data?.Network || []).filter(n => n.bytesRecv > 0 || n.bytesSent > 0);
             },
+            getCpuUsage() { return Math.round(this.data?.CPUUsage?.[0] || 0); },
+            getMemUsage() { return Math.round(this.data?.Memory?.usedPercent || 0); },
 
-            getCpuUsage() {
-                return Math.round(this.data?.CPUUsage?.[0] || 0);
+            // Color Helpers (保持不变)
+            getColorClass(val) {
+                if(val >= 90) return 'text-rose-600 dark:text-rose-400';
+                if(val >= 70) return 'text-amber-600 dark:text-amber-400';
+                return 'text-gray-900 dark:text-white';
             },
-
-            getMemUsage() {
-                return Math.round(this.data?.Memory?.usedPercent || 0);
+            getBgClass(val) {
+                if(val >= 90) return 'bg-rose-500';
+                if(val >= 70) return 'bg-amber-500';
+                return 'bg-emerald-500';
+            },
+            getDiskColor(val) {
+                return val > 85 ? 'bg-rose-500' : 'bg-purple-500';
             },
 
             init() {
+                this.connectSSE();
+            },
+
+            connectSSE() {
                 const eventSource = new EventSource('/admin/monitor?type=info');
-                eventSource.onmessage = (event) => {
+
+                // 连接成功
+                eventSource.onopen = () => {
+                    this.isConnected = true;
+                };
+
+                // 接收消息
+                eventSource.onmessage = (e) => {
                     try {
-                        this.data = JSON.parse(event.data);
-                    } catch (e) {
-                        console.error("Error processing SSE data:", e);
+                        this.data = JSON.parse(e.data);
+                        // 确保收到消息时状态为 true (防止 onopen 未触发的情况)
+                        if (!this.isConnected) this.isConnected = true;
+                    } catch (err) {
+                        console.error(err);
                     }
                 };
-                eventSource.onerror = (err) => {
-                    // Close purely to prevent browser console spam during dev if server restarts
-                    // In prod, you might want auto-reconnect logic (EventSource does this natively usually)
+
+                // 连接错误或断开
+                eventSource.onerror = () => {
+                    this.isConnected = false;
+                    // SSE 默认会自动重连，但你可以选择在这里关闭它手动重连
                     // eventSource.close();
-                    console.log("SSE Connection lost, retrying...");
                 };
             },
 
             formatUptime(seconds) {
                 if (!seconds) return 'N/A';
-                const days = Math.floor(seconds / (3600 * 24));
-                const hours = Math.floor((seconds % (3600 * 24)) / 3600);
+                const days = Math.floor(seconds / 86400);
+                const hours = Math.floor((seconds % 86400) / 3600);
                 const minutes = Math.floor((seconds % 3600) / 60);
                 if (days > 0) return `${days}d ${hours}h ${minutes}m`;
                 return `${hours}h ${minutes}m`;
             },
 
-            formatBytes(bytes, decimals = 2) {
-                if (bytes === undefined || bytes === null) return '0 B';
-                if (bytes === 0) return '0 B';
-                if (bytes < 0) return 'N/A';
-                const k = 1024;
-                const dm = decimals < 0 ? 0 : decimals;
-                const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                const unit = sizes[i] !== undefined ? sizes[i] : sizes[sizes.length -1];
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + unit;
+            formatBytes(bytes, decimals = 1) {
+                if (!bytes) return '0 B';
+                const k = 1024, sizes = ['B', 'KB', 'MB', 'GB', 'TB'], i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
             }
         }));
     });
 </script>
+
 {{template "footer.template"}}

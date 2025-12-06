@@ -2,9 +2,10 @@ package core
 
 import (
 	"embed"
+	"gopanel/assets"
+
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
-	"gopanel/assets"
 )
 
 type Core struct {
