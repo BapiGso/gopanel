@@ -26,7 +26,7 @@ func (c *Core) Route() {
 	c.e.Validator = mymiddleware.DefaultValidator
 	c.e.Renderer = mymiddleware.DefaultTemplateRender
 
-	c.e.Use(mymiddleware.Slog)
+	c.e.Use(middleware.RequestLogger())
 	c.e.Use(middleware.Recover())
 	c.e.Use(middleware.Gzip())
 
