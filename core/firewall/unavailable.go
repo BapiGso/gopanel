@@ -2,8 +2,8 @@
 
 package firewall
 
-import "github.com/labstack/echo/v4"
+import "github.com/labstack/echo/v5"
 
-func Index(c echo.Context) error {
+func Index(c *echo.Context) error {
 	return c.Render(200, "unavailable.template", nil)
 }

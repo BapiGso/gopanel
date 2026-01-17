@@ -2,7 +2,7 @@ package file
 
 import (
 	"fmt"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"io"
 	"net/http"
 	"net/url"
@@ -15,7 +15,7 @@ import (
 	"unicode/utf8"
 )
 
-func Process(c echo.Context) error {
+func Process(c *echo.Context) error {
 	path := filepath.Clean(c.QueryParam("path"))
 	mode := c.QueryParam("mode")
 	switch c.Request().Method {
@@ -113,7 +113,7 @@ func Process(c echo.Context) error {
 }
 
 // Index 主要依靠cookie来进行路径状态管理
-func Index(c echo.Context) error {
+func Index(c *echo.Context) error {
 	//从cookie中获取目录路径
 	directory := "/"
 	if dirHistory, err := c.Cookie("dirHistory"); err == nil {

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/google/nftables"
 	"github.com/google/nftables/expr"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"math/rand"
 	"net/http"
 	"time"
@@ -25,7 +25,7 @@ func generateUniqueName(prefix string, length int) string {
 	return fmt.Sprintf("%s_%s", prefix, string(b))
 }
 
-func Index(c echo.Context) error {
+func Index(c *echo.Context) error {
 	conn, err := nftables.New()
 	if err != nil {
 		return err

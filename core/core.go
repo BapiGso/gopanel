@@ -2,10 +2,9 @@ package core
 
 import (
 	"embed"
-	"gopanel/assets"
-
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/spf13/viper"
+	"gopanel/assets"
 )
 
 type Core struct {
@@ -19,6 +18,6 @@ func New() (c *Core) {
 	c = &Core{}
 	c.assetsFS = &assets.Assets
 	c.e = echo.New()
-	c.e.HideBanner = true
+	//c.e.HideBanner = true
 	return c
 }

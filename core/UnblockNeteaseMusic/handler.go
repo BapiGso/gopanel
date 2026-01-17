@@ -2,11 +2,11 @@ package UnblockNeteaseMusic
 
 import (
 	"flag"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"strings"
 )
 
-func Index(c echo.Context) error {
+func Index(c *echo.Context) error {
 	switch c.Request().Method {
 	case "GET":
 		return c.Render(200, "UnblockNeteaseMusic.template", nil)

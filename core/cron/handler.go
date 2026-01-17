@@ -3,7 +3,7 @@ package cron
 import (
 	"fmt"
 	"github.com/go-co-op/gocron/v2"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"net/http"
 	"os/exec"
 	"slices"
@@ -36,7 +36,7 @@ func (t *task) Name() string {
 
 var schedulerList []task
 
-func Index(c echo.Context) error {
+func Index(c *echo.Context) error {
 	req := &struct {
 		Name      string `form:"name"         json:"name"`
 		Frequency string `form:"frequency"    json:"frequency"`

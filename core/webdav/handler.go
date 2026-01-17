@@ -2,7 +2,7 @@ package webdav
 
 import (
 	"fmt"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/spf13/viper"
 	"golang.org/x/net/webdav"
 	"net/http"
@@ -14,7 +14,7 @@ var srv = &webdav.Handler{
 	LockSystem: webdav.NewMemLS(),
 }
 
-func Index(c echo.Context) error {
+func Index(c *echo.Context) error {
 	switch c.Request().Method {
 	case "GET":
 		return c.Render(http.StatusOK, "webdav.template", map[string]any{
@@ -63,7 +63,7 @@ func FileSystem() echo.HandlerFunc {
 	}))
 }
 
-func WebDav(c echo.Context) error {
+func WebDav(c *echo.Context) error {
 	fmt.Println(123)
 	srv.ServeHTTP(c.Response(), c.Request())
 	return nil

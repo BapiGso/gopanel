@@ -3,7 +3,7 @@ package term
 import (
 	"errors"
 	"fmt"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"golang.org/x/net/websocket"
 	"io"
 	"net/http"
@@ -15,7 +15,7 @@ var (
 	termMutex   sync.Mutex
 )
 
-func Index(c echo.Context) error {
+func Index(c *echo.Context) error {
 	termMutex.Lock()
 	terms := make([]*Term, 0, len(activeTerms))
 	for _, t := range activeTerms {
@@ -25,7 +25,7 @@ func Index(c echo.Context) error {
 	return c.Render(http.StatusOK, "term.template", terms)
 }
 
-func CreateTermHandler(c echo.Context) error {
+func CreateTermHandler(c *echo.Context) error {
 	req := &struct {
 		Host     string `query:"host" form:"host" json:"host" validate:"required"`
 		Port     int    `query:"port" form:"port" json:"port" validate:"required"`
@@ -56,7 +56,7 @@ func CreateTermHandler(c echo.Context) error {
 	return c.JSON(200, term)
 }
 
-func SetTermWindowSizeHandler(c echo.Context) error {
+func SetTermWindowSizeHandler(c *echo.Context) error {
 	req := &struct {
 		Id   string `query:"id" form:"id" json:"id"`
 		Rows int    `query:"rows" form:"rows" json:"rows"`
@@ -84,7 +84,7 @@ func SetTermWindowSizeHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, term)
 }
 
-func LinkTermDataHandler(c echo.Context) error {
+func LinkTermDataHandler(c *echo.Context) error {
 	const TermBufferSize = 8192
 	id := c.Param("id")
 
@@ -98,14 +98,14 @@ func LinkTermDataHandler(c echo.Context) error {
 
 	websocket.Handler(func(ws *websocket.Conn) {
 		defer func() {
-			c.Logger().Infof("Destroy term: %s", term.Id)
+			c.Logger().Info("Destroy term: %s", term.Id)
 			termMutex.Lock()
 			delete(activeTerms, term.Id)
 			termMutex.Unlock()
 			term.Close()
 			ws.Close()
 		}()
-		c.Logger().Infof("Linking term: %s", term.Id)
+		c.Logger().Info("Linking term: %s", term.Id)
 		go func() {
 			b := [TermBufferSize]byte{}
 			for {
@@ -114,7 +114,7 @@ func LinkTermDataHandler(c echo.Context) error {
 					if !errors.Is(err, io.EOF) {
 						websocket.Message.Send(ws,
 							fmt.Sprintf("\nError: %s", err.Error()))
-						c.Logger().Error(err)
+						c.Logger().Error(err.Error())
 					}
 					return
 				}
@@ -133,7 +133,7 @@ func LinkTermDataHandler(c echo.Context) error {
 					if !errors.Is(err, io.EOF) {
 						websocket.Message.Send(ws,
 							fmt.Sprintf("\nError: %s", err.Error()))
-						c.Logger().Error(err)
+						c.Logger().Error(err.Error())
 					}
 					return
 				}
@@ -148,12 +148,12 @@ func LinkTermDataHandler(c echo.Context) error {
 			msg := ""
 			err := websocket.Message.Receive(ws, &msg)
 			if err != nil {
-				c.Logger().Error(err)
+				c.Logger().Error(err.Error())
 				return
 			}
 			_, err = term.Stdin.Write([]byte(msg))
 			if err != nil {
-				c.Logger().Error(err)
+				c.Logger().Error(err.Error())
 				return
 			}
 		}

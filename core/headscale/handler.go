@@ -15,7 +15,7 @@ import (
 
 	"github.com/juanfont/headscale/hscontrol"
 	"github.com/juanfont/headscale/hscontrol/types"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 // ================= 全局变量区 =================
@@ -41,7 +41,7 @@ type headscaleConfig struct {
 }
 
 // Index 是唯一的入口函数
-func Index(c echo.Context) error {
+func Index(c *echo.Context) error {
 	// 获取请求动作类型
 	action := c.QueryParam("status")
 	method := c.Request().Method

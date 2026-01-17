@@ -3,13 +3,13 @@ package monitor
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"net/http"
 	"time"
 )
 
 // Index 是监视器页面和 SSE 流的 HTTP 处理器
-func Index(c echo.Context) error {
+func Index(c *echo.Context) error {
 	if c.QueryParam("type") == "info" { // SSE 流请求
 		c.Response().Header().Set(echo.HeaderContentType, "text/event-stream")
 		c.Response().Header().Set(echo.HeaderCacheControl, "no-cache")
@@ -33,7 +33,7 @@ func Index(c echo.Context) error {
 				if _, err := fmt.Fprint(c.Response(), "data: "+string(jsonStu)+"\n\n"); err != nil {
 					return err
 				}
-				c.Response().Flush()
+				http.NewResponseController(c.Response()).Flush()
 				time.Sleep(2 * time.Second)
 			}
 		}

@@ -3,8 +3,8 @@ package mymiddleware
 import (
 	"context"
 	"fmt"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 	"log/slog"
 	"os"
 )
@@ -29,8 +29,8 @@ var Slog = middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 	LogURI:      true,
 	LogStatus:   true,
 	LogRemoteIP: true,
-	LogError:    true,
-	LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+	//LogError:    true,
+	LogValuesFunc: func(c *echo.Context, v middleware.RequestLoggerValues) error {
 		slog.LogAttrs(context.Background(), slog.LevelInfo, fmt.Sprintf("err=%v", v.Error),
 			slog.String("Method", v.Method),
 			slog.String("Url", v.URI),

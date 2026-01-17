@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"net/http"
 	"time"
 )
 
-func Index(c echo.Context) error {
+func Index(c *echo.Context) error {
 	switch c.Request().Method {
 	case "GET":
 		if c.QueryParam("type") == "info" {
@@ -39,7 +39,7 @@ func Index(c echo.Context) error {
 						return err
 					}
 					fmt.Fprint(c.Response(), "data: "+string(jsonStu)+"\n\n")
-					c.Response().Flush()
+					http.NewResponseController(c.Response()).Flush()
 					time.Sleep(2 * time.Second)
 				}
 			}

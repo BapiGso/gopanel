@@ -1,12 +1,12 @@
 package security
 
 import (
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/spf13/viper"
 	"net/http"
 )
 
-func Index(c echo.Context) error {
+func Index(c *echo.Context) error {
 
 	switch c.Request().Method {
 	case "GET":

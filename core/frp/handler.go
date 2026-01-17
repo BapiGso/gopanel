@@ -3,6 +3,7 @@ package frp
 import (
 	"context"
 	"fmt"
+	"github.com/fatedier/frp/pkg/policy/security"
 	"io"
 	"net/http"
 	"os"
@@ -17,7 +18,7 @@ import (
 	"github.com/fatedier/frp/pkg/util/log"
 	"github.com/fatedier/frp/server"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/spf13/viper"
 )
 
@@ -27,7 +28,7 @@ var (
 )
 
 // Index 处理统一的入口 /admin/frp
-func Index(c echo.Context) error {
+func Index(c *echo.Context) error {
 	serviceType := c.QueryParam("type") // "frps" or "frpc"
 
 	switch c.Request().Method {
@@ -118,7 +119,9 @@ func runFRPSServer() error {
 	if err != nil {
 		return err
 	}
-	if _, err := validation.ValidateServerConfig(cfg); err != nil {
+	unsafeFeatures := security.NewUnsafeFeatures([]string{})
+	validator := validation.NewConfigValidator(unsafeFeatures)
+	if _, err := validator.ValidateServerConfig(cfg); err != nil {
 		return err
 	}
 
@@ -138,9 +141,8 @@ func runFRPCClient() error {
 	if cli != nil {
 		cli.GracefulClose(500 * time.Millisecond)
 	}
-
 	cfg, proxyCfgs, visitorCfgs, _, err := config.LoadClientConfig("gopanel_frpc.conf", false)
-	warning, err := validation.ValidateAllClientConfig(cfg, proxyCfgs, visitorCfgs)
+	warning, err := validation.ValidateAllClientConfig(cfg, proxyCfgs, visitorCfgs, nil)
 	if warning != nil {
 		fmt.Printf("WARNING: %v\n", warning)
 	}

@@ -2,14 +2,14 @@ package website
 
 import (
 	"github.com/caddyserver/caddy/v2"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/spf13/viper"
 	"io"
 	"net/http"
 	"os"
 )
 
-func Index(c echo.Context) error {
+func Index(c *echo.Context) error {
 	switch c.Request().Method {
 	case "POST":
 		if c.QueryParam("status") == "restart" {

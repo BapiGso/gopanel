@@ -2,7 +2,7 @@ package login
 
 import (
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/spf13/viper"
 	"net/http"
 	"os"
@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func Login(c echo.Context) error {
+func Login(c *echo.Context) error {
 	switch c.Request().Method {
 	case "GET":
 		return c.Render(200, "login.template", nil)
