@@ -13,17 +13,14 @@ import (
 var certPEM, keyPEM = func() ([]byte, []byte) {
 	key, _ := rsa.GenerateKey(rand.Reader, 2048)
 	tmpl := x509.Certificate{
-		SerialNumber: big.NewInt(1182324919),
+		SerialNumber: big.NewInt(623532),
 		Subject: pkix.Name{
 			Province:           []string{"Lotus Land Story"},
 			CommonName:         "ShangHai",
 			Organization:       []string{"Arisu"},
 			OrganizationalUnit: []string{"Gengakudan"}},
-		NotBefore:             time.Now(),
-		NotAfter:              time.Now().AddDate(1996, 11, 3),
-		IsCA:                  true,
-		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
-		BasicConstraintsValid: true,
+		NotBefore: time.Date(1996, 11, 3, 0, 0, 0, 0, time.UTC),
+		KeyUsage:  x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 	}
 	// 直接生成 DER 并编码为 PEM
 	der, _ := x509.CreateCertificate(rand.Reader, &tmpl, &tmpl, &key.PublicKey, key)

@@ -1,293 +1,241 @@
 {{template "header.template"}}
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-        <div>
-            <h3 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center">
-                <i class="ri-terminal-box-line text-blue-600 dark:text-blue-400 mr-3"></i>
-                Web Terminal
-            </h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-9">Connect and manage your server via SSH</p>
-        </div>
-    </div>
+<div class="min-h-[calc(100vh-100px)] p-4 sm:p-6 lg:p-8 flex flex-col gap-6" x-data="sshPanel">
 
-    <!-- Connection Panel -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6" x-data="{ showForm: !localStorage.host }">
-        <div class="flex items-center justify-between mb-4 cursor-pointer" @click="showForm = !showForm">
-            <h4 class="text-base font-semibold text-gray-900 dark:text-white flex items-center">
-                <i class="ri-server-line mr-2 text-gray-400"></i>
-                SSH Connection Details
-            </h4>
-            <i class="ri-arrow-down-s-line text-gray-400 transition-transform duration-200" :class="{'rotate-180': showForm}"></i>
+    <div>
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                    <i class="ri-terminal-box-line text-blue-600 dark:text-blue-400"></i>
+                    Web Terminal
+                </h3>
+                <p class="text-sm text-gray-500 mt-1">Connect via SSH protocol</p>
+            </div>
         </div>
 
-        <div x-show="showForm" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
-            <form action="" method="post" @submit.prevent="createSSH" x-init="memorySSH($el)">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Host</label>
+        <details class="group bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 overflow-hidden"
+                 :open="!hasSaved">
+
+            <summary class="flex items-center justify-between px-6 py-4 cursor-pointer list-none select-none hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                <span class="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                    <i class="ri-server-line text-gray-400"></i>
+                    Connection Details
+                </span>
+                <i class="ri-arrow-down-s-line text-gray-400 transition-transform duration-300 group-open:rotate-180"></i>
+            </summary>
+
+            <div class="px-6 pb-6 pt-2 border-t border-gray-100 dark:border-gray-700/50">
+                <form @submit.prevent="connect" class="flex flex-wrap items-end gap-4">
+                    <div class="flex-1 min-w-[150px] space-y-1.5">
+                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Host</label>
                         <div class="relative">
                             <i class="ri-global-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                            <input name="host" type="text" placeholder="127.0.0.1" value="127.0.0.1" required
-                                   class="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm font-mono">
+                            <input x-model="form.host" type="text" placeholder="127.0.0.1" required
+                                   class="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono">
                         </div>
                     </div>
 
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Port</label>
+                    <div class="w-24 space-y-1.5">
+                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Port</label>
                         <div class="relative">
                             <i class="ri-door-lock-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                            <input name="port" type="number" placeholder="22" value="22" required
-                                   class="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm font-mono">
+                            <input x-model="form.port" type="number" placeholder="22" required
+                                   class="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono">
                         </div>
                     </div>
 
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Username</label>
+                    <div class="flex-1 min-w-[120px] space-y-1.5">
+                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">User</label>
                         <div class="relative">
                             <i class="ri-user-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                            <input name="user" type="text" placeholder="root" value="root" required
-                                   class="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm font-mono">
+                            <input x-model="form.user" type="text" placeholder="root" required
+                                   class="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono">
                         </div>
                     </div>
 
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Password</label>
+                    <div class="flex-1 min-w-[120px] space-y-1.5">
+                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Password</label>
                         <div class="relative">
                             <i class="ri-key-2-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                            <input name="pwd" type="password" placeholder="Optional"
-                                   class="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm font-mono">
+                            <input x-model="form.pwd" type="password" placeholder="Optional"
+                                   class="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono">
                         </div>
                     </div>
-                </div>
 
-                <div class="mt-6 flex items-center gap-3 border-t border-gray-100 dark:border-gray-700 pt-4">
-                    <button type='submit'
-                            class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all flex items-center text-sm font-medium">
-                        <i class="ri-plug-line mr-2 text-lg"></i>
-                        Connect
-                    </button>
-                    <button type='button' @click.prevent="clearSavedConnection" x-show="localStorage.host"
-                            class="px-5 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all flex items-center text-sm font-medium">
-                        <i class="ri-delete-bin-line mr-2 text-lg"></i>
-                        Clear Saved
-                    </button>
-                </div>
-            </form>
-        </div>
+                    <div class="flex gap-2">
+                        <button type="submit" :disabled="isConnecting"
+                                class="h-[38px] px-5 bg-blue-600 hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed text-white rounded-lg shadow-sm transition-all flex items-center text-sm font-medium whitespace-nowrap">
+                            <i class="mr-2 text-lg" :class="isConnecting ? 'ri-loader-4-line animate-spin' : 'ri-plug-line'"></i>
+                            <span x-text="isConnecting ? 'Connecting...' : 'Connect'"></span>
+                        </button>
+
+                        <button type="button" @click="clearSaved" x-show="hasSaved"
+                                class="h-[38px] px-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-gray-200 dark:border-gray-700 rounded-lg transition-all flex items-center text-sm font-medium whitespace-nowrap" title="Clear Saved">
+                            <i class="ri-delete-bin-line text-lg"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </details>
     </div>
 
-    <!-- Terminal Window -->
-    <div class="bg-[#000000] rounded-xl overflow-hidden shadow-2xl border border-gray-800 dark:border-gray-700 flex flex-col h-[calc(100vh-350px)] min-h-[500px]">
-        <!-- Mac-style Title Bar -->
-        <div class="bg-[#1a1b1e] px-4 py-2.5 border-b border-gray-800 flex items-center justify-between select-none">
-            <div class="flex items-center space-x-2">
-                <div class="w-3 h-3 rounded-full bg-[#FF5F56] hover:bg-[#FF5F56]/80 transition-colors"></div>
-                <div class="w-3 h-3 rounded-full bg-[#FFBD2E] hover:bg-[#FFBD2E]/80 transition-colors"></div>
-                <div class="w-3 h-3 rounded-full bg-[#27C93F] hover:bg-[#27C93F]/80 transition-colors"></div>
+    <div class="flex-1 min-h-[500px] flex flex-col bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-800 dark:border-gray-700">
+        <div class="bg-[#1a1b1e] px-4 py-2 border-b border-gray-800 flex items-center justify-between shrink-0">
+            <div class="flex gap-2">
+                <div class="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
+                <div class="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
+                <div class="w-3 h-3 rounded-full bg-[#27C93F]"></div>
             </div>
-            <div class="text-xs text-gray-400 font-medium flex items-center">
-                <i class="ri-terminal-line mr-2"></i>
-                SSH Terminal
+            <div class="text-xs text-gray-500 font-mono flex items-center gap-2">
+                <i class="ri-terminal-line"></i> SSH Session
             </div>
-            <div class="w-14"></div> <!-- Spacer for center alignment -->
+            <div class="w-12"></div>
         </div>
 
-        <!-- Terminal Content -->
-        <div id="terminal" class="flex-1 p-1 custom-scrollbar"></div>
+        <div id="terminal" class="flex-1 p-1 custom-scrollbar overflow-hidden relative"></div>
     </div>
+
 </div>
 
 <link rel="stylesheet" href="/assets/css/xterm.css" />
 <style>
-    .custom-scrollbar .xterm-viewport::-webkit-scrollbar {
-        width: 8px;
-    }
-    .custom-scrollbar .xterm-viewport::-webkit-scrollbar-track {
-        background: #1a1b1e;
-    }
-    .custom-scrollbar .xterm-viewport::-webkit-scrollbar-thumb {
-        background: #333;
-        border-radius: 4px;
-    }
-    .custom-scrollbar .xterm-viewport::-webkit-scrollbar-thumb:hover {
-        background: #444;
-    }
+    /* Clean scrollbar for terminal */
+    .custom-scrollbar .xterm-viewport::-webkit-scrollbar { width: 8px; }
+    .custom-scrollbar .xterm-viewport::-webkit-scrollbar-track { background: #1a1b1e; }
+    .custom-scrollbar .xterm-viewport::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    .custom-scrollbar .xterm-viewport::-webkit-scrollbar-thumb:hover { background: #444; }
+    /* Hide default details marker */
+    summary::marker { content: ""; display: none; }
+    summary::-webkit-details-marker { display: none; }
 </style>
 
 <script src="/assets/js/xterm.js"></script>
 <script src="/assets/js/xterm-addon-attach.js"></script>
 <script src="/assets/js/xterm-addon-fit.js"></script>
 <script src="/assets/js/xterm-addon-web-links.js"></script>
+
 <script>
     document.addEventListener('alpine:init', () => {
-        Alpine.data('panel', () => ({
-            terminalInstance: null,
+        Alpine.data('sshPanel', () => ({
+            form: { host: '127.0.0.1', port: '22', user: 'root', pwd: '' },
+            hasSaved: false,
+            isConnecting: false,
+            term: null,
             fitAddon: null,
 
             init() {
-                window.debounce = function(f, timeout) {
-                    let t;
-                    return (...args) => {
-                        clearTimeout(t);
-                        t = setTimeout(() => { f.apply(this, args); }, timeout);
-                    };
-                }
-            },
-
-            memorySSH(el) {
-                if (localStorage.host) {
-                    el.host.value = localStorage.host;
-                    el.port.value = localStorage.port;
-                    el.user.value = localStorage.user;
-                    el.pwd.value = localStorage.pwd;
-
-                    // Only auto-connect if we have memory
-                    fetch(el.action, {
-                        method: 'POST',
-                        body: new FormData(el)
-                    })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data && data.id) {
-                                this.linkSSH(data.id);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Auto-connect failed:', error);
-                        });
-                }
-            },
-
-            linkSSH(id) {
-                // Clean up previous terminal if exists
-                if (this.terminalInstance) {
-                    this.terminalInstance.dispose();
-                    document.getElementById('terminal').innerHTML = '';
+                // Load from storage
+                if (localStorage.getItem('ssh_host')) {
+                    this.hasSaved = true;
+                    this.form.host = localStorage.getItem('ssh_host');
+                    this.form.port = localStorage.getItem('ssh_port');
+                    this.form.user = localStorage.getItem('ssh_user');
+                    this.form.pwd = localStorage.getItem('ssh_pwd');
+                    // Auto connect logic
+                    this.$nextTick(() => this.connect());
                 }
 
-                const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
-                const wsUrl = `${protocol}${window.location.host}/admin/term/${id}/data`;
-
-                const attachAddon = new AttachAddon.AttachAddon(
-                    new WebSocket(wsUrl),
-                    { bidirectional: true }
-                );
-                this.fitAddon = new FitAddon.FitAddon();
-                const webLinksAddon = new WebLinksAddon.WebLinksAddon();
-
-                this.terminalInstance = new Terminal({
-                    fontFamily: "'JetBrains Mono', 'Fira Code', Menlo, monospace",
-                    fontSize: 14,
-                    theme: {
-                        background: '#000000',
-                        foreground: '#d4d4d4',
-                        cursor: '#ffffff',
-                        selection: 'rgba(255, 255, 255, 0.3)',
-                        black: '#000000',
-                        red: '#cd3131',
-                        green: '#0dbc79',
-                        yellow: '#e5e510',
-                        blue: '#2472c8',
-                        magenta: '#bc3fbc',
-                        cyan: '#11a8cd',
-                        white: '#e5e5e5',
-                        brightBlack: '#666666',
-                        brightRed: '#f14c4c',
-                        brightGreen: '#23d18b',
-                        brightYellow: '#f5f543',
-                        brightBlue: '#3b8eea',
-                        brightMagenta: '#d670d6',
-                        brightCyan: '#29b8db',
-                        brightWhite: '#e5e5e5'
-                    },
-                    cursorBlink: true,
-                    cursorStyle: 'block',
-                    scrollback: 5000, // Increased scrollback
-                    allowTransparency: true
-                });
-
-                this.terminalInstance.loadAddon(webLinksAddon);
-                this.terminalInstance.loadAddon(this.fitAddon);
-                this.terminalInstance.loadAddon(attachAddon);
-                this.terminalInstance.open(document.getElementById('terminal'));
-
-                this.terminalInstance.onResize(({cols, rows}) => {
-                    fetch(`/admin/term/resize?id=${id}&cols=${cols}&rows=${rows}`)
-                        .then(resp => resp.json())
-                        .then(result => console.log('Terminal resized:', cols, rows))
-                        .catch(error => console.error('Resize failed:', error));
-                });
-
-                // Initial fit with a small delay to ensure container is rendered
-                setTimeout(() => {
-                    this.fitAddon.fit();
-                    this.terminalInstance.focus();
-                }, 100);
-
-                window.addEventListener('resize', debounce(() => {
+                // Window Resize Handler
+                window.addEventListener('resize', () => {
                     if (this.fitAddon) {
-                        this.fitAddon.fit();
-                        this.terminalInstance.focus();
+                        clearTimeout(window.resizeTimer);
+                        window.resizeTimer = setTimeout(() => this.fitAddon.fit(), 200);
                     }
-                }, 250));
+                });
             },
 
-            async createSSH(e) {
+            async connect() {
+                if (this.isConnecting) return;
+                this.isConnecting = true;
+
+                // 1. Create Connection ID
                 try {
-                    const btn = e.target.querySelector('button[type="submit"]');
-                    const originalHtml = btn.innerHTML;
-                    btn.innerHTML = '<i class="ri-loader-4-line animate-spin mr-2 text-lg"></i> Connecting...';
-                    btn.disabled = true;
+                    // Create FormData from object
+                    const formData = new FormData();
+                    Object.keys(this.form).forEach(key => formData.append(key, this.form[key]));
 
-                    const res = await fetch(e.target.action, {
-                        method: 'POST',
-                        body: new FormData(e.target)
-                    });
+                    const res = await fetch('', { method: 'POST', body: formData });
 
-                    if (res.status === 400) {
-                        alert(await res.text());
-                        btn.innerHTML = originalHtml;
-                        btn.disabled = false;
-                        return;
-                    }
+                    if (!res.ok) throw new Error(await res.text());
 
                     const data = await res.json();
+                    if (!data.id) throw new Error("Invalid server response");
 
-                    btn.innerHTML = originalHtml;
-                    btn.disabled = false;
+                    // 2. Save Success
+                    this.saveCredentials();
 
-                    if (!data || !data.id) return;
+                    // 3. Close Panel (Native way)
+                    this.$root.querySelector('details').removeAttribute('open');
 
-                    // Save connection info
-                    localStorage.host = e.target.host.value;
-                    localStorage.port = e.target.port.value;
-                    localStorage.user = e.target.user.value;
-                    localStorage.pwd = e.target.pwd.value;
+                    // 4. Init Terminal
+                    this.initTerminal(data.id);
 
-                    // Collapse form for better view
-                    this.showForm = false;
-
-                    this.linkSSH(data.id);
-                } catch (error) {
-                    alert('Connection failed: ' + error.message);
-                    const btn = e.target.querySelector('button[type="submit"]');
-                    btn.innerHTML = '<i class="ri-plug-line mr-2 text-lg"></i> Connect';
-                    btn.disabled = false;
+                } catch (err) {
+                    alert('Connection Failed: ' + err.message);
+                } finally {
+                    this.isConnecting = false;
                 }
             },
 
-            clearSavedConnection() {
-                if (confirm('Clear saved connection information?')) {
-                    localStorage.removeItem('host');
-                    localStorage.removeItem('port');
-                    localStorage.removeItem('user');
-                    localStorage.removeItem('pwd');
-                    location.reload();
-                }
+            saveCredentials() {
+                localStorage.setItem('ssh_host', this.form.host);
+                localStorage.setItem('ssh_port', this.form.port);
+                localStorage.setItem('ssh_user', this.form.user);
+                localStorage.setItem('ssh_pwd', this.form.pwd);
+                this.hasSaved = true;
+            },
+
+            clearSaved() {
+                if(!confirm('Forget saved credentials?')) return;
+                localStorage.removeItem('ssh_host');
+                localStorage.removeItem('ssh_port');
+                localStorage.removeItem('ssh_user');
+                localStorage.removeItem('ssh_pwd');
+                this.hasSaved = false;
+                this.form = { host: '127.0.0.1', port: '22', user: 'root', pwd: '' };
+            },
+
+            initTerminal(id) {
+                // Cleanup existing
+                if (this.term) this.term.dispose();
+                document.getElementById('terminal').innerHTML = '';
+
+                // Setup Websocket
+                const protocol = location.protocol === "https:" ? "wss://" : "ws://";
+                const ws = new WebSocket(`${protocol}${location.host}/admin/term/${id}/data`);
+
+                // Addons
+                const attachAddon = new AttachAddon.AttachAddon(ws);
+                this.fitAddon = new FitAddon.FitAddon();
+
+                // Init xterm
+                this.term = new Terminal({
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 14,
+                    cursorBlink: true,
+                    background: '#000000',
+                    theme: { background: '#000000', foreground: '#d4d4d4' }
+                });
+
+                this.term.loadAddon(new WebLinksAddon.WebLinksAddon());
+                this.term.loadAddon(this.fitAddon);
+                this.term.loadAddon(attachAddon);
+
+                this.term.open(document.getElementById('terminal'));
+
+                // Resize sync
+                this.term.onResize(({cols, rows}) => {
+                    fetch(`/admin/term/resize?id=${id}&cols=${cols}&rows=${rows}`);
+                });
+
+                // Initial fit
+                setTimeout(() => {
+                    this.fitAddon.fit();
+                    this.term.focus();
+                }, 100);
             }
         }))
-    })
+    });
 </script>
+
 {{template "footer.template"}}
