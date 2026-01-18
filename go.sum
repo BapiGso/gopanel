@@ -431,6 +431,8 @@ github.com/labstack/echo-jwt/v5 v5.0.0-20260101195926-7cdd901b4337 h1:+9keiGOPRL
 github.com/labstack/echo-jwt/v5 v5.0.0-20260101195926-7cdd901b4337/go.mod h1:7zV1rqeuZ57XS4nwL/ymw4tywVUzg5SEovZandLv9nI=
 github.com/labstack/echo/v5 v5.0.0-20260101135421-ec9232814e7b h1:+5lI6NJTUBWkavP2F/9tQ9oaDX2b+f5hv0MiOHIoogs=
 github.com/labstack/echo/v5 v5.0.0-20260101135421-ec9232814e7b/go.mod h1:5La3y+CVfH4IzVRlQA2LmK+clJEniclmzbqSyZIhsP4=
+github.com/labstack/echo/v5 v5.0.0 h1:JHKGrI0cbNsNMyKvranuY0C94O4hSM7yc/HtwcV3Na4=
+github.com/labstack/echo/v5 v5.0.0/go.mod h1:SyvlSdObGjRXeQfCCXW/sybkZdOOQZBmpKF0bvALaeo=
 github.com/labstack/gommon v0.4.2 h1:F8qTUNXgG1+6WQmqoUWnz8WiEU60mXVVw0P4ht1WRA0=
 github.com/labstack/gommon v0.4.2/go.mod h1:QlUFxVM+SNXhDL/Z7YhocGIBYOiwB0mXm1+1bAPHPyU=
 github.com/ledongthuc/pdf v0.0.0-20220302134840-0c2507a12d80/go.mod h1:imJHygn/1yfhB7XSJJKlFZKl/J+dCPAknuiaGOshXAs=
@@ -1038,6 +1040,8 @@ modernc.org/sortutil v1.2.1 h1:+xyoGf15mM3NMlPDnFqrteY07klSFxLElE2PVuWIJ7w=
 modernc.org/sortutil v1.2.1/go.mod h1:7ZI3a3REbai7gzCLcotuw9AC4VZVpYMjDzETGsSMqJE=
 modernc.org/sqlite v1.44.1 h1:qybx/rNpfQipX/t47OxbHmkkJuv2JWifCMH8SVUiDas=
 modernc.org/sqlite v1.44.1/go.mod h1:CzbrU2lSB1DKUusvwGz7rqEKIq+NUd8GWuBBZDs9/nA=
+modernc.org/sqlite v1.44.2 h1:EdYqXeBpKFJjg8QYnw6E71MpANkoxyuYi+g68ugOL8g=
+modernc.org/sqlite v1.44.2/go.mod h1:CzbrU2lSB1DKUusvwGz7rqEKIq+NUd8GWuBBZDs9/nA=
 modernc.org/strutil v1.2.1 h1:UneZBkQA+DX2Rp35KcM69cSsNES9ly8mQWD71HKlOA0=
 modernc.org/strutil v1.2.1/go.mod h1:EHkiggD70koQxjVdSBM3JKM7k6L0FbGE5eymy9i3B9A=
 modernc.org/token v1.1.0 h1:Xl7Ap9dKaEs5kLoOQeQmPWevfnk/DM5qcLcYlA8ys6Y=

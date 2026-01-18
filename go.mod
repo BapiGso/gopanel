@@ -14,7 +14,7 @@ require (
 	github.com/google/nftables v0.3.0
 	github.com/juanfont/headscale v0.27.1
 	github.com/labstack/echo-jwt/v5 v5.0.0-20260101195926-7cdd901b4337
-	github.com/labstack/echo/v5 v5.0.0-20260101135421-ec9232814e7b
+	github.com/labstack/echo/v5 v5.0.0
 	github.com/labstack/gommon v0.4.2
 	github.com/shirou/gopsutil/v4 v4.25.12
 	github.com/spf13/viper v1.21.0
@@ -304,7 +304,7 @@ require (
 	modernc.org/libc v1.67.6 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	modernc.org/sqlite v1.44.1 // indirect
+	modernc.org/sqlite v1.44.2 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 	tailscale.com v1.94.0 // indirect
