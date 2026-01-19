@@ -13,7 +13,7 @@ require (
 	github.com/golang/glog v1.2.5
 	github.com/google/nftables v0.3.0
 	github.com/juanfont/headscale v0.27.1
-	github.com/labstack/echo-jwt/v5 v5.0.0-20260101195926-7cdd901b4337
+	github.com/labstack/echo-jwt/v5 v5.0.0
 	github.com/labstack/echo/v5 v5.0.0
 	github.com/labstack/gommon v0.4.2
 	github.com/shirou/gopsutil/v4 v4.25.12
