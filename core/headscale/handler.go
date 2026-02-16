@@ -38,7 +38,7 @@ type headscaleConfig struct {
 	IPv4Prefix        string `form:"ipv4_prefix"`
 	IPv6Prefix        string `form:"ipv6_prefix"`
 	BaseDomain        string `form:"base_domain"`
-	DERPEnabled       bool   `form:"derp_enabled" default:"true"` // "on" or ""
+	DERPEnabled       bool   `form:"derp_enabled"`
 	DERPRegionID      int    `form:"derp_region_id" default:"999"`
 	DERPRegionCode    string `form:"derp_region_code" default:"gopanel"`
 	DERPRegionName    string `form:"derp_region_name" default:"GoPanel Embedded DERP"`

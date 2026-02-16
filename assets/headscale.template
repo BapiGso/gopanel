@@ -144,8 +144,9 @@
                             </div>
 
                             <div class="md:col-span-2" x-data="{ derpEnabled: false }">
+                                <input type="hidden" name="derp_enabled" :value="derpEnabled">
                                 <label class="flex items-center cursor-pointer mb-4">
-                                    <input name="derp_enabled" type="checkbox" x-model="derpEnabled"
+                                    <input type="checkbox" x-model="derpEnabled"
                                            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
                                     <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Enable Embedded DERP Server</span>
                                 </label>
