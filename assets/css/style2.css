@@ -1,0 +1,1565 @@
+@charset "UTF-8";
+
+/* ============================================================
+   Apple Design System — Classless Stylesheet
+   Based on Apple Music / App Store design tokens (style.css)
+   PicoCSS-inspired: style elements directly, minimal classes
+   ============================================================ */
+
+/* ────────────────────────────────────────────────────────────
+   1. DESIGN TOKENS — Light Mode (default)
+   ──────────────────────────────────────────────────────────── */
+
+:root {
+    color-scheme: light dark;
+
+    /* ── Font Family (exact Apple stack) ── */
+    --font-family: -apple-system, BlinkMacSystemFont, "Apple Color Emoji",
+        "SF Pro", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --font-family-mono: "SF Mono", SFMono-Regular, ui-monospace, Menlo, Monaco,
+        Consolas, "Liberation Mono", "Courier New", monospace;
+    --font-family-rounded: ui-rounded, -apple-system, BlinkMacSystemFont,
+        "Apple Color Emoji", "SF Pro", "SF Pro Icons", "Helvetica Neue",
+        Helvetica, Arial, sans-serif;
+
+    /* ── System Colors (Apple HIG) ── */
+    --systemRed: #ff3b30;
+    --systemOrange: #ff9500;
+    --systemYellow: #fc0;
+    --systemGreen: #28cd41;
+    --systemMint: #00c7be;
+    --systemTeal: #59adc4;
+    --systemCyan: #55bef0;
+    --systemBlue: #007aff;
+    --systemIndigo: #5856d6;
+    --systemPurple: #af52de;
+    --systemPink: #ff2d55;
+    --systemBrown: #a2845e;
+    --systemGray: #8e8e93;
+
+    /* ── Semantic Opacity Colors ── */
+    --systemPrimary: rgba(0, 0, 0, .85);
+    --systemSecondary: rgba(0, 0, 0, .5);
+    --systemTertiary: rgba(0, 0, 0, .25);
+    --systemQuaternary: rgba(0, 0, 0, .1);
+    --systemQuinary: rgba(0, 0, 0, .05);
+
+    /* ── Gray Scale ── */
+    --systemGray2: #aeaeb2;
+    --systemGray3: #c7c7cc;
+    --systemGray4: #d1d1d6;
+    --systemGray5: #e5e5ea;
+    --systemGray6: #f2f2f7;
+
+    /* ── Key Color (Accent) ── */
+    --keyColor: #007aff;
+    --keyColor-rgb: 0, 122, 255;
+    --keyColor-rollover: #0045b7;
+    --keyColor-pressed: #005cd7;
+    --keyColor-deepPressed: #0045b7;
+    --keyColor-disabled: rgba(0, 122, 255, .35);
+
+    /* ── Backgrounds ── */
+    --pageBg: #f5f5f7;
+    --pageBg-rgb: 245, 245, 247;
+    --pageBG: #fff;
+    --footerBg: #f2f2f2;
+    --shelfBG: rgba(0, 0, 0, .05);
+    --opaqueShelfBG: #f2f2f2;
+    --fallbackMaterialBG: hsla(0, 0%, 100%, .97);
+    --navSidebarBG: rgba(60, 60, 67, .03);
+
+    /* ── Dividers ── */
+    --labelDivider: rgba(0, 0, 0, .15);
+    --vibrantDivider: rgba(60, 60, 67, .29);
+    --keyline-border-style: .5px solid var(--labelDivider);
+
+    /* ── Shadows (Apple values) ── */
+    --dialogShadowColor: rgba(0, 0, 0, .25);
+    --radiosityShadowColor: rgba(0, 0, 0, .1);
+    --shadow-small: 0 3px 9px rgba(0, 0, 0, .08);
+    --shadow-medium: 0 3px 20px rgba(0, 0, 0, .08);
+    --shadow-card:
+        0 0 0 .5px rgba(0, 0, 0, .08),
+        0 2px 8px rgba(0, 0, 0, .04),
+        0 8px 40px rgba(0, 0, 0, .04);
+    --shadow-card-hover:
+        0 0 0 .5px rgba(0, 0, 0, .12),
+        0 4px 16px rgba(0, 0, 0, .08),
+        0 12px 48px rgba(0, 0, 0, .06);
+    --shadow-dialog:
+        inset 0 0 0 1px rgba(255, 255, 255, .2),
+        0 0 0 .5px rgba(0, 0, 0, .2),
+        0 8px 40px var(--dialogShadowColor);
+
+    /* ── Material / Vibrancy (Apple backdrop) ── */
+    --systemStandardThickMaterialSover: hsla(120, 0%, 96%, .72);
+    --systemStandardMediumMaterialSover: hsla(0, 0%, 96%, .6);
+    --systemStandardThinMaterialSover: hsla(0, 0%, 96%, .48);
+    --systemHeaderMaterialSover: hsla(0, 0%, 100%, .8);
+    --systemToolbarTitlebarMaterialSover: hsla(0, 0%, 99%, .8);
+    --materialBlur: blur(60px) saturate(240%);
+
+    /* ── Segmented Control ── */
+    --segmentedControlBG: hsla(240, 4%, 48%, .12);
+    --segmentedControlSelectedText: rgba(0, 0, 0, .85);
+    --segmentedControlSelectedBG: #fff;
+    --segmentedControlActiveBG: hsla(0, 0%, 100%, .7);
+    --segmentedControlSelectedShadow1: rgba(0, 0, 0, .12);
+    --segmentedControlSelectedShadow2: rgba(0, 0, 0, .04);
+    --segmentedControlSelectedBorder: rgba(0, 0, 0, .15);
+
+    /* ── Border Radius (Apple global radii) ── */
+    --radius-xsmall: 5px;
+    --radius-small: 9px;
+    --radius-medium: 12px;
+    --radius-large: 17px;
+    --radius-xlarge: 24px;
+    --radius-pill: 980px;
+
+    /* ── Layout ── */
+    --bodyGutter: 25px;
+    --moduleGutter: 30px;
+    --content-max-width: 980px;
+    --content-wide-width: 1200px;
+
+    /* ── Z-Index (Apple layers) ── */
+    --z-default: 1;
+    --z-bubbles: 50;
+    --z-web-chrome: 9901;
+    --z-contextual-menus: 9951;
+    --z-modal: 10001;
+
+    /* ── Transitions ── */
+    --transition-duration: .2s;
+    --transition-timing: ease-in-out;
+    --transition: all var(--transition-duration) var(--transition-timing);
+
+    /* ── Modal / Scrim ── */
+    --modalScrimColor: rgba(0, 0, 0, .45);
+    --modalCloseButtonBGColor: #e8e8ed;
+    --cardHoverColor: hsla(240, 3%, 49%, .25);
+
+    /* ── Typography Scale (Apple font shorthand tokens) ── */
+    --large-title: 700 34px/1.08 var(--font-family);
+    --large-title-emphasized: 800 34px/1.08 var(--font-family);
+    --title-1: 700 28px/1.1 var(--font-family);
+    --title-1-emphasized: 800 28px/1.1 var(--font-family);
+    --title-2: 700 22px/1.18 var(--font-family);
+    --title-2-emphasized: 800 22px/1.18 var(--font-family);
+    --title-3: 600 20px/1.2 var(--font-family);
+    --title-3-emphasized: 700 20px/1.2 var(--font-family);
+    --headline: 600 17px/1.24 var(--font-family);
+    --headline-emphasized: 700 17px/1.24 var(--font-family);
+    --body: 400 17px/1.47 var(--font-family);
+    --body-emphasized: 600 17px/1.47 var(--font-family);
+    --callout: 400 16px/1.38 var(--font-family);
+    --callout-emphasized: 600 16px/1.38 var(--font-family);
+    --subhead: 400 15px/1.33 var(--font-family);
+    --subhead-emphasized: 600 15px/1.33 var(--font-family);
+    --footnote: 400 13px/1.38 var(--font-family);
+    --footnote-emphasized: 600 13px/1.38 var(--font-family);
+    --caption-1: 400 12px/1.33 var(--font-family);
+    --caption-1-emphasized: 600 12px/1.33 var(--font-family);
+    --caption-2: 400 11px/1.27 var(--font-family);
+    --caption-2-emphasized: 600 11px/1.27 var(--font-family);
+}
+
+/* ────────────────────────────────────────────────────────────
+   2. DARK MODE — @media + [data-theme="dark"]
+   ──────────────────────────────────────────────────────────── */
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --systemRed: #ff453a;
+        --systemOrange: #ff9f0a;
+        --systemYellow: #ffd60a;
+        --systemGreen: #32d74b;
+        --systemMint: #63e6e2;
+        --systemTeal: #6ac4dc;
+        --systemCyan: #5ac8f5;
+        --systemBlue: #0a84ff;
+        --systemIndigo: #5e5ce6;
+        --systemPurple: #bf5af2;
+        --systemPink: #ff375f;
+        --systemBrown: #ac8e68;
+        --systemGray: #98989d;
+
+        --systemPrimary: hsla(0, 0%, 100%, .85);
+        --systemSecondary: hsla(0, 0%, 100%, .55);
+        --systemTertiary: hsla(0, 0%, 100%, .25);
+        --systemQuaternary: hsla(0, 0%, 100%, .1);
+        --systemQuinary: hsla(0, 0%, 100%, .05);
+
+        --systemGray2: #636366;
+        --systemGray3: #48484a;
+        --systemGray4: #3a3a3c;
+        --systemGray5: #2c2c2e;
+        --systemGray6: #1c1c1e;
+
+        --keyColor: #0a84ff;
+        --keyColor-rgb: 10, 132, 255;
+        --keyColor-rollover: #47c1ff;
+        --keyColor-pressed: #38b2ff;
+        --keyColor-deepPressed: #47c1ff;
+        --keyColor-disabled: rgba(10, 132, 255, .5);
+
+        --pageBg: #151515;
+        --pageBg-rgb: 21, 21, 21;
+        --pageBG: #1f1f1f;
+        --footerBg: #323232;
+        --shelfBG: hsla(0, 0%, 100%, .05);
+        --opaqueShelfBG: #2b2b2b;
+        --fallbackMaterialBG: rgba(31, 31, 31, .97);
+        --navSidebarBG: rgba(235, 235, 245, .03);
+
+        --labelDivider: hsla(0, 0%, 100%, .1);
+        --vibrantDivider: rgba(235, 235, 245, .19);
+
+        --dialogShadowColor: rgba(0, 0, 0, .55);
+        --radiosityShadowColor: rgba(0, 0, 0, .3);
+        --shadow-small: 0 3px 9px rgba(0, 0, 0, .2);
+        --shadow-medium: 0 3px 20px rgba(0, 0, 0, .25);
+        --shadow-card:
+            0 0 0 .5px rgba(255, 255, 255, .06),
+            0 2px 8px rgba(0, 0, 0, .15),
+            0 8px 40px rgba(0, 0, 0, .12);
+        --shadow-card-hover:
+            0 0 0 .5px rgba(255, 255, 255, .1),
+            0 4px 16px rgba(0, 0, 0, .25),
+            0 12px 48px rgba(0, 0, 0, .18);
+        --shadow-dialog:
+            inset 0 0 0 1px rgba(255, 255, 255, .08),
+            0 0 0 .5px rgba(0, 0, 0, .4),
+            0 8px 40px var(--dialogShadowColor);
+
+        --systemStandardThickMaterialSover: rgba(40, 40, 40, .7);
+        --systemStandardMediumMaterialSover: rgba(40, 40, 40, .6);
+        --systemStandardThinMaterialSover: rgba(40, 40, 40, .5);
+        --systemHeaderMaterialSover: rgba(30, 30, 30, .8);
+        --systemToolbarTitlebarMaterialSover: rgba(60, 60, 60, .8);
+
+        --segmentedControlBG: hsla(240, 4%, 48%, .24);
+        --segmentedControlSelectedText: hsla(0, 0%, 100%, .85);
+        --segmentedControlSelectedBG: #636366;
+        --segmentedControlActiveBG: #747477;
+        --segmentedControlSelectedShadow1: transparent;
+        --segmentedControlSelectedShadow2: transparent;
+        --segmentedControlSelectedBorder: hsla(0, 0%, 100%, .1);
+
+        --modalScrimColor: rgba(0, 0, 0, .6);
+        --modalCloseButtonBGColor: #333336;
+        --cardHoverColor: hsla(240, 3%, 49%, .41);
+    }
+}
+
+/* Explicit dark theme override */
+[data-theme="dark"] {
+    --systemRed: #ff453a;
+    --systemOrange: #ff9f0a;
+    --systemYellow: #ffd60a;
+    --systemGreen: #32d74b;
+    --systemMint: #63e6e2;
+    --systemTeal: #6ac4dc;
+    --systemCyan: #5ac8f5;
+    --systemBlue: #0a84ff;
+    --systemIndigo: #5e5ce6;
+    --systemPurple: #bf5af2;
+    --systemPink: #ff375f;
+    --systemBrown: #ac8e68;
+    --systemGray: #98989d;
+
+    --systemPrimary: hsla(0, 0%, 100%, .85);
+    --systemSecondary: hsla(0, 0%, 100%, .55);
+    --systemTertiary: hsla(0, 0%, 100%, .25);
+    --systemQuaternary: hsla(0, 0%, 100%, .1);
+    --systemQuinary: hsla(0, 0%, 100%, .05);
+
+    --systemGray2: #636366;
+    --systemGray3: #48484a;
+    --systemGray4: #3a3a3c;
+    --systemGray5: #2c2c2e;
+    --systemGray6: #1c1c1e;
+
+    --keyColor: #0a84ff;
+    --keyColor-rgb: 10, 132, 255;
+    --keyColor-rollover: #47c1ff;
+    --keyColor-pressed: #38b2ff;
+    --keyColor-deepPressed: #47c1ff;
+    --keyColor-disabled: rgba(10, 132, 255, .5);
+
+    --pageBg: #151515;
+    --pageBg-rgb: 21, 21, 21;
+    --pageBG: #1f1f1f;
+    --footerBg: #323232;
+    --shelfBG: hsla(0, 0%, 100%, .05);
+    --opaqueShelfBG: #2b2b2b;
+    --fallbackMaterialBG: rgba(31, 31, 31, .97);
+    --navSidebarBG: rgba(235, 235, 245, .03);
+
+    --labelDivider: hsla(0, 0%, 100%, .1);
+    --vibrantDivider: rgba(235, 235, 245, .19);
+
+    --dialogShadowColor: rgba(0, 0, 0, .55);
+    --radiosityShadowColor: rgba(0, 0, 0, .3);
+    --shadow-small: 0 3px 9px rgba(0, 0, 0, .2);
+    --shadow-medium: 0 3px 20px rgba(0, 0, 0, .25);
+    --shadow-card:
+        0 0 0 .5px rgba(255, 255, 255, .06),
+        0 2px 8px rgba(0, 0, 0, .15),
+        0 8px 40px rgba(0, 0, 0, .12);
+    --shadow-card-hover:
+        0 0 0 .5px rgba(255, 255, 255, .1),
+        0 4px 16px rgba(0, 0, 0, .25),
+        0 12px 48px rgba(0, 0, 0, .18);
+    --shadow-dialog:
+        inset 0 0 0 1px rgba(255, 255, 255, .08),
+        0 0 0 .5px rgba(0, 0, 0, .4),
+        0 8px 40px var(--dialogShadowColor);
+
+    --systemStandardThickMaterialSover: rgba(40, 40, 40, .7);
+    --systemStandardMediumMaterialSover: rgba(40, 40, 40, .6);
+    --systemStandardThinMaterialSover: rgba(40, 40, 40, .5);
+    --systemHeaderMaterialSover: rgba(30, 30, 30, .8);
+    --systemToolbarTitlebarMaterialSover: rgba(60, 60, 60, .8);
+
+    --segmentedControlBG: hsla(240, 4%, 48%, .24);
+    --segmentedControlSelectedText: hsla(0, 0%, 100%, .85);
+    --segmentedControlSelectedBG: #636366;
+    --segmentedControlActiveBG: #747477;
+    --segmentedControlSelectedShadow1: transparent;
+    --segmentedControlSelectedShadow2: transparent;
+    --segmentedControlSelectedBorder: hsla(0, 0%, 100%, .1);
+
+    --modalScrimColor: rgba(0, 0, 0, .6);
+    --modalCloseButtonBGColor: #333336;
+    --cardHoverColor: hsla(240, 3%, 49%, .41);
+}
+
+/* ────────────────────────────────────────────────────────────
+   3. CSS RESET (Apple-style)
+   ──────────────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+    font-size: 106.25%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+}
+
+abbr, blockquote, body, button, dd, dl, dt, fieldset, figure, form,
+h1, h2, h3, h4, h5, h6, hgroup, input, legend, li, ol, p, pre, ul {
+    margin: 0;
+    padding: 0;
+}
+
+address, caption, code, figcaption, pre, th {
+    font-size: 1em;
+    font-style: normal;
+    font-weight: 400;
+}
+
+fieldset, iframe {
+    border: 0;
+}
+
+caption, th {
+    text-align: start;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+audio, canvas, progress, video {
+    vertical-align: baseline;
+}
+
+ul, ol {
+    list-style: none;
+}
+
+img, svg, video, canvas, audio, iframe, embed, object {
+    display: block;
+    max-width: 100%;
+}
+
+img {
+    height: auto;
+}
+
+svg {
+    pointer-events: none;
+}
+
+/* ────────────────────────────────────────────────────────────
+   4. FOCUS STYLES (Apple standard)
+   ──────────────────────────────────────────────────────────── */
+
+:focus-visible {
+    outline: 4px solid rgba(var(--keyColor-rgb), .6);
+    outline-offset: 1px;
+}
+
+::-moz-focus-inner {
+    border: 0;
+    padding: 0;
+}
+
+/* ────────────────────────────────────────────────────────────
+   5. BODY
+   ──────────────────────────────────────────────────────────── */
+
+body {
+    font-family: var(--font-family);
+    font: var(--body);
+    color: var(--systemPrimary);
+    background-color: var(--pageBg);
+    line-height: 1.47;
+    -ms-scroll-chaining: none;
+    overscroll-behavior: none;
+    min-height: 100dvh;
+}
+
+/* ────────────────────────────────────────────────────────────
+   6. TYPOGRAPHY (Apple type scale)
+   ──────────────────────────────────────────────────────────── */
+
+h1 {
+    font: var(--large-title-emphasized);
+    color: var(--systemPrimary);
+    letter-spacing: -.01em;
+    margin-block-end: .6em;
+}
+
+h2 {
+    font: var(--title-1-emphasized);
+    color: var(--systemPrimary);
+    letter-spacing: .007em;
+    margin-block-end: .5em;
+}
+
+h3 {
+    font: var(--title-2-emphasized);
+    color: var(--systemPrimary);
+    letter-spacing: .011em;
+    margin-block-end: .45em;
+}
+
+h4 {
+    font: var(--title-3-emphasized);
+    color: var(--systemPrimary);
+    letter-spacing: .012em;
+    margin-block-end: .4em;
+}
+
+h5 {
+    font: var(--headline-emphasized);
+    color: var(--systemPrimary);
+    letter-spacing: -.022em;
+    margin-block-end: .35em;
+}
+
+h6 {
+    font: var(--subhead-emphasized);
+    color: var(--systemSecondary);
+    letter-spacing: -.009em;
+    margin-block-end: .3em;
+    text-transform: uppercase;
+}
+
+p {
+    font: var(--body);
+    color: var(--systemPrimary);
+    margin-block-end: 1em;
+}
+
+p:last-child {
+    margin-block-end: 0;
+}
+
+/* Heading group (Apple pattern: title + subtitle) */
+hgroup {
+    margin-block-end: 1.2em;
+}
+
+hgroup > * {
+    margin-block: 0;
+}
+
+hgroup > :not(:first-child):last-child {
+    font: var(--subhead);
+    color: var(--systemSecondary);
+    margin-block-start: .25em;
+}
+
+/* Heading after content */
+:where(article, blockquote, dl, figure, form, ol, p, pre, table, ul)
+    ~ :is(h1, h2, h3, h4, h5, h6) {
+    margin-block-start: 1.5em;
+}
+
+small {
+    font: var(--footnote);
+    color: var(--systemSecondary);
+}
+
+strong, b {
+    font-weight: 600;
+}
+
+em, i {
+    font-style: italic;
+}
+
+mark {
+    background-color: rgba(var(--keyColor-rgb), .15);
+    color: var(--systemPrimary);
+    padding: .1em .3em;
+    border-radius: 3px;
+}
+
+blockquote {
+    font: var(--body);
+    color: var(--systemSecondary);
+    border-inline-start: 3px solid var(--keyColor);
+    padding-inline-start: 1.25em;
+    margin-block: 1em;
+    margin-inline: 0;
+}
+
+hr {
+    border: none;
+    border-block-start: var(--keyline-border-style);
+    margin-block: 2em;
+}
+
+::selection {
+    background: rgba(var(--keyColor-rgb), .25);
+    color: var(--systemPrimary);
+}
+
+/* ────────────────────────────────────────────────────────────
+   7. LINKS
+   ──────────────────────────────────────────────────────────── */
+
+a {
+    color: var(--keyColor);
+    text-decoration: none;
+    transition: color var(--transition-duration) var(--transition-timing);
+    cursor: pointer;
+}
+
+a:hover {
+    color: var(--keyColor-rollover);
+    text-decoration: none;
+}
+
+a:active {
+    color: var(--keyColor-pressed);
+}
+
+/* ────────────────────────────────────────────────────────────
+   8. BUTTONS (Apple pill-shape buttons)
+   ──────────────────────────────────────────────────────────── */
+
+button, [role="button"] {
+    font: var(--body-emphasized);
+    font-family: var(--font-family);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5em;
+    padding: 8px 20px;
+    border: none;
+    border-radius: var(--radius-pill);
+    background-color: var(--keyColor);
+    color: #fff;
+    cursor: pointer;
+    transition: background-color .14s ease-out, transform .1s ease-out,
+        box-shadow .14s ease-out;
+    word-break: keep-all;
+    white-space: nowrap;
+    -webkit-user-select: none;
+    user-select: none;
+    line-height: 1.47;
+}
+
+button:hover, [role="button"]:hover {
+    background-color: var(--keyColor-rollover);
+    transition: background-color .21s ease-out;
+}
+
+button:active, [role="button"]:active {
+    background-color: var(--keyColor-pressed);
+    transform: scale(.98);
+    transition: background-color .14s ease-out, transform .06s ease-out;
+}
+
+button:disabled, [role="button"][aria-disabled="true"] {
+    opacity: .42;
+    cursor: default;
+    pointer-events: none;
+}
+
+/* Secondary (gray tinted) button */
+button[data-variant="secondary"],
+[role="button"][data-variant="secondary"] {
+    background-color: rgba(var(--keyColor-rgb), .08);
+    color: var(--keyColor);
+}
+
+button[data-variant="secondary"]:hover,
+[role="button"][data-variant="secondary"]:hover {
+    background-color: rgba(var(--keyColor-rgb), .14);
+}
+
+button[data-variant="secondary"]:active,
+[role="button"][data-variant="secondary"]:active {
+    background-color: rgba(var(--keyColor-rgb), .2);
+}
+
+/* Gray button */
+button[data-variant="gray"],
+[role="button"][data-variant="gray"] {
+    background-color: var(--systemQuaternary);
+    color: var(--systemPrimary);
+}
+
+button[data-variant="gray"]:hover,
+[role="button"][data-variant="gray"]:hover {
+    background-color: var(--systemTertiary);
+}
+
+/* Destructive button */
+button[data-variant="destructive"],
+[role="button"][data-variant="destructive"] {
+    background-color: var(--systemRed);
+    color: #fff;
+}
+
+/* Small button */
+button[data-size="small"],
+[role="button"][data-size="small"] {
+    font: var(--footnote-emphasized);
+    font-family: var(--font-family);
+    padding: 5px 14px;
+}
+
+/* Large button */
+button[data-size="large"],
+[role="button"][data-size="large"] {
+    font: var(--title-3-emphasized);
+    font-family: var(--font-family);
+    padding: 12px 28px;
+}
+
+/* ────────────────────────────────────────────────────────────
+   9. FORM ELEMENTS
+   ──────────────────────────────────────────────────────────── */
+
+input, select, textarea {
+    font: var(--body);
+    font-family: var(--font-family);
+    color: var(--systemPrimary);
+    background-color: var(--pageBG);
+    border: 1px solid var(--labelDivider);
+    border-radius: var(--radius-small);
+    padding: 10px 14px;
+    width: 100%;
+    transition: border-color .2s ease, box-shadow .2s ease;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--keyColor);
+    box-shadow: 0 0 0 3px rgba(var(--keyColor-rgb), .25);
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--systemTertiary);
+}
+
+input[type="search"] {
+    border-radius: var(--radius-pill);
+    padding-inline-start: 36px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%238e8e93' viewBox='0 0 16 16'%3E%3Cpath d='M6.5 1a5.5 5.5 0 0 1 4.383 8.823l3.896 3.9a.75.75 0 0 1-1.061 1.06l-3.895-3.9A5.5 5.5 0 1 1 6.5 1zm0 1.5a4 4 0 1 0 0 8 4 4 0 0 0 0-8z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 12px center;
+    background-size: 16px;
+}
+
+input[type="checkbox"], input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    margin: 0;
+    vertical-align: middle;
+    accent-color: var(--keyColor);
+}
+
+input[type="range"] {
+    padding: 0;
+    border: none;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--systemQuaternary);
+    accent-color: var(--keyColor);
+}
+
+select {
+    padding-inline-end: 36px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='%238e8e93'%3E%3Cpath d='M1.41.59 6 5.17 10.59.59 12 2 6 8 0 2z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 14px) center;
+    background-size: 12px 8px;
+    cursor: pointer;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 120px;
+    line-height: 1.47;
+}
+
+label {
+    font: var(--subhead-emphasized);
+    color: var(--systemPrimary);
+    display: block;
+    margin-block-end: 6px;
+}
+
+fieldset {
+    margin-block-end: 1.5em;
+}
+
+legend {
+    font: var(--headline-emphasized);
+    color: var(--systemPrimary);
+    margin-block-end: .8em;
+}
+
+/* Switch (Apple-style toggle) */
+input[type="checkbox"][role="switch"] {
+    width: 42px;
+    height: 26px;
+    padding: 2px;
+    border-radius: 26px;
+    background: var(--systemGray3);
+    border: none;
+    position: relative;
+    cursor: pointer;
+    transition: background-color .2s ease;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+input[type="checkbox"][role="switch"]::before {
+    content: "";
+    display: block;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+    transition: transform .2s ease;
+}
+
+input[type="checkbox"][role="switch"]:checked {
+    background: var(--keyColor);
+}
+
+input[type="checkbox"][role="switch"]:checked::before {
+    transform: translateX(16px);
+}
+
+/* ────────────────────────────────────────────────────────────
+   10. SEGMENTED CONTROL via [role="tablist"]
+   ──────────────────────────────────────────────────────────── */
+
+[role="tablist"] {
+    display: inline-flex;
+    background: var(--segmentedControlBG);
+    border-radius: var(--radius-small);
+    padding: 2px;
+    gap: 1px;
+}
+
+[role="tab"] {
+    font: var(--footnote-emphasized);
+    font-family: var(--font-family);
+    color: var(--systemPrimary);
+    background: transparent;
+    border: none;
+    border-radius: calc(var(--radius-small) - 2px);
+    padding: 6px 16px;
+    cursor: pointer;
+    transition: background-color .15s ease, box-shadow .15s ease;
+    -webkit-user-select: none;
+    user-select: none;
+    white-space: nowrap;
+}
+
+[role="tab"]:hover {
+    background: var(--segmentedControlActiveBG);
+}
+
+[role="tab"][aria-selected="true"] {
+    background: var(--segmentedControlSelectedBG);
+    color: var(--segmentedControlSelectedText);
+    box-shadow:
+        0 1px 3px var(--segmentedControlSelectedShadow1),
+        0 0 1px var(--segmentedControlSelectedShadow2),
+        inset 0 0 0 .5px var(--segmentedControlSelectedBorder);
+    pointer-events: none;
+}
+
+/* ────────────────────────────────────────────────────────────
+   11. ARTICLE (Card — Apple-style with material finish)
+   ──────────────────────────────────────────────────────────── */
+
+article {
+    background: var(--pageBG);
+    border-radius: var(--radius-large);
+    box-shadow: var(--shadow-card);
+    padding: 24px;
+    margin-block-end: 20px;
+    transition: box-shadow .3s ease, transform .3s ease;
+}
+
+article:hover {
+    box-shadow: var(--shadow-card-hover);
+}
+
+/* Card with material/vibrancy */
+article[data-material] {
+    background: var(--systemStandardThickMaterialSover);
+    -webkit-backdrop-filter: var(--materialBlur);
+    backdrop-filter: var(--materialBlur);
+    box-shadow: var(--shadow-dialog);
+}
+
+/* Elevated card */
+article[data-elevated] {
+    box-shadow: var(--shadow-medium);
+}
+
+/* Card header */
+article > header {
+    padding-block-end: 16px;
+    margin-block-end: 16px;
+    border-block-end: var(--keyline-border-style);
+}
+
+article > header > h1,
+article > header > h2,
+article > header > h3,
+article > header > h4,
+article > header > h5 {
+    margin-block-end: 0;
+}
+
+/* Card footer */
+article > footer {
+    padding-block-start: 16px;
+    margin-block-start: 16px;
+    border-block-start: var(--keyline-border-style);
+}
+
+/* ────────────────────────────────────────────────────────────
+   12. SECTION
+   ──────────────────────────────────────────────────────────── */
+
+section {
+    margin-block-end: 40px;
+}
+
+section > header {
+    margin-block-end: 20px;
+}
+
+/* ────────────────────────────────────────────────────────────
+   13. TABLE (Apple thin-divider tables)
+   ──────────────────────────────────────────────────────────── */
+
+table {
+    width: 100%;
+    font: var(--body);
+}
+
+thead th {
+    font: var(--footnote-emphasized);
+    color: var(--systemSecondary);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: 10px 16px;
+    text-align: start;
+    border-block-end: var(--keyline-border-style);
+}
+
+tbody td {
+    padding: 12px 16px;
+    border-block-end: var(--keyline-border-style);
+    color: var(--systemPrimary);
+    vertical-align: middle;
+}
+
+tbody th {
+    padding: 12px 16px;
+    border-block-end: var(--keyline-border-style);
+    color: var(--systemSecondary);
+    font: var(--subhead);
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+tbody tr:last-child td,
+tbody tr:last-child th {
+    border-block-end: none;
+}
+
+tbody tr {
+    transition: background-color .15s ease;
+}
+
+tbody tr:hover {
+    background-color: var(--systemQuinary);
+}
+
+tfoot td {
+    font: var(--footnote);
+    color: var(--systemSecondary);
+    padding: 10px 16px;
+    border-block-start: var(--keyline-border-style);
+}
+
+/* Striped table via data attribute */
+table[data-striped] tbody tr:nth-child(odd) {
+    background-color: var(--systemQuinary);
+}
+
+/* ────────────────────────────────────────────────────────────
+   14. DETAILS / SUMMARY (Disclosure — Apple style)
+   ──────────────────────────────────────────────────────────── */
+
+details {
+    background: var(--pageBG);
+    border-radius: var(--radius-medium);
+    box-shadow: var(--shadow-card);
+    margin-block-end: 8px;
+    overflow: hidden;
+}
+
+summary {
+    font: var(--headline-emphasized);
+    color: var(--systemPrimary);
+    padding: 16px 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    list-style: none;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: background-color .15s ease;
+}
+
+summary::-webkit-details-marker {
+    display: none;
+}
+
+summary::after {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-inline-end: 2px solid var(--systemTertiary);
+    border-block-end: 2px solid var(--systemTertiary);
+    transform: rotate(-45deg);
+    transition: transform .25s ease;
+    flex-shrink: 0;
+    margin-inline-start: 12px;
+}
+
+details[open] > summary::after {
+    transform: rotate(45deg);
+}
+
+summary:hover {
+    background-color: var(--systemQuinary);
+}
+
+details > :not(summary) {
+    padding: 0 20px 20px;
+}
+
+/* Details inside an article — no extra shadow, flush style */
+article details {
+    box-shadow: none;
+    background: var(--systemQuinary);
+}
+
+/* ────────────────────────────────────────────────────────────
+   15. NAV (Apple frosted glass nav bar)
+   ──────────────────────────────────────────────────────────── */
+
+nav {
+    background: var(--systemHeaderMaterialSover);
+    -webkit-backdrop-filter: var(--materialBlur);
+    backdrop-filter: var(--materialBlur);
+    border-block-end: var(--keyline-border-style);
+    padding: 12px var(--bodyGutter);
+    position: sticky;
+    top: 0;
+    z-index: var(--z-web-chrome);
+}
+
+nav ul {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    max-width: var(--content-wide-width);
+    margin-inline: auto;
+}
+
+nav li {
+    display: flex;
+    align-items: center;
+}
+
+nav a {
+    font: var(--subhead);
+    color: var(--systemSecondary);
+    transition: color .2s ease;
+    padding: 6px 0;
+}
+
+nav a:hover {
+    color: var(--systemPrimary);
+}
+
+nav a[aria-current="page"],
+nav a[aria-current="true"] {
+    color: var(--systemPrimary);
+    font: var(--subhead-emphasized);
+}
+
+nav > strong, nav > a:first-child {
+    font: var(--headline-emphasized);
+    color: var(--systemPrimary);
+    margin-inline-end: auto;
+}
+
+/* ────────────────────────────────────────────────────────────
+   16. DIALOG / MODAL (Apple HIG modal)
+   ──────────────────────────────────────────────────────────── */
+
+dialog {
+    font-family: var(--font-family);
+    background: var(--pageBG);
+    border: none;
+    border-radius: var(--radius-large);
+    box-shadow: var(--shadow-dialog);
+    padding: 28px;
+    max-width: min(540px, calc(100vw - 48px));
+    width: 100%;
+    color: var(--systemPrimary);
+}
+
+dialog::backdrop {
+    background: var(--modalScrimColor);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+}
+
+dialog > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-block-end: 20px;
+    margin-block-end: 20px;
+    border-block-end: var(--keyline-border-style);
+}
+
+dialog > footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-block-start: 20px;
+    margin-block-start: 20px;
+    border-block-start: var(--keyline-border-style);
+}
+
+/* ────────────────────────────────────────────────────────────
+   17. PROGRESS
+   ──────────────────────────────────────────────────────────── */
+
+progress {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border: none;
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--systemQuaternary);
+}
+
+progress::-webkit-progress-bar {
+    background: var(--systemQuaternary);
+    border-radius: 3px;
+}
+
+progress::-webkit-progress-value {
+    background: var(--keyColor);
+    border-radius: 3px;
+    transition: width .3s ease;
+}
+
+progress::-moz-progress-bar {
+    background: var(--keyColor);
+    border-radius: 3px;
+}
+
+/* Progress color variants */
+progress[data-color="green"]::-webkit-progress-value { background: var(--systemGreen); }
+progress[data-color="green"]::-moz-progress-bar { background: var(--systemGreen); }
+progress[data-color="orange"]::-webkit-progress-value { background: var(--systemOrange); }
+progress[data-color="orange"]::-moz-progress-bar { background: var(--systemOrange); }
+progress[data-color="red"]::-webkit-progress-value { background: var(--systemRed); }
+progress[data-color="red"]::-moz-progress-bar { background: var(--systemRed); }
+progress[data-color="purple"]::-webkit-progress-value { background: var(--systemPurple); }
+progress[data-color="purple"]::-moz-progress-bar { background: var(--systemPurple); }
+progress[data-color="teal"]::-webkit-progress-value { background: var(--systemTeal); }
+progress[data-color="teal"]::-moz-progress-bar { background: var(--systemTeal); }
+
+/* ────────────────────────────────────────────────────────────
+   18. METER
+   ──────────────────────────────────────────────────────────── */
+
+meter {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border: none;
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--systemQuaternary);
+}
+
+meter::-webkit-meter-bar {
+    background: var(--systemQuaternary);
+    border-radius: 3px;
+    border: none;
+}
+
+meter::-webkit-meter-optimum-value {
+    background: var(--systemGreen);
+    border-radius: 3px;
+}
+
+meter::-webkit-meter-suboptimum-value {
+    background: var(--systemOrange);
+    border-radius: 3px;
+}
+
+meter::-webkit-meter-even-less-good-value {
+    background: var(--systemRed);
+    border-radius: 3px;
+}
+
+/* ────────────────────────────────────────────────────────────
+   19. CODE / PRE
+   ──────────────────────────────────────────────────────────── */
+
+code {
+    font-family: var(--font-family-mono);
+    font-size: .88em;
+    background: var(--systemQuinary);
+    color: var(--systemRed);
+    padding: .15em .4em;
+    border-radius: var(--radius-xsmall);
+}
+
+pre {
+    font-family: var(--font-family-mono);
+    font-size: .88em;
+    background: var(--pageBG);
+    border: 1px solid var(--labelDivider);
+    border-radius: var(--radius-medium);
+    padding: 20px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-block: 1em;
+    line-height: 1.6;
+}
+
+pre code {
+    background: none;
+    padding: 0;
+    color: var(--systemPrimary);
+    border-radius: 0;
+}
+
+kbd {
+    font-family: var(--font-family-mono);
+    font-size: .88em;
+    background: var(--systemQuinary);
+    border: 1px solid var(--labelDivider);
+    border-radius: var(--radius-xsmall);
+    padding: .15em .5em;
+    box-shadow: 0 1px 0 var(--labelDivider);
+}
+
+/* ────────────────────────────────────────────────────────────
+   20. LISTS
+   ──────────────────────────────────────────────────────────── */
+
+/* Card-style list items inside articles */
+article > ul > li, article > ol > li {
+    padding: 12px 0;
+    border-block-end: var(--keyline-border-style);
+}
+
+article > ul > li:last-child, article > ol > li:last-child {
+    border-block-end: none;
+}
+
+/* Definition lists */
+dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 20px;
+    align-items: baseline;
+}
+
+dt {
+    font: var(--footnote-emphasized);
+    color: var(--systemSecondary);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+dd {
+    font: var(--body);
+    color: var(--systemPrimary);
+}
+
+/* ────────────────────────────────────────────────────────────
+   21. FOOTER (Apple-style page footer)
+   ──────────────────────────────────────────────────────────── */
+
+body > footer {
+    background: var(--footerBg);
+    padding: 24px var(--bodyGutter);
+    margin-block-start: 60px;
+    border-block-start: var(--keyline-border-style);
+}
+
+body > footer p, body > footer small {
+    font: var(--caption-1);
+    color: var(--systemSecondary);
+}
+
+body > footer a {
+    color: var(--systemSecondary);
+}
+
+body > footer a:hover {
+    color: var(--keyColor);
+}
+
+/* ────────────────────────────────────────────────────────────
+   22. HEADER (Page-level)
+   ──────────────────────────────────────────────────────────── */
+
+body > header {
+    padding: 40px var(--bodyGutter) 20px;
+    max-width: var(--content-wide-width);
+    margin-inline: auto;
+}
+
+/* ────────────────────────────────────────────────────────────
+   23. MAIN
+   ──────────────────────────────────────────────────────────── */
+
+main {
+    max-width: var(--content-wide-width);
+    margin-inline: auto;
+    padding: 0 var(--bodyGutter);
+}
+
+/* ────────────────────────────────────────────────────────────
+   24. GRID LAYOUT (only class-based utility)
+   ──────────────────────────────────────────────────────────── */
+
+.grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.grid[data-columns="2"] {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.grid[data-columns="3"] {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.grid[data-columns="4"] {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 768px) {
+    .grid[data-columns="2"],
+    .grid[data-columns="3"],
+    .grid[data-columns="4"] {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .grid[data-columns="3"],
+    .grid[data-columns="4"] {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ────────────────────────────────────────────────────────────
+   25. BADGES via [data-badge]
+   ──────────────────────────────────────────────────────────── */
+
+[data-badge] {
+    display: inline-flex;
+    align-items: center;
+    font: var(--caption-1-emphasized);
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    background: rgba(var(--keyColor-rgb), .1);
+    color: var(--keyColor);
+}
+
+[data-badge="green"] {
+    background: rgba(40, 205, 65, .12);
+    color: var(--systemGreen);
+}
+
+[data-badge="orange"] {
+    background: rgba(255, 149, 0, .12);
+    color: var(--systemOrange);
+}
+
+[data-badge="red"] {
+    background: rgba(255, 59, 48, .12);
+    color: var(--systemRed);
+}
+
+[data-badge="purple"] {
+    background: rgba(175, 82, 222, .12);
+    color: var(--systemPurple);
+}
+
+[data-badge="gray"] {
+    background: var(--systemQuaternary);
+    color: var(--systemSecondary);
+}
+
+/* ────────────────────────────────────────────────────────────
+   26. TOOLTIP via [data-tooltip]
+   ──────────────────────────────────────────────────────────── */
+
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    font: var(--caption-1);
+    color: #fff;
+    background: rgba(0, 0, 0, .75);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    padding: 6px 12px;
+    border-radius: var(--radius-xsmall);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .15s ease;
+    z-index: var(--z-bubbles);
+}
+
+[data-tooltip]:hover::after {
+    opacity: 1;
+}
+
+/* ────────────────────────────────────────────────────────────
+   27. LOADING SPINNER via [aria-busy="true"]
+   ──────────────────────────────────────────────────────────── */
+
+[aria-busy="true"]::before {
+    content: "";
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid var(--systemQuaternary);
+    border-top-color: var(--keyColor);
+    border-radius: 50%;
+    animation: apple-spin .8s linear infinite;
+    margin-inline-end: 8px;
+    vertical-align: middle;
+}
+
+@keyframes apple-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ────────────────────────────────────────────────────────────
+   28. SCROLLBAR
+   ──────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--systemQuaternary);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--systemTertiary);
+}
+
+/* ────────────────────────────────────────────────────────────
+   29. RESPONSIVE (Apple breakpoints)
+   ──────────────────────────────────────────────────────────── */
+
+@media (min-width: 1000px) {
+    :root {
+        --bodyGutter: 40px;
+    }
+}
+
+@media (max-width: 734px) {
+    :root {
+        --bodyGutter: 20px;
+        --large-title: 700 28px/1.1 var(--font-family);
+        --large-title-emphasized: 800 28px/1.1 var(--font-family);
+        --title-1: 700 24px/1.12 var(--font-family);
+        --title-1-emphasized: 800 24px/1.12 var(--font-family);
+        --title-2: 700 20px/1.2 var(--font-family);
+        --title-2-emphasized: 800 20px/1.2 var(--font-family);
+    }
+
+    article {
+        padding: 20px;
+        border-radius: var(--radius-medium);
+    }
+
+    dialog {
+        padding: 20px;
+        border-radius: var(--radius-medium);
+    }
+
+    nav ul {
+        gap: 16px;
+    }
+}
+
+/* ────────────────────────────────────────────────────────────
+   30. DATA-ATTRIBUTE UTILITIES
+   ──────────────────────────────────────────────────────────── */
+
+/* System color overrides */
+[data-color="red"]    { color: var(--systemRed); }
+[data-color="orange"] { color: var(--systemOrange); }
+[data-color="yellow"] { color: var(--systemYellow); }
+[data-color="green"]  { color: var(--systemGreen); }
+[data-color="mint"]   { color: var(--systemMint); }
+[data-color="teal"]   { color: var(--systemTeal); }
+[data-color="cyan"]   { color: var(--systemCyan); }
+[data-color="blue"]   { color: var(--systemBlue); }
+[data-color="indigo"] { color: var(--systemIndigo); }
+[data-color="purple"] { color: var(--systemPurple); }
+[data-color="pink"]   { color: var(--systemPink); }
+[data-color="brown"]  { color: var(--systemBrown); }
+[data-color="gray"]   { color: var(--systemGray); }
+
+/* Text hierarchy */
+[data-text="primary"]   { color: var(--systemPrimary); }
+[data-text="secondary"] { color: var(--systemSecondary); }
+[data-text="tertiary"]  { color: var(--systemTertiary); }
+
+/* Visual separator */
+[data-divider] {
+    border-block-start: var(--keyline-border-style);
+    padding-block-start: 20px;
+    margin-block-start: 20px;
+}
+
+/* ────────────────────────────────────────────────────────────
+   31. PRINT
+   ──────────────────────────────────────────────────────────── */
+
+@media print {
+    *, *::before, *::after {
+        background: transparent !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    body {
+        font-size: 12pt;
+        line-height: 1.5;
+        color: #000;
+    }
+
+    a {
+        color: #000;
+        text-decoration: underline;
+    }
+
+    nav, dialog, [aria-busy="true"]::before {
+        display: none !important;
+    }
+
+    article {
+        border: 1px solid #ddd;
+        page-break-inside: avoid;
+    }
+}
+
+/* ────────────────────────────────────────────────────────────
+   32. REDUCED MOTION
+   ──────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

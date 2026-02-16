@@ -147,7 +147,7 @@
                     </td>
                 </tr>
 
-                {{range .}}
+                {{range .Files}}
                     <tr class="hover:bg-blue-50/50 dark:hover:bg-gray-700/50 transition-colors group">
                         <td class="px-6 py-4">
                             <input type="checkbox" x-init="$watch('checkAll', val => $el.checked=val)"
@@ -213,7 +213,7 @@
             </table>
         </div>
         <!-- Empty State Hint (Optional, displays if list looks empty) -->
-        <template x-if="!{{len .}} && '{{len .}}' != '0'">
+        <template x-if="!{{len .Files}} && '{{len .Files}}' != '0'">
             <!-- Note: Template logic for checking empty usually done in Go, but here just adding footer space -->
             <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
                 <p class="text-xs text-gray-500 dark:text-gray-400 text-center">End of file list</p>
