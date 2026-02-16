@@ -3,16 +3,35 @@
 # Check operating system
 OS=$(uname -s)
 
+# Detect init system on Linux
+INIT_SYSTEM=""
+if [ "$OS" = "Linux" ]; then
+    if command -v systemctl > /dev/null 2>&1; then
+        INIT_SYSTEM="systemd"
+    elif command -v rc-service > /dev/null 2>&1; then
+        INIT_SYSTEM="openrc"
+    else
+        echo "Unsupported init system. Only systemd and OpenRC (Alpine) are supported."
+        exit 1
+    fi
+fi
+
 # Stop and disable gopanel service
 if [ "$OS" = "Linux" ]; then
-    sudo systemctl stop gopanel
-    sudo systemctl disable gopanel
-    sudo rm /etc/systemd/system/gopanel.service
-    sudo systemctl daemon-reload
+    if [ "$INIT_SYSTEM" = "systemd" ]; then
+        sudo systemctl stop gopanel
+        sudo systemctl disable gopanel
+        sudo rm -f /etc/systemd/system/gopanel.service
+        sudo systemctl daemon-reload
+    elif [ "$INIT_SYSTEM" = "openrc" ]; then
+        sudo rc-service gopanel stop
+        sudo rc-update del gopanel default
+        sudo rm -f /etc/init.d/gopanel
+    fi
 elif [ "$OS" = "FreeBSD" ]; then
     sudo service gopanel stop
     sudo sysrc gopanel_enable=NO
-    sudo rm /usr/local/etc/rc.d/gopanel
+    sudo rm -f /usr/local/etc/rc.d/gopanel
 elif [ "$OS" = "Darwin" ]; then
     PLIST_PATH="/Library/LaunchDaemons/com.gopanel.service.plist"
     if [ -f "$PLIST_PATH" ]; then
@@ -42,7 +61,7 @@ if [ -d "$CONFIG_DIR" ]; then
     sudo rm -f "$CONFIG_DIR/gopanel_Caddyfile"
     sudo rm -f "$CONFIG_DIR/gopanel_frps.conf"
     sudo rm -f "$CONFIG_DIR/gopanel_frpc.conf"
-    
+
     # Ask whether to remove the entire working directory
     echo "Do you want to remove the entire working directory $CONFIG_DIR? (y/n)"
     read -r response
