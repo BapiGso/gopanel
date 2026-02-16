@@ -1,14 +1,17 @@
 package term
 
 import (
+	"errors"
 	"fmt"
-	"golang.org/x/crypto/ssh"
 	"io"
 	"net"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/knownhosts"
 )
 
 type Term struct {
@@ -63,10 +66,15 @@ func NewTerm(opt TermOption) (*Term, error) {
 		fmt.Printf("Failed to get user home directory: %v\n", err)
 	}
 
+	hostKeyCallback, err := hostKeyCallback()
+	if err != nil {
+		return nil, fmt.Errorf("failed to setup host key verification: %v", err)
+	}
+
 	config := &ssh.ClientConfig{
 		User:            opt.Username,
 		Auth:            auth,
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(), //这个地方不验证指纹非常的不安全，但是一般人和同类产品也都不验证，以后在想想更好的改善吧
+		HostKeyCallback: hostKeyCallback,
 	}
 	// 处理 IPv6 地址
 	var addr string
@@ -155,4 +163,56 @@ func (t *Term) SetWindowSize(rows, cols int) error {
 	t.Rows = rows
 	t.Cols = cols
 	return nil
+}
+
+// hostKeyCallback returns an ssh.HostKeyCallback that uses TOFU (Trust On First Use).
+// It reads ~/.ssh/known_hosts for verification; if the host is unknown, it appends
+// the key automatically so subsequent connections are verified.
+func hostKeyCallback() (ssh.HostKeyCallback, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
+
+	knownHostsPath := filepath.Join(homeDir, ".ssh", "known_hosts")
+
+	// Ensure the file exists
+	if _, err := os.Stat(knownHostsPath); errors.Is(err, os.ErrNotExist) {
+		if err := os.MkdirAll(filepath.Dir(knownHostsPath), 0700); err != nil {
+			return nil, err
+		}
+		if err := os.WriteFile(knownHostsPath, nil, 0600); err != nil {
+			return nil, err
+		}
+	}
+
+	cb, err := knownhosts.New(knownHostsPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return func(hostname string, remote net.Addr, key ssh.PublicKey) error {
+		err := cb(hostname, remote, key)
+		if err == nil {
+			return nil
+		}
+
+		// If the error is "key is unknown", trust on first use and append it
+		if keyErr, ok := errors.AsType[*knownhosts.KeyError](err); ok && len(keyErr.Want) == 0 {
+			// No existing entry — append the new host key
+			f, ferr := os.OpenFile(knownHostsPath, os.O_APPEND|os.O_WRONLY, 0600)
+			if ferr != nil {
+				return ferr
+			}
+			defer f.Close()
+			line := knownhosts.Line([]string{knownhosts.Normalize(hostname)}, key)
+			if _, ferr = fmt.Fprintln(f, line); ferr != nil {
+				return ferr
+			}
+			return nil
+		}
+
+		// Key mismatch — possible MITM, reject
+		return err
+	}, nil
 }
