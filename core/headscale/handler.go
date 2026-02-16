@@ -10,6 +10,7 @@ import (
 	"net/netip"
 	"net/url"
 	"os"
+	"runtime"
 	"sync"
 	"time"
 
@@ -175,8 +176,10 @@ func loadServerConfig(c *headscaleConfig) (*types.Config, error) {
 
 	derpURL, _ := url.Parse("https://controlplane.tailscale.com/derpmap/default")
 
-	// 获取当前路径，防止权限问题
+	// 获取当前路径作为数据目录
 	cwd, _ := os.Getwd()
+	dataDir := cwd + "/data/headscale"
+	_ = os.MkdirAll(dataDir, 0755)
 
 	return &types.Config{
 		ServerURL:                      c.ServerURL,
@@ -190,13 +193,13 @@ func loadServerConfig(c *headscaleConfig) (*types.Config, error) {
 		IPAllocation:                   types.IPAllocationStrategySequential,
 		NoisePrivateKeyPath:            c.PrivateKeyPath,
 		BaseDomain:                     c.BaseDomain,
-		Log:                            types.LogConfig{Level: 1}, // 简单的日志配置
+		Log:                            types.LogConfig{Level: 1},
 		DisableUpdateCheck:             true,
 		Database: types.DatabaseConfig{
 			Type:  "sqlite3",
 			Debug: false,
 			Sqlite: types.SqliteConfig{
-				Path:          fmt.Sprintf("%s/headscale.db", cwd), // 改为当前目录
+				Path:          dataDir + "/headscale.db",
 				WriteAheadLog: true,
 			},
 		},
@@ -209,7 +212,15 @@ func loadServerConfig(c *headscaleConfig) (*types.Config, error) {
 		},
 		TLS:                  types.TLSConfig{},
 		DNSConfig:            types.DNSConfig{},
-		UnixSocket:           fmt.Sprintf("%s/headscale.sock", cwd), // 改为当前目录
+		UnixSocket:           dataDir + "/headscale.sock",
 		UnixSocketPermission: 0755,
+		Tuning: types.Tuning{
+			NotifierSendTimeout:            800 * time.Millisecond,
+			BatchChangeDelay:               800 * time.Millisecond,
+			NodeMapSessionBufferedChanSize: 30,
+			BatcherWorkers:                 runtime.NumCPU(),
+			NodeStoreBatchSize:             100,
+			NodeStoreBatchTimeout:          500 * time.Millisecond,
+		},
 	}, nil
 }
