@@ -40,8 +40,39 @@ if [ "$OS" != "Linux" ] && [ "$OS" != "FreeBSD" ] && [ "$OS" != "Darwin" ]; then
     echo "Unsupported operating system: $OS. Please manually download the appropriate gopanel version for your system."
     exit 1
 fi
+# Detect init system on Linux
+INIT_SYSTEM=""
+if [ "$OS" = "Linux" ]; then
+    if command -v systemctl > /dev/null 2>&1; then
+        INIT_SYSTEM="systemd"
+    elif command -v rc-service > /dev/null 2>&1; then
+        INIT_SYSTEM="openrc"
+    else
+        echo "Unsupported init system. Only systemd and OpenRC (Alpine) are supported."
+        exit 1
+    fi
+fi
+WORKDIR="/opt/gopanel"
 # Set download link
 DOWNLOAD_URL="https://github.com/BapiGso/gopanel/releases/latest/download/gopanel_${OS_LOWER}_${GOARCH}"
+# Check if this is an update
+IS_UPDATE=false
+if [ -f /usr/local/bin/gopanel ]; then
+    IS_UPDATE=true
+    echo "Detected existing gopanel installation, updating..."
+    # Stop service before update
+    if [ "$OS" = "Linux" ]; then
+        if [ "$INIT_SYSTEM" = "systemd" ]; then
+            sudo systemctl stop gopanel 2>/dev/null
+        elif [ "$INIT_SYSTEM" = "openrc" ]; then
+            sudo rc-service gopanel stop 2>/dev/null
+        fi
+    elif [ "$OS" = "FreeBSD" ]; then
+        sudo service gopanel stop 2>/dev/null
+    elif [ "$OS" = "Darwin" ]; then
+        sudo launchctl unload /Library/LaunchDaemons/com.gopanel.service.plist 2>/dev/null
+    fi
+fi
 # Download gopanel
 sudo wget "$DOWNLOAD_URL" -O /usr/local/bin/gopanel
 # Check if download succeeded
@@ -51,12 +82,29 @@ if [ $? -ne 0 ]; then
 fi
 # Grant execute permission
 sudo chmod +x /usr/local/bin/gopanel
+# If updating, restart service and exit
+if [ "$IS_UPDATE" = true ]; then
+    if [ "$OS" = "Linux" ]; then
+        if [ "$INIT_SYSTEM" = "systemd" ]; then
+            sudo systemctl start gopanel
+        elif [ "$INIT_SYSTEM" = "openrc" ]; then
+            sudo rc-service gopanel start
+        fi
+    elif [ "$OS" = "FreeBSD" ]; then
+        sudo service gopanel start
+    elif [ "$OS" = "Darwin" ]; then
+        sudo launchctl load -w /Library/LaunchDaemons/com.gopanel.service.plist
+    fi
+    sleep 2
+    echo "gopanel update success!"
+    exit 0
+fi
 # Create working directory
-WORKDIR="/opt/gopanel"
 sudo mkdir -p "$WORKDIR"
 # Create service file
 if [ "$OS" = "Linux" ]; then
-    cat << EOF | sudo tee /etc/systemd/system/gopanel.service > /dev/null
+    if [ "$INIT_SYSTEM" = "systemd" ]; then
+        cat << EOF | sudo tee /etc/systemd/system/gopanel.service > /dev/null
 [Unit]
 Description=GoPanel Service
 After=network.target
@@ -69,14 +117,38 @@ WorkingDirectory=${WORKDIR}
 [Install]
 WantedBy=multi-user.target
 EOF
-    # Reload systemd configuration
-    sudo systemctl daemon-reload
-    # Enable and start gopanel service
-    sudo systemctl enable gopanel
-    sudo systemctl start gopanel
-    # Check service status
-    sleep 2
-    sudo systemctl status gopanel
+        # Reload systemd configuration
+        sudo systemctl daemon-reload
+        # Enable and start gopanel service
+        sudo systemctl enable gopanel
+        sudo systemctl start gopanel
+        # Check service status
+        sleep 2
+        sudo systemctl status gopanel
+    elif [ "$INIT_SYSTEM" = "openrc" ]; then
+        cat << EOF | sudo tee /etc/init.d/gopanel > /dev/null
+#!/sbin/openrc-run
+description="GoPanel Service"
+command="/usr/local/bin/gopanel"
+command_args="-w ${WORKDIR}"
+command_background=true
+pidfile="/run/\${RC_SVCNAME}.pid"
+directory="${WORKDIR}"
+
+depend() {
+    need net
+    after firewall
+}
+EOF
+        # Grant execute permission to init script
+        sudo chmod +x /etc/init.d/gopanel
+        # Enable and start gopanel service
+        sudo rc-update add gopanel default
+        sudo rc-service gopanel start
+        # Check service status
+        sleep 2
+        sudo rc-service gopanel status
+    fi
 elif [ "$OS" = "FreeBSD" ]; then
     cat << EOF | sudo tee /usr/local/etc/rc.d/gopanel > /dev/null
 #!/bin/sh
