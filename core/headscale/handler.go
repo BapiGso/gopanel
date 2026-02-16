@@ -34,21 +34,26 @@ type headscaleConfig struct {
 	ServerURL         string `form:"server_url"`
 	ListenAddr        string `form:"listen_addr"`
 	MetricsListenAddr string `form:"metrics_listen_addr"`
-	GRPCListenAddr    string `form:"grpc_listen_addr"`
 	PrivateKeyPath    string `form:"private_key_path"`
 	IPv4Prefix        string `form:"ipv4_prefix"`
 	IPv6Prefix        string `form:"ipv6_prefix"`
 	BaseDomain        string `form:"base_domain"`
+	DERPEnabled       bool   `form:"derp_enabled" default:"true"` // "on" or ""
+	DERPRegionID      int    `form:"derp_region_id" default:"999"`
+	DERPRegionCode    string `form:"derp_region_code" default:"gopanel"`
+	DERPRegionName    string `form:"derp_region_name" default:"GoPanel Embedded DERP"`
+	DERPSTUNAddr      string `form:"derp_stun_addr" default:"0.0.0.0:3478"`
+	DERPVerifyClient  string `form:"derp_verify_clients"` // "on" or ""
 }
 
 // Index 是唯一的入口函数
 func Index(c *echo.Context) error {
 	// 获取请求动作类型
 	action := c.QueryParam("status")
-	method := c.Request().Method
+	switch c.Request().Method {
 
 	// 1. 处理 POST 请求 (控制指令：启动、停止、检查状态)
-	if method == "POST" {
+	case "POST":
 		hsMutex.Lock()
 		defer hsMutex.Unlock()
 
@@ -149,10 +154,8 @@ func Index(c *echo.Context) error {
 			// saveConfigToDisk(c)
 			return c.JSON(200, map[string]any{"success": true, "message": "Config saved (mock)"})
 		}
-	}
 
-	// 2. 处理 GET 请求 (渲染页面)
-	if method == "GET" {
+	case "GET":
 		// 可以在这里读取配置文件回显
 		return c.Render(http.StatusOK, "headscale.template", map[string]any{
 			"headscaleEnable": hsRunning,
@@ -185,7 +188,7 @@ func loadServerConfig(c *headscaleConfig) (*types.Config, error) {
 		ServerURL:                      c.ServerURL,
 		Addr:                           c.ListenAddr,
 		MetricsAddr:                    c.MetricsListenAddr,
-		GRPCAddr:                       c.GRPCListenAddr,
+		GRPCAddr:                       "127.0.0.1:50443",
 		GRPCAllowInsecure:              true,
 		EphemeralNodeInactivityTimeout: 30 * time.Minute,
 		PrefixV4:                       &prefix4,
@@ -204,8 +207,14 @@ func loadServerConfig(c *headscaleConfig) (*types.Config, error) {
 			},
 		},
 		DERP: types.DERPConfig{
-			ServerEnabled:                      false,
-			AutomaticallyAddEmbeddedDerpRegion: false,
+			ServerEnabled:                      c.DERPEnabled,
+			AutomaticallyAddEmbeddedDerpRegion: c.DERPEnabled,
+			ServerRegionID:                     c.DERPRegionID,
+			ServerRegionCode:                   c.DERPRegionCode,
+			ServerRegionName:                   c.DERPRegionName,
+			STUNAddr:                           c.DERPSTUNAddr,
+			ServerPrivateKeyPath:               dataDir + "/derp_server.key",
+			ServerVerifyClients:                c.DERPVerifyClient == "on",
 			URLs:                               []url.URL{*derpURL},
 			AutoUpdate:                         true,
 			UpdateFrequency:                    24 * time.Hour,

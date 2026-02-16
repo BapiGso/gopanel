@@ -2,9 +2,6 @@ package core
 
 import (
 	"context"
-	"github.com/labstack/echo/v5"
-	"github.com/labstack/echo/v5/middleware"
-	"github.com/spf13/viper"
 	"gopanel/core/cron"
 	"gopanel/core/docker"
 	"gopanel/core/file"
@@ -18,10 +15,14 @@ import (
 	"gopanel/core/term"
 	"gopanel/core/webdav"
 	"gopanel/core/website"
+
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
+	"github.com/spf13/viper"
 )
 
 func (c *Core) Route() {
-	c.e.Validator = mymiddleware.DefaultValidator
+	c.e.Validator = &mymiddleware.Validator{}
 	c.e.Renderer = mymiddleware.DefaultTemplateRender
 
 	c.e.Use(middleware.RequestLogger())

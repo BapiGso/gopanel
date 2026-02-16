@@ -23,7 +23,6 @@ func TestLoadServerConfig_ValidConfig(t *testing.T) {
 		ServerURL:         "https://myheadscale.example.com:443",
 		ListenAddr:        "0.0.0.0:8080",
 		MetricsListenAddr: "127.0.0.1:9090",
-		GRPCListenAddr:    "127.0.0.1:50443",
 		PrivateKeyPath:    "/var/lib/headscale/noise_private.key",
 		IPv4Prefix:        "100.64.0.0/10",
 		IPv6Prefix:        "fd7a:115c:a1e0::/48",
@@ -44,8 +43,8 @@ func TestLoadServerConfig_ValidConfig(t *testing.T) {
 	if result.MetricsAddr != cfg.MetricsListenAddr {
 		t.Errorf("MetricsAddr = %q, want %q", result.MetricsAddr, cfg.MetricsListenAddr)
 	}
-	if result.GRPCAddr != cfg.GRPCListenAddr {
-		t.Errorf("GRPCAddr = %q, want %q", result.GRPCAddr, cfg.GRPCListenAddr)
+	if result.GRPCAddr != "127.0.0.1:50443" {
+		t.Errorf("GRPCAddr = %q, want %q", result.GRPCAddr, "127.0.0.1:50443")
 	}
 	if result.NoisePrivateKeyPath != cfg.PrivateKeyPath {
 		t.Errorf("NoisePrivateKeyPath = %q, want %q", result.NoisePrivateKeyPath, cfg.PrivateKeyPath)
@@ -78,7 +77,6 @@ func TestLoadServerConfig_InvalidIPv4Prefix(t *testing.T) {
 		ServerURL:         "https://example.com",
 		ListenAddr:        "0.0.0.0:8080",
 		MetricsListenAddr: "127.0.0.1:9090",
-		GRPCListenAddr:    "127.0.0.1:50443",
 		PrivateKeyPath:    "/tmp/key",
 		IPv4Prefix:        "invalid-prefix",
 		IPv6Prefix:        "fd7a:115c:a1e0::/48",
@@ -99,7 +97,6 @@ func TestLoadServerConfig_InvalidIPv6Prefix(t *testing.T) {
 		ServerURL:         "https://example.com",
 		ListenAddr:        "0.0.0.0:8080",
 		MetricsListenAddr: "127.0.0.1:9090",
-		GRPCListenAddr:    "127.0.0.1:50443",
 		PrivateKeyPath:    "/tmp/key",
 		IPv4Prefix:        "100.64.0.0/10",
 		IPv6Prefix:        "not-valid",
@@ -112,6 +109,112 @@ func TestLoadServerConfig_InvalidIPv6Prefix(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "IPv6") {
 		t.Errorf("error should mention IPv6, got: %v", err)
+	}
+}
+
+// ==================== DERP 配置测试 ====================
+
+func TestLoadServerConfig_DERPEnabled(t *testing.T) {
+	cfg := &headscaleConfig{
+		ServerURL:         "https://example.com",
+		ListenAddr:        "0.0.0.0:8080",
+		MetricsListenAddr: "127.0.0.1:9090",
+		PrivateKeyPath:    "/tmp/key",
+		IPv4Prefix:        "100.64.0.0/10",
+		IPv6Prefix:        "fd7a:115c:a1e0::/48",
+		BaseDomain:        "example.com",
+		DERPEnabled:       true,
+		DERPRegionID:      100,
+		DERPRegionCode:    "my-region",
+		DERPRegionName:    "My Custom DERP",
+		DERPSTUNAddr:      "0.0.0.0:3479",
+		DERPVerifyClient:  "on",
+	}
+
+	result, err := loadServerConfig(cfg)
+	if err != nil {
+		t.Fatalf("loadServerConfig failed: %v", err)
+	}
+
+	derp := result.DERP
+	if !derp.ServerEnabled {
+		t.Error("DERP.ServerEnabled should be true")
+	}
+	if !derp.AutomaticallyAddEmbeddedDerpRegion {
+		t.Error("DERP.AutomaticallyAddEmbeddedDerpRegion should be true")
+	}
+	if derp.ServerRegionID != 100 {
+		t.Errorf("DERP.ServerRegionID = %d, want 100", derp.ServerRegionID)
+	}
+	if derp.ServerRegionCode != "my-region" {
+		t.Errorf("DERP.ServerRegionCode = %q, want %q", derp.ServerRegionCode, "my-region")
+	}
+	if derp.ServerRegionName != "My Custom DERP" {
+		t.Errorf("DERP.ServerRegionName = %q, want %q", derp.ServerRegionName, "My Custom DERP")
+	}
+	if derp.STUNAddr != "0.0.0.0:3479" {
+		t.Errorf("DERP.STUNAddr = %q, want %q", derp.STUNAddr, "0.0.0.0:3479")
+	}
+	if !derp.ServerVerifyClients {
+		t.Error("DERP.ServerVerifyClients should be true")
+	}
+	if derp.ServerPrivateKeyPath == "" {
+		t.Error("DERP.ServerPrivateKeyPath should not be empty")
+	}
+	if !strings.HasSuffix(derp.ServerPrivateKeyPath, "/derp_server.key") {
+		t.Errorf("DERP.ServerPrivateKeyPath = %q, should end with /derp_server.key", derp.ServerPrivateKeyPath)
+	}
+	// 即使启用了内嵌 DERP，官方 URL 仍作为 fallback
+	if len(derp.URLs) != 1 {
+		t.Errorf("DERP.URLs length = %d, want 1 (fallback)", len(derp.URLs))
+	}
+}
+
+func TestLoadServerConfig_DERPDisabled(t *testing.T) {
+	cfg := &headscaleConfig{
+		ServerURL:         "https://example.com",
+		ListenAddr:        "0.0.0.0:8080",
+		MetricsListenAddr: "127.0.0.1:9090",
+		PrivateKeyPath:    "/tmp/key",
+		IPv4Prefix:        "100.64.0.0/10",
+		IPv6Prefix:        "fd7a:115c:a1e0::/48",
+		BaseDomain:        "example.com",
+		DERPEnabled:       false,
+	}
+
+	result, err := loadServerConfig(cfg)
+	if err != nil {
+		t.Fatalf("loadServerConfig failed: %v", err)
+	}
+
+	if result.DERP.ServerEnabled {
+		t.Error("DERP.ServerEnabled should be false")
+	}
+	if result.DERP.AutomaticallyAddEmbeddedDerpRegion {
+		t.Error("DERP.AutomaticallyAddEmbeddedDerpRegion should be false")
+	}
+}
+
+func TestLoadServerConfig_DERPVerifyClientOff(t *testing.T) {
+	cfg := &headscaleConfig{
+		ServerURL:         "https://example.com",
+		ListenAddr:        "0.0.0.0:8080",
+		MetricsListenAddr: "127.0.0.1:9090",
+		PrivateKeyPath:    "/tmp/key",
+		IPv4Prefix:        "100.64.0.0/10",
+		IPv6Prefix:        "fd7a:115c:a1e0::/48",
+		BaseDomain:        "example.com",
+		DERPEnabled:       true,
+		DERPVerifyClient:  "",
+	}
+
+	result, err := loadServerConfig(cfg)
+	if err != nil {
+		t.Fatalf("loadServerConfig failed: %v", err)
+	}
+
+	if result.DERP.ServerVerifyClients {
+		t.Error("DERP.ServerVerifyClients should be false when DERPVerifyClient is empty")
 	}
 }
 
@@ -143,7 +246,6 @@ func parseJSON(t *testing.T, rec *httptest.ResponseRecorder) map[string]any {
 }
 
 func TestCheckStatus_WhenStopped(t *testing.T) {
-	// 确保初始状态是停止的
 	hsMutex.Lock()
 	hsRunning = false
 	hsError = ""
@@ -242,14 +344,12 @@ func TestCheckStatus_WithError(t *testing.T) {
 		t.Errorf("error = %v, want error message", result["error"])
 	}
 
-	// 清理
 	hsMutex.Lock()
 	hsError = ""
 	hsMutex.Unlock()
 }
 
-// ==================== 连接测试 ====================
-// 以下测试用于验证 Headscale 服务是否真的可以启动和连接
+// ==================== 集成测试 ====================
 // 需要在 Linux 上运行，并且需要合适的文件权限
 
 func TestHeadscaleStartAndConnect(t *testing.T) {
@@ -267,20 +367,24 @@ func TestHeadscaleStartAndConnect(t *testing.T) {
 		os.RemoveAll(testDir)
 	}()
 
-	// 准备表单数据
+	// 准备表单数据（启用内嵌 DERP）
 	form := url.Values{
 		"server_url":          {"http://127.0.0.1:18080"},
 		"listen_addr":         {"127.0.0.1:18080"},
 		"metrics_listen_addr": {"127.0.0.1:19090"},
-		"grpc_listen_addr":    {"127.0.0.1:50444"},
-		"private_key_path":    {"/tmp/headscale_test_noise.key"},
+		"private_key_path":    {testDir + "/noise_private.key"},
 		"ipv4_prefix":         {"100.64.0.0/10"},
 		"ipv6_prefix":         {"fd7a:115c:a1e0::/48"},
 		"base_domain":         {"test.example.com"},
+		"derp_enabled":        {"true"},
+		"derp_region_id":      {"999"},
+		"derp_region_code":    {"gopanel"},
+		"derp_region_name":    {"GoPanel Embedded DERP"},
+		"derp_stun_addr":      {"0.0.0.0:3478"},
 	}
 
 	// 1. 启动 Headscale
-	t.Log("Starting Headscale...")
+	t.Log("Starting Headscale with embedded DERP...")
 	c, rec := newTestContext("POST", "/admin/headscale?status=start", form)
 	err := Index(c)
 	if err != nil {
