@@ -30,7 +30,7 @@ func (m *windowsManager) List() ([]Rule, error) {
 	}
 
 	var rules []Rule
-	for _, line := range strings.Split(string(out), "\n") {
+	for line := range strings.SplitSeq(string(out), "\n") {
 		line = strings.TrimSpace(line)
 		idx := strings.Index(line, "GoPanelFW-")
 		if idx < 0 {

@@ -399,7 +399,7 @@ func TestHeadscaleStartAndConnect(t *testing.T) {
 
 	// 2. 等待服务启动，然后检查状态
 	t.Log("Waiting for service to start...")
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		time.Sleep(500 * time.Millisecond)
 
 		c2, rec2 := newTestContext("POST", "/admin/headscale?status=check", nil)
@@ -421,7 +421,7 @@ func TestHeadscaleStartAndConnect(t *testing.T) {
 	// 3. 等待端口绑定完成，然后尝试 HTTP 连接
 	t.Log("Testing HTTP connection to Headscale...")
 	var connected bool
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		time.Sleep(500 * time.Millisecond)
 		resp, err := http.Get("http://127.0.0.1:18080/health")
 		if err != nil {
