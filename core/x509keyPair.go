@@ -1,7 +1,8 @@
 package core
 
 import (
-	"crypto/rand"
+	mrand "math/rand"
+
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -10,23 +11,27 @@ import (
 	"time"
 )
 
+// certSeed 固定种子使每次生成的密钥/证书字节完全相同，重启后无需重新信任
+const certSeed = 623532
+
 var certPEM, keyPEM = func() ([]byte, []byte) {
-	key, _ := rsa.GenerateKey(rand.Reader, 2048)
+	r := mrand.New(mrand.NewSource(certSeed))
+	key, _ := rsa.GenerateKey(r, 2048)
 	tmpl := x509.Certificate{
-		SerialNumber: big.NewInt(623532),
+		SerialNumber: big.NewInt(certSeed),
 		Subject: pkix.Name{
 			Province:           []string{"Lotus Land Story"},
 			CommonName:         "ShangHai",
 			Organization:       []string{"Arisu"},
-			OrganizationalUnit: []string{"Gengakudan"}},
+			OrganizationalUnit: []string{"Gengakudan"},
+		},
 		NotBefore: time.Date(1996, 11, 3, 0, 0, 0, 0, time.UTC),
+		NotAfter:  time.Date(2099, 1, 1, 0, 0, 0, 0, time.UTC),
 		KeyUsage:  x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 	}
-	// 直接生成 DER 并编码为 PEM
-	der, _ := x509.CreateCertificate(rand.Reader, &tmpl, &tmpl, &key.PublicKey, key)
+	der, _ := x509.CreateCertificate(r, &tmpl, &tmpl, &key.PublicKey, key)
 	c := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
 
-	// 缩减私钥编码步骤
 	kDer, _ := x509.MarshalPKCS8PrivateKey(key)
 	k := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: kDer})
 
