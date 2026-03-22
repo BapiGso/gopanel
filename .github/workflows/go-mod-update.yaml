@@ -97,10 +97,10 @@ jobs:
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.ACTIONS_PR_TOKEN || github.token }}
-          commit-message: chore: update Go modules
+          commit-message: "chore: update Go modules"
           branch: chore/go-mod-updates
           delete-branch: true
-          title: chore: update Go modules
+          title: "chore: update Go modules"
           labels: |
             dependencies
             go-mod-update
