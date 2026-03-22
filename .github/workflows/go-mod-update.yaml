@@ -43,11 +43,63 @@ jobs:
             exit 0
           fi
 
-          printf 'Found %s module updates:\n' "${#updates[@]}"
+          tmpdir="$(mktemp -d)"
+          trap 'rm -rf "$tmpdir"' EXIT
+
+          cp go.mod "$tmpdir/go.mod"
+          if [ -f go.sum ]; then
+            cp go.sum "$tmpdir/go.sum"
+          fi
+
+          restore_state() {
+            cp "$tmpdir/go.mod" go.mod
+            if [ -f "$tmpdir/go.sum" ]; then
+              cp "$tmpdir/go.sum" go.sum
+            else
+              rm -f go.sum
+            fi
+          }
+
+          save_state() {
+            cp go.mod "$tmpdir/go.mod"
+            if [ -f go.sum ]; then
+              cp go.sum "$tmpdir/go.sum"
+            else
+              rm -f "$tmpdir/go.sum"
+            fi
+          }
+
+          successful=()
+          skipped=()
+
+          printf 'Found %s candidate module updates:\n' "${#updates[@]}"
           printf ' - %s\n' "${updates[@]}"
 
-          go get "${updates[@]}"
-          go mod tidy
+          if go get "${updates[@]}" && go mod tidy; then
+            successful=("${updates[@]}")
+          else
+            echo "Batch update failed, retrying one module at a time."
+            restore_state
+
+            for update in "${updates[@]}"; do
+              echo "::group::Trying $update"
+              if go get "$update" && go mod tidy; then
+                successful+=("$update")
+                save_state
+                echo "Updated $update"
+              else
+                skipped+=("$update")
+                restore_state
+                echo "Skipped $update"
+              fi
+              echo "::endgroup::"
+            done
+          fi
+
+          if [ "${#successful[@]}" -eq 0 ]; then
+            echo "has_updates=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
           if git diff --quiet -- go.mod go.sum; then
             echo "has_updates=false" >> "$GITHUB_OUTPUT"
@@ -57,7 +109,14 @@ jobs:
           {
             echo "has_updates=true"
             echo "updates<<EOF"
-            printf '%s\n' "${updates[@]}"
+            printf '%s\n' "${successful[@]}"
+            echo "EOF"
+            echo "skipped_updates<<EOF"
+            if [ "${#skipped[@]}" -gt 0 ]; then
+              printf '%s\n' "${skipped[@]}"
+            else
+              echo "None"
+            fi
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
@@ -107,9 +166,14 @@ jobs:
           body: |
             This PR was created automatically by the daily Go module update workflow.
 
-            Updated modules:
+            Updated modules that applied cleanly:
             ```text
             ${{ steps.update.outputs.updates }}
+            ```
+
+            Skipped modules:
+            ```text
+            ${{ steps.update.outputs.skipped_updates }}
             ```
 
             If you want this PR to trigger other workflows, set `ACTIONS_PR_TOKEN` to a PAT with repo scope.
