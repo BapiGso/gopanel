@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
   pull-requests: write
 
 concurrency:
@@ -128,6 +129,8 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
+            const branchName = 'chore/go-mod-updates';
+            const title = 'chore: update Go modules';
             const markerLabel = 'go-mod-update';
 
             const prs = await github.paginate(github.rest.pulls.list, {
@@ -139,7 +142,9 @@ jobs:
 
             for (const pr of prs) {
               const hasLabel = pr.labels.some(label => label.name === markerLabel);
-              if (!hasLabel) {
+              const matchesBranch = pr.head.ref === branchName;
+              const matchesTitle = pr.title === title;
+              if (!hasLabel && !matchesBranch && !matchesTitle) {
                 continue;
               }
 
@@ -153,6 +158,7 @@ jobs:
 
       - name: Create pull request
         if: steps.update.outputs.has_updates == 'true'
+        id: create_pr
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.ACTIONS_PR_TOKEN || github.token }}
@@ -160,9 +166,6 @@ jobs:
           branch: chore/go-mod-updates
           delete-branch: true
           title: "chore: update Go modules"
-          labels: |
-            dependencies
-            go-mod-update
           body: |
             This PR was created automatically by the daily Go module update workflow.
 
@@ -180,3 +183,54 @@ jobs:
           add-paths: |
             go.mod
             go.sum
+
+      - name: Apply PR labels
+        if: steps.update.outputs.has_updates == 'true' && steps.create_pr.outputs.pull-request-number != ''
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.ACTIONS_PR_TOKEN || github.token }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = Number('${{ steps.create_pr.outputs.pull-request-number }}');
+            const labels = [
+              {
+                name: 'dependencies',
+                color: '0366d6',
+                description: 'Pull requests that update project dependencies'
+              },
+              {
+                name: 'go-mod-update',
+                color: '0e8a16',
+                description: 'Automated Go module update pull requests'
+              }
+            ];
+
+            for (const label of labels) {
+              try {
+                await github.rest.issues.getLabel({
+                  owner,
+                  repo,
+                  name: label.name
+                });
+              } catch (error) {
+                if (error.status !== 404) {
+                  throw error;
+                }
+
+                await github.rest.issues.createLabel({
+                  owner,
+                  repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description
+                });
+              }
+            }
+
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number,
+              labels: labels.map(label => label.name)
+            });
