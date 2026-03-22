@@ -1,10 +1,13 @@
 package website
 
 import (
+	_ "github.com/caddy-dns/cloudflare"
 	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
 	"github.com/caddyserver/caddy/v2/caddyconfig/httpcaddyfile"
 	_ "github.com/caddyserver/caddy/v2/modules/standard" //不导入这个不行
+
+	"os"
 
 	_ "github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
 	_ "github.com/caddyserver/caddy/v2/modules/caddyevents"
@@ -19,7 +22,6 @@ import (
 	_ "github.com/caddyserver/caddy/v2/modules/filestorage"
 	_ "github.com/caddyserver/caddy/v2/modules/logging"
 	_ "github.com/caddyserver/caddy/v2/modules/metrics"
-	"os"
 )
 
 func caddyStart() error {

@@ -1,58 +1,78 @@
+# gopanel
 
-![preview](./assets/img/preview4.png)
+![Preview](./assets/img/preview4.png)
 
+A lightweight Go-based management panel with simple deployment and practical built-in tools.
 
-![license](https://img.shields.io/github/license/BapiGso/gopanel)
-![last - commit](https://img.shields.io/github/last-commit/BapiGso/gopanel)
-![stars - gopanel](https://img.shields.io/github/stars/bapigso/gopanel?style=social)
-![forks - gopanel](https://img.shields.io/github/forks/bapigso/gopanel?style=social)
-![CodeQL](https://github.com/BapiGso/gopanel/workflows/CodeQL/badge.svg)
+![License](https://img.shields.io/github/license/BapiGso/gopanel?style=flat-square)
+![Release](https://img.shields.io/github/v/release/BapiGso/gopanel?style=flat-square)
+![Last Commit](https://img.shields.io/github/last-commit/BapiGso/gopanel?style=flat-square)
+![Issues](https://img.shields.io/github/issues/BapiGso/gopanel?style=flat-square)
+![CodeQL](https://img.shields.io/github/actions/workflow/status/BapiGso/gopanel/codeql.yml?branch=master&style=flat-square&label=CodeQL)
 
----
+![Stars](https://img.shields.io/github/stars/BapiGso/gopanel?style=social)
+![Forks](https://img.shields.io/github/forks/BapiGso/gopanel?style=social)
 
-## ABOUT
+> Entertainment project. Do not use in production.
 
-**gopanel** It is a management panel written in Go language with zero dependencies, super simple deployment and very simple functions.
+## Quick Start
 
-❗Entertainment project, do not use in production environment
-
-#### INSTALL
+<details open>
+<summary><strong>Install</strong></summary>
 
 ```bash
 bash <(curl -s https://raw.githubusercontent.com/BapiGso/gopanel/master/shell/install_gopanel.sh)
 ```
 
-Or, download the appropriate version for your platform from the [Releases](https://github.com/BapiGso/gopanel/releases) page and run it.
+Or download the appropriate version for your platform from the [Releases](https://github.com/BapiGso/gopanel/releases) page and run it directly.
 
-#### UNINSTALL
+</details>
+
+<details>
+<summary><strong>Uninstall</strong></summary>
 
 ```bash
 bash <(curl -s https://raw.githubusercontent.com/BapiGso/gopanel/master/shell/uninstall_gopanel.sh)
 ```
 
-#### FUNCTION
-- Panel security entrance
-- Server monitoring([github.com/shirou/gopsutil](https://github.com/shirou/gopsutil))
-- cron ([github.com/go-co-op/gocron/v2](https://github.com/go-co-op/gocron))
-- webssh ([golang.org/x/crypto/ssh](https://golang.org/x/crypto/ssh))
-- webdav server ([golang.org/x/net/webdav](https://golang.org/x/net/webdav))
-- web file editor
-- caddy manage ([github.com/caddyserver/caddy/v2](https://github.com/caddyserver/caddy))
-- frps manage ([github.com/fatedier/frp](https://github.com/fatedier/frp))
-- frpc manage ([github.com/fatedier/frp](https://github.com/fatedier/frp))
-- ~~UnblockNeteaseMusic~~ ([github.com/cnsilvan/UnblockNeteaseMusic](https://github.com/cnsilvan/UnblockNeteaseMusic))
-- docker manage ([github.com/docker/docker](https://github.com/docker/docker))
-- firewall ([github.com/google/nftables](https://github.com/google/nftables))
+</details>
 
+## Features
 
-#### TODO
+| Module               | Description                          | Dependency                                                     |
+| -------------------- | ------------------------------------ | -------------------------------------------------------------- |
+| Security Entrance    | Panel security entry and protection  | Built-in                                                       |
+| Server Monitor       | Basic server monitoring              | [shirou/gopsutil](https://github.com/shirou/gopsutil)          |
+| Cron                 | Scheduled task management            | [go-co-op/gocron](https://github.com/go-co-op/gocron)          |
+| WebSSH               | Terminal access in the browser       | [golang.org/x/crypto/ssh](https://pkg.go.dev/golang.org/x/crypto/ssh) |
+| WebDAV               | WebDAV server support                | [golang.org/x/net/webdav](https://pkg.go.dev/golang.org/x/net/webdav) |
+| File Editor          | Web file manager and editor          | Built-in                                                       |
+| Caddy Manage         | Caddy service management             | [caddyserver/caddy](https://github.com/caddyserver/caddy)      |
+| FRPS Manage          | frps management                      | [fatedier/frp](https://github.com/fatedier/frp)                |
+| FRPC Manage          | frpc management                      | [fatedier/frp](https://github.com/fatedier/frp)                |
+| Docker Manage        | Docker management                    | [docker/docker](https://github.com/docker/docker)              |
+| Firewall             | Firewall management                  | [google/nftables](https://github.com/google/nftables)          |
+| UnblockNeteaseMusic  | Currently disabled                   | [cnsilvan/UnblockNeteaseMusic](https://github.com/cnsilvan/UnblockNeteaseMusic) |
 
-- headscale ([github.com/juanfont/headscale](https://github.com/juanfont/headscale))
+## Roadmap
 
-## LICENSE
+<details>
+<summary><strong>Planned / TODO</strong></summary>
 
-released under the [Apache License](https://github.com/BapiGso/gopanel/blob/master/LICENSE).
+- headscale ([juanfont/headscale](https://github.com/juanfont/headscale))
+
+</details>
+
+## Project Links
+
+- [Releases](https://github.com/BapiGso/gopanel/releases)
+- [Issues](https://github.com/BapiGso/gopanel/issues)
+- [License](https://github.com/BapiGso/gopanel/blob/master/LICENSE)
+
+## License
+
+Released under the [Apache License](https://github.com/BapiGso/gopanel/blob/master/LICENSE).
 
 ## Acknowledgments
 
-I would like to extend my heartfelt thanks to the gopher developers and the open-source community for their invaluable contributions. Your efforts have made this project possible.
+Thanks to the Go community and all open-source contributors who made this project possible.

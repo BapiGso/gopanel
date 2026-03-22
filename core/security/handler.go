@@ -2,7 +2,7 @@ package security
 
 import (
 	"github.com/labstack/echo/v5"
-	"github.com/spf13/viper"
+	"gopanel/core/config"
 	"net/http"
 )
 
@@ -12,7 +12,7 @@ func Index(c *echo.Context) error {
 	case "GET":
 		return c.Render(http.StatusOK, "security.template", map[string]any{
 			"getPanelConfig": func(s string) any {
-				return viper.Get(s)
+				return config.Get(s)
 			},
 		})
 	case "POST":
@@ -25,12 +25,13 @@ func Index(c *echo.Context) error {
 		if err := c.Bind(req); err != nil {
 			return err
 		}
-		viper.Set("panel.port", req.Port)
-		viper.Set("panel.path", req.Path)
-		viper.Set("panel.username", req.Username)
-		viper.Set("panel.password", req.Password)
-		if err := viper.WriteConfig(); err != nil {
-			return err // 处理错误
+		if err := config.Update(func(cfg *config.Config) {
+			cfg.Panel.Port = req.Port
+			cfg.Panel.Path = req.Path
+			cfg.Panel.Username = req.Username
+			cfg.Panel.Password = req.Password
+		}); err != nil {
+			return err
 		}
 		if err := restart(); err != nil {
 			return err

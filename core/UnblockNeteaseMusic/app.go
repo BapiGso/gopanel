@@ -1,3 +1,5 @@
+//go:build ignore
+
 package UnblockNeteaseMusic
 
 import (
@@ -6,12 +8,13 @@ import (
 
 	"fmt"
 
-	"github.com/cnsilvan/UnblockNeteaseMusic/provider"
-	"github.com/cnsilvan/UnblockNeteaseMusic/version"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/cnsilvan/UnblockNeteaseMusic/provider"
+	"github.com/cnsilvan/UnblockNeteaseMusic/version"
 	//_ "github.com/mkevac/debugcharts" // 可选，添加后可以查看几个实时图表数据
 	//_ "net/http/pprof" // 必须，引入 pprof 模块
 

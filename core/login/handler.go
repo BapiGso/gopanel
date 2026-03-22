@@ -3,7 +3,7 @@ package login
 import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v5"
-	"github.com/spf13/viper"
+	"gopanel/core/config"
 	"net/http"
 	"os"
 	"strconv"
@@ -25,7 +25,7 @@ func Login(c *echo.Context) error {
 		if err := c.Validate(req); err != nil {
 			return err
 		}
-		if req.Username == viper.GetString("panel.username") && req.Password == viper.GetString("panel.password") {
+		if req.Username == config.String("panel.username") && req.Password == config.String("panel.password") {
 			token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, &jwt.RegisteredClaims{
 				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)), //过期日期设置7天
 			}).SignedString([]byte(strconv.Itoa(os.Getpid())))

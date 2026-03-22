@@ -1,7 +1,7 @@
 package website
 
 import (
-	"github.com/spf13/viper"
+	"gopanel/core/config"
 	"os"
 )
 
@@ -18,7 +18,7 @@ respond "Hello, world!"
 `
 		_ = os.WriteFile(filePath, []byte(content), 0644)
 	}
-	if viper.GetBool("enable.caddy") {
+	if config.Bool("enable.caddy") {
 		_ = caddyStart()
 	}
 }

@@ -3,7 +3,6 @@ package frp
 import (
 	"context"
 	"fmt"
-	"github.com/fatedier/frp/pkg/policy/security"
 	"io"
 	"net/http"
 	"os"
@@ -11,15 +10,19 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/fatedier/frp/pkg/policy/security"
+
 	// 合并引用
 	"github.com/fatedier/frp/client"
 	"github.com/fatedier/frp/pkg/config"
+	configsource "github.com/fatedier/frp/pkg/config/source"
 	"github.com/fatedier/frp/pkg/config/v1/validation"
 	"github.com/fatedier/frp/pkg/util/log"
 	"github.com/fatedier/frp/server"
 
+	appconfig "gopanel/core/config"
+
 	"github.com/labstack/echo/v5"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -35,12 +38,14 @@ func Index(c *echo.Context) error {
 	case "POST":
 		action := c.QueryParam("status") // "start", "enable", "stop"
 
-		if action == "start" {
-			if serviceType == "frps" {
+		switch action {
+		case "start":
+			switch serviceType {
+			case "frps":
 				if err := runFRPSServer(); err != nil {
 					return c.String(500, err.Error())
 				}
-			} else if serviceType == "frpc" {
+			case "frpc":
 				// FRPC start is async in original code
 				go func() {
 					if err := runFRPCClient(); err != nil {
@@ -51,14 +56,10 @@ func Index(c *echo.Context) error {
 				time.Sleep(500 * time.Millisecond)
 			}
 			return c.String(200, "Service started successfully")
-		}
-
-		if action == "enable" {
+		case "enable":
 			configKey := fmt.Sprintf("enable.%s", serviceType)
-			currentVal := viper.GetBool(configKey)
-			viper.Set(configKey, !currentVal)
-
-			if err := viper.WriteConfig(); err != nil {
+			currentVal := appconfig.Bool(configKey)
+			if err := appconfig.Write(configKey, !currentVal); err != nil {
 				return c.String(500, "Failed to write config: "+err.Error())
 			}
 			return c.String(200, fmt.Sprintf("%s auto-boot toggled", serviceType))
@@ -99,8 +100,8 @@ func Index(c *echo.Context) error {
 		return c.Render(http.StatusOK, "frp.template", map[string]any{
 			"frpsConfig": string(frpsFile),
 			"frpcConfig": string(frpcFile),
-			"frpsEnable": viper.GetBool("enable.frps"),
-			"frpcEnable": viper.GetBool("enable.frpc"),
+			"frpsEnable": appconfig.Bool("enable.frps"),
+			"frpcEnable": appconfig.Bool("enable.frpc"),
 		})
 	}
 
@@ -142,6 +143,9 @@ func runFRPCClient() error {
 		cli.GracefulClose(500 * time.Millisecond)
 	}
 	cfg, proxyCfgs, visitorCfgs, _, err := config.LoadClientConfig("gopanel_frpc.conf", false)
+	if err != nil {
+		return err
+	}
 	warning, err := validation.ValidateAllClientConfig(cfg, proxyCfgs, visitorCfgs, nil)
 	if warning != nil {
 		fmt.Printf("WARNING: %v\n", warning)
@@ -152,10 +156,15 @@ func runFRPCClient() error {
 
 	log.InitLogger(cfg.Log.To, cfg.Log.Level, int(cfg.Log.MaxDays), cfg.Log.DisablePrintColor)
 
+	configSource := configsource.NewConfigSource()
+	if err := configSource.ReplaceAll(proxyCfgs, visitorCfgs); err != nil {
+		return err
+	}
+	configAggregator := configsource.NewAggregator(configSource)
+
 	cli, err = client.NewService(client.ServiceOptions{
-		Common:      cfg,
-		ProxyCfgs:   proxyCfgs,
-		VisitorCfgs: visitorCfgs,
+		Common:                 cfg,
+		ConfigSourceAggregator: configAggregator,
 	})
 	if err != nil {
 		return err
@@ -212,17 +221,14 @@ remotePort = 6000
 
 	// 3. 异步启动逻辑
 	go func() {
-		// 稍微延迟等待 Viper 加载完毕
-		time.Sleep(3 * time.Second)
-
-		if viper.GetBool("enable.frps") {
+		if appconfig.Bool("enable.frps") {
 			fmt.Println("[FRPS] Auto-starting...")
 			if err := runFRPSServer(); err != nil {
 				fmt.Printf("[FRPS] Start failed: %v\n", err)
 			}
 		}
 
-		if viper.GetBool("enable.frpc") {
+		if appconfig.Bool("enable.frpc") {
 			fmt.Println("[FRPC] Auto-starting...")
 			if err := runFRPCClient(); err != nil {
 				fmt.Printf("[FRPC] Start failed: %v\n", err)

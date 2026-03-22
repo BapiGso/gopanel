@@ -3,14 +3,12 @@ package core
 import (
 	"embed"
 	"github.com/labstack/echo/v5"
-	"github.com/spf13/viper"
 	"gopanel/assets"
 )
 
 type Core struct {
 	assetsFS *embed.FS  //主题所在文件夹
 	e        *echo.Echo //后台框架
-	_        *viper.Viper
 	// 邮件提醒
 }
 

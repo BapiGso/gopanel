@@ -3,8 +3,8 @@ package webdav
 import (
 	"fmt"
 	"github.com/labstack/echo/v5"
-	"github.com/spf13/viper"
 	"golang.org/x/net/webdav"
+	"gopanel/core/config"
 	"net/http"
 )
 
@@ -19,7 +19,7 @@ func Index(c *echo.Context) error {
 	case "GET":
 		return c.Render(http.StatusOK, "webdav.template", map[string]any{
 			"getPanelConfig": func(s string) any {
-				return viper.Get(s)
+				return config.Get(s)
 			},
 		})
 	case "POST":
@@ -27,15 +27,17 @@ func Index(c *echo.Context) error {
 			Enable   string `form:"enable"`
 			Username string `form:"username"`
 			Password string `form:"password"`
-		}{}
+		}{
+		}
 		if err := c.Bind(req); err != nil {
 			return err
 		}
-		viper.Set("webdav.enable", req.Enable == "on")
-		viper.Set("webdav.username", req.Username)
-		viper.Set("webdav.password", req.Password)
-		if err := viper.WriteConfig(); err != nil {
-			return err // 处理错误
+		if err := config.Update(func(cfg *config.Config) {
+			cfg.WebDAV.Enable = req.Enable == "on"
+			cfg.WebDAV.Username = req.Username
+			cfg.WebDAV.Password = req.Password
+		}); err != nil {
+			return err
 		}
 		return c.JSON(204, "success")
 	}
@@ -44,18 +46,18 @@ func Index(c *echo.Context) error {
 
 func FileSystem() echo.HandlerFunc {
 	return echo.WrapHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println(viper.GetString("webdav.username"))
+		fmt.Println(config.String("webdav.username"))
 		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 		username, password, ok := r.BasicAuth()
 		if !ok {
 			http.Error(w, "Not authorized", 401)
 			return
 		}
-		if username != viper.GetString("webdav.username") || password != viper.GetString("webdav.password") {
+		if username != config.String("webdav.username") || password != config.String("webdav.password") {
 			http.Error(w, "Not authorized", 401)
 			return
 		}
-		if !viper.GetBool("webdav.enable") {
+		if !config.Bool("webdav.enable") {
 			http.Error(w, "Not enable", 401)
 			return
 		}

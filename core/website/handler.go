@@ -3,7 +3,7 @@ package website
 import (
 	"github.com/caddyserver/caddy/v2"
 	"github.com/labstack/echo/v5"
-	"github.com/spf13/viper"
+	"gopanel/core/config"
 	"io"
 	"net/http"
 	"os"
@@ -23,9 +23,8 @@ func Index(c *echo.Context) error {
 			}
 		}
 		if c.QueryParam("status") == "enable" {
-			viper.Set("enable.caddy", !viper.GetBool("enable.caddy"))
-			if err := viper.WriteConfig(); err != nil {
-				return err // 处理错误
+			if err := config.Write("enable.caddy", !config.Bool("enable.caddy")); err != nil {
+				return err
 			}
 		}
 		return c.JSON(200, "success")
@@ -46,7 +45,7 @@ func Index(c *echo.Context) error {
 		}
 		return c.Render(http.StatusOK, "website.template", map[string]any{
 			"caddyFile":   string(file),
-			"caddyEnable": viper.GetBool("enable.caddy"),
+			"caddyEnable": config.Bool("enable.caddy"),
 		})
 	}
 	return echo.ErrMethodNotAllowed

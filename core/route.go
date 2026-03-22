@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"gopanel/core/config"
 	"gopanel/core/cron"
 	"gopanel/core/docker"
 	"gopanel/core/file"
@@ -18,7 +19,6 @@ import (
 
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
-	"github.com/spf13/viper"
 )
 
 func (c *Core) Route() {
@@ -34,7 +34,7 @@ func (c *Core) Route() {
 		c.JSON(400, err.Error())
 	}
 	//限制频率
-	c.e.Any(viper.GetString("panel.path"), login.Login, middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(3)))
+	c.e.Any(config.String("panel.path"), login.Login, middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(3)))
 
 	c.e.Match([]string{"GET", "HEAD", "POST", "OPTIONS", "PUT", "MKCOL",
 		"DELETE", "PROPFIND", "PROPPATCH", "COPY", "MOVE", "REPORT",
@@ -74,9 +74,9 @@ func (c *Core) Route() {
 	admin.Any("/headscale", headscale.Index) // 获取页面
 	admin.Any("/firewall", firewall.Index)
 	//admin.Any("/UnblockNeteaseMusic", UnblockNeteaseMusic.Index)
-	//c.e.Start(viper.GetString("panel.port"))
-	//c.e.StartTLS(viper.GetString("panel.port"), []byte(certPEM), []byte(keyPEM))
-	sc := echo.StartConfig{Address: viper.GetString("panel.port")}
+	//c.e.Start(config.String("panel.port"))
+	//c.e.StartTLS(config.String("panel.port"), []byte(certPEM), []byte(keyPEM))
+	sc := echo.StartConfig{Address: config.String("panel.port")}
 	if err := sc.StartTLS(context.Background(), c.e, certPEM, keyPEM); err != nil {
 		c.e.Logger.Error("failed to start server", "error", err)
 	}

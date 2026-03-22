@@ -1,3 +1,5 @@
+//go:build ignore
+
 // Package configinit  这个包的创建是因为caddy用的glog库把-v参数占用了会导致panic
 // 所以用全局变量把这个参数冲突解决掉
 package configinit
