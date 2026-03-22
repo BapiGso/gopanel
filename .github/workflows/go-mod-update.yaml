@@ -1,0 +1,118 @@
+name: Update Go Modules
+
+on:
+  schedule:
+    - cron: '17 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: go-mod-update
+  cancel-in-progress: false
+
+jobs:
+  update-go-modules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Upgrade Go modules
+        id: update
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t updates < <(
+            go list -mod=readonly -u -m -f '{{if and (not .Main) (not .Replace) .Update}}{{.Path}}@{{.Update.Version}}{{end}}' all | sed '/^$/d'
+          )
+
+          if [ "${#updates[@]}" -eq 0 ]; then
+            echo "has_updates=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          printf 'Found %s module updates:\n' "${#updates[@]}"
+          printf ' - %s\n' "${updates[@]}"
+
+          go get "${updates[@]}"
+          go mod tidy
+
+          if git diff --quiet -- go.mod go.sum; then
+            echo "has_updates=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          {
+            echo "has_updates=true"
+            echo "updates<<EOF"
+            printf '%s\n' "${updates[@]}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Close previous dependency update PRs
+        if: steps.update.outputs.has_updates == 'true'
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.ACTIONS_PR_TOKEN || github.token }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const markerLabel = 'go-mod-update';
+
+            const prs = await github.paginate(github.rest.pulls.list, {
+              owner,
+              repo,
+              state: 'open',
+              per_page: 100
+            });
+
+            for (const pr of prs) {
+              const hasLabel = pr.labels.some(label => label.name === markerLabel);
+              if (!hasLabel) {
+                continue;
+              }
+
+              await github.rest.pulls.update({
+                owner,
+                repo,
+                pull_number: pr.number,
+                state: 'closed'
+              });
+            }
+
+      - name: Create pull request
+        if: steps.update.outputs.has_updates == 'true'
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.ACTIONS_PR_TOKEN || github.token }}
+          commit-message: chore: update Go modules
+          branch: chore/go-mod-updates
+          delete-branch: true
+          title: chore: update Go modules
+          labels: |
+            dependencies
+            go-mod-update
+          body: |
+            This PR was created automatically by the daily Go module update workflow.
+
+            Updated modules:
+            ```text
+            ${{ steps.update.outputs.updates }}
+            ```
+
+            If you want this PR to trigger other workflows, set `ACTIONS_PR_TOKEN` to a PAT with repo scope.
+          add-paths: |
+            go.mod
+            go.sum
