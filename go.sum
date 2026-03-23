@@ -677,8 +677,8 @@ github.com/tailscale/setec v0.0.0-20260310221408-dcd97e42f251 h1:kNnJlwxSzue+VRJ
 github.com/tailscale/setec v0.0.0-20260310221408-dcd97e42f251/go.mod h1:6NU8H/GLPVX2TnXAY1duyy9ylLaHwFpr0X93UPiYmNI=
 github.com/tailscale/squibble v0.0.0-20260303070345-3ac5157f405e h1:4yfp5/YDr+TzbUME/PalYJVXAsp7zA2Gv2xQMZ9Qors=
 github.com/tailscale/squibble v0.0.0-20260303070345-3ac5157f405e/go.mod h1:xJkMmR3t+thnUQhA3Q4m2VSlS5pcOq+CIjmU/xfKKx4=
-github.com/tailscale/tailsql v0.0.0-20260312072822-30b26e1ac506 h1:ec6vmpIbl+8IT2poOnLXT1vjRrAbU5SuUi12AyqiNPg=
-github.com/tailscale/tailsql v0.0.0-20260312072822-30b26e1ac506/go.mod h1:bpNmZdvZKmBstrZunT+NXL6hmrFw5AsuT7MGiYS8sRc=
+github.com/tailscale/tailsql v0.0.0-20260322172246-3ab0c1744d9c h1:7lJQ/zycbk1E9e0nUiMuwIDYprFTLpWXUwiPdi+tRlI=
+github.com/tailscale/tailsql v0.0.0-20260322172246-3ab0c1744d9c/go.mod h1:bpNmZdvZKmBstrZunT+NXL6hmrFw5AsuT7MGiYS8sRc=
 github.com/tailscale/tscert v0.0.0-20251216020129-aea342f6d747 h1:RnBbFMmodYzhC6adOjTbtUQXyzV8dcvKYbolzs6Qch0=
 github.com/tailscale/tscert v0.0.0-20251216020129-aea342f6d747/go.mod h1:ejPAJui3kVK4u5TgMtqtXlWf5HnKh9fLy5kvpaeuas0=
 github.com/tailscale/web-client-prebuilt v0.0.0-20251127225136-f19339b67368 h1:0tpDdAj9sSfSZg4gMwNTdqMP592sBrq2Sm0w6ipnh7k=
@@ -1004,7 +1004,6 @@ gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c h1:Hei/4ADfdWqJk1ZMxUNpqntN
 gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c/go.mod h1:JHkPIbrfpd72SG/EVd6muEfDQjcINNoR0C8j2r3qZ4Q=
 gopkg.in/ini.v1 v1.67.1 h1:tVBILHy0R6e4wkYOn3XmiITt/hEVH4TFMYvAX2Ytz6k=
 gopkg.in/ini.v1 v1.67.1/go.mod h1:x/cyOwCgZqOkJoDIJ3c1KNHMo10+nLGAhh+kn3Zizss=
-gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0/go.mod h1:WDnlLJ4WF5VGsH/HVa3CI79GS0ol3YnhVnKP89i0kNg=
 gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
 gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
@@ -1022,8 +1021,8 @@ honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWh
 honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 honnef.co/go/tools v0.7.0 h1:w6WUp1VbkqPEgLz4rkBzH/CSU6HkoqNLp6GstyTx3lU=
 honnef.co/go/tools v0.7.0/go.mod h1:pm29oPxeP3P82ISxZDgIYeOaf9ta6Pi0EWvCFoLG2vc=
-howett.net/plist v1.0.1 h1:37GdZ8tP09Q35o9ych3ehygcsL+HqKSwzctveSlarvM=
-howett.net/plist v1.0.1/go.mod h1:lqaXoTrLY4hg8tnEzNru53gicrbv7rrk+2xJA/7hw9g=
+howett.net/plist v1.0.2-0.20250314012144-ee69052608d9 h1:eeH1AIcPvSc0Z25ThsYF+Xoqbn0CI/YnXVYoTLFdGQw=
+howett.net/plist v1.0.2-0.20250314012144-ee69052608d9/go.mod h1:fyFX5Hj5tP1Mpk8obqA9MZgXT416Q5711SDT7dQLTLk=
 k8s.io/apimachinery v0.35.3 h1:MeaUwQCV3tjKP4bcwWGgZ/cp/vpsRnQzqO6J6tJyoF8=
 k8s.io/apimachinery v0.35.3/go.mod h1:jQCgFZFR1F4Ik7hvr2g84RTJSZegBc8yHgFWKn//hns=
 k8s.io/klog/v2 v2.140.0 h1:Tf+J3AH7xnUzZyVVXhTgGhEKnFqye14aadWv7bzXdzc=

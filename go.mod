@@ -238,7 +238,7 @@ require (
 	github.com/tailscale/peercred v0.0.0-20250107143737-35a0c7bd7edc // indirect
 	github.com/tailscale/setec v0.0.0-20260310221408-dcd97e42f251 // indirect
 	github.com/tailscale/squibble v0.0.0-20260303070345-3ac5157f405e // indirect
-	github.com/tailscale/tailsql v0.0.0-20260312072822-30b26e1ac506 // indirect
+	github.com/tailscale/tailsql v0.0.0-20260322172246-3ab0c1744d9c // indirect
 	github.com/tailscale/tscert v0.0.0-20251216020129-aea342f6d747 // indirect
 	github.com/tailscale/web-client-prebuilt v0.0.0-20251127225136-f19339b67368 // indirect
 	github.com/tailscale/wireguard-go v0.0.0-20251121194102-c6fd943bb437 // indirect
@@ -328,7 +328,7 @@ require (
 	gorm.io/gorm v1.31.1 // indirect
 	gotest.tools/v3 v3.5.2 // indirect
 	gvisor.dev/gvisor v0.0.0-20260320022258-0ee4bfc55de7 // indirect
-	howett.net/plist v1.0.1 // indirect
+	howett.net/plist v1.0.2-0.20250314012144-ee69052608d9 // indirect
 	k8s.io/apimachinery v0.35.3 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
 	k8s.io/utils v0.0.0-20260319190234-28399d86e0b5 // indirect
