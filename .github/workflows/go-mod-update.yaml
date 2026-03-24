@@ -2,7 +2,7 @@ name: Update Go Modules
 
 on:
   schedule:
-    - cron: '17 2 * * *'
+    - cron: '17 2 1,16 * *'
   workflow_dispatch:
 
 permissions:
@@ -167,7 +167,7 @@ jobs:
           delete-branch: true
           title: "chore: update Go modules"
           body: |
-            This PR was created automatically by the daily Go module update workflow.
+            This PR was created automatically by the semi-monthly Go module update workflow.
 
             Updated modules that applied cleanly:
             ```text
