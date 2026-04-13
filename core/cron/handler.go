@@ -1,11 +1,16 @@
 package cron
 
 import (
+	"errors"
 	"fmt"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/labstack/echo/v5"
+	"io/fs"
 	"net/http"
+	"os"
 	"os/exec"
+	"path/filepath"
+	"regexp"
 	"slices"
 	"time"
 )
@@ -36,6 +41,8 @@ func (t *task) Name() string {
 
 var schedulerList []task
 
+var cronNamePattern = regexp.MustCompile(`^[A-Za-z0-9._-]{1,64}$`)
+
 func Index(c *echo.Context) error {
 	req := &struct {
 		Name      string `form:"name"         json:"name"`
@@ -63,6 +70,9 @@ func Index(c *echo.Context) error {
 		}
 		return c.JSON(200, map[string]string{"message": "Cron job created successfully"})
 	case "PUT":
+		if req.Index < 0 || req.Index >= len(schedulerList) {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid index"})
+		}
 		switch c.QueryParam("type") {
 		case "pause":
 			if err := schedulerList[req.Index].StopJobs(); err != nil {
@@ -73,10 +83,14 @@ func Index(c *echo.Context) error {
 			schedulerList[req.Index].Start()
 			schedulerList[req.Index].Paused = false
 		case "remove":
+			name := schedulerList[req.Index].Name()
 			if err := schedulerList[req.Index].Shutdown(); err != nil {
 				return err
 			}
 			schedulerList = slices.Delete(schedulerList, req.Index, req.Index+1)
+			if err := removeCronScript(name); err != nil {
+				return err
+			}
 		case "runnow":
 			if err := schedulerList[req.Index].RunNow(); err != nil {
 				return err
@@ -90,8 +104,15 @@ func Index(c *echo.Context) error {
 }
 
 func addCron(name, cmd string, jobDefinition gocron.JobDefinition) error {
+	if jobDefinition == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid job definition")
+	}
+	scriptPath, err := persistCronScript(name, cmd)
+	if err != nil {
+		return err
+	}
+
 	var s task
-	var err error
 	if s.Scheduler, err = gocron.NewScheduler(); err != nil {
 		return err
 	}
@@ -100,7 +121,7 @@ func addCron(name, cmd string, jobDefinition gocron.JobDefinition) error {
 		jobDefinition,
 		gocron.NewTask(
 			func() {
-				exec.Command("sh", "-c", cmd).Run()
+				_ = exec.Command(scriptRunnerCommand(), scriptRunnerArgs(scriptPath)...).Run()
 			},
 		),
 		gocron.WithName(name),
@@ -111,6 +132,41 @@ func addCron(name, cmd string, jobDefinition gocron.JobDefinition) error {
 	schedulerList = append(schedulerList, s)
 	s.Start()
 	return nil
+}
+
+func persistCronScript(name, content string) (string, error) {
+	if !cronNamePattern.MatchString(name) {
+		return "", echo.NewHTTPError(http.StatusBadRequest, "invalid cron job name")
+	}
+	dir := filepath.Join("data", "cron")
+	if err := os.MkdirAll(dir, 0700); err != nil {
+		return "", err
+	}
+
+	path := filepath.Join(dir, name+".sh")
+	if err := os.WriteFile(path, []byte(content), fs.FileMode(0600)); err != nil {
+		return "", err
+	}
+	return path, nil
+}
+
+func scriptRunnerCommand() string {
+	return "sh"
+}
+
+func scriptRunnerArgs(scriptPath string) []string {
+	return []string{scriptPath}
+}
+
+func removeCronScript(name string) error {
+	if !cronNamePattern.MatchString(name) {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid cron job name")
+	}
+	err := os.Remove(filepath.Join("data", "cron", name+".sh"))
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	return err
 }
 
 func getJobDefinition(fre, atTime int) gocron.JobDefinition {

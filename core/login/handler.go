@@ -1,13 +1,9 @@
 package login
 
 import (
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v5"
 	"gopanel/core/config"
-	"net/http"
-	"os"
-	"strconv"
-	"time"
+	"gopanel/core/mymiddleware"
 )
 
 func Login(c *echo.Context) error {
@@ -26,17 +22,10 @@ func Login(c *echo.Context) error {
 			return err
 		}
 		if req.Username == config.String("panel.username") && req.Password == config.String("panel.password") {
-			token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, &jwt.RegisteredClaims{
-				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)), //过期日期设置7天
-			}).SignedString([]byte(strconv.Itoa(os.Getpid())))
-			if err != nil {
+			if err := mymiddleware.SessionManager.RenewToken(c.Request().Context()); err != nil {
 				return err
 			}
-			c.SetCookie(&http.Cookie{
-				Name:     "panel_token",
-				Value:    token,
-				HttpOnly: true,
-			})
+			mymiddleware.SessionManager.Put(c.Request().Context(), "authenticated", true)
 			return c.Redirect(302, "/admin/monitor")
 		}
 		return echo.ErrUnauthorized

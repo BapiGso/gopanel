@@ -1,21 +1,42 @@
 package mymiddleware
 
 import (
-	echojwt "github.com/labstack/echo-jwt/v5"
-	"github.com/labstack/echo/v5"
 	"net/http"
-	"os"
-	"strconv"
+	"time"
+
+	"github.com/alexedwards/scs/v2"
+	"github.com/labstack/echo/v5"
 )
 
-var JWT, _ = echojwt.Config{
-	ErrorHandler: func(c *echo.Context, err error) error {
-		return c.Render(http.StatusTeapot, "warning.template", map[string]string{
-			"message": err.Error(),
+const (
+	sessionCookieName = "panel_token"
+	sessionAuthKey    = "authenticated"
+)
+
+var SessionManager = func() *scs.SessionManager {
+	manager := scs.New()
+	manager.Lifetime = 7 * 24 * time.Hour
+	manager.Cookie.Name = sessionCookieName
+	manager.Cookie.HttpOnly = true
+	manager.Cookie.Path = "/"
+	manager.Cookie.SameSite = http.SameSiteLaxMode
+	manager.Cookie.Secure = true
+	return manager
+}()
+
+var Session = echo.WrapMiddleware(SessionManager.LoadAndSave)
+
+var JWT echo.MiddlewareFunc = func(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c *echo.Context) error {
+		if debugBypassEnabled() {
+			return next(c)
+		}
+		if SessionManager.GetBool(c.Request().Context(), sessionAuthKey) {
+			return next(c)
+		}
+		return c.Render(http.StatusUnauthorized, "warning.template", map[string]string{
+			"message": "unauthorized",
 			"ip":      c.RealIP(),
 		})
-	},
-	SigningKey:  []byte(strconv.Itoa(os.Getpid())),
-	TokenLookup: "cookie:panel_token",
-	Skipper:     func(c *echo.Context) bool { return os.Getenv("GOPANEL_DEBUG") == "1" },
-}.ToMiddleware()
+	}
+}

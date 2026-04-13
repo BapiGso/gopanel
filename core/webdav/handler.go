@@ -1,7 +1,6 @@
 package webdav
 
 import (
-	"fmt"
 	"github.com/labstack/echo/v5"
 	"golang.org/x/net/webdav"
 	"gopanel/core/config"
@@ -46,7 +45,6 @@ func Index(c *echo.Context) error {
 
 func FileSystem() echo.HandlerFunc {
 	return echo.WrapHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println(config.String("webdav.username"))
 		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 		username, password, ok := r.BasicAuth()
 		if !ok {
@@ -58,15 +56,9 @@ func FileSystem() echo.HandlerFunc {
 			return
 		}
 		if !config.Bool("webdav.enable") {
-			http.Error(w, "Not enable", 401)
+			http.Error(w, "Not enable", http.StatusForbidden)
 			return
 		}
 		srv.ServeHTTP(w, r)
 	}))
-}
-
-func WebDav(c *echo.Context) error {
-	fmt.Println(123)
-	srv.ServeHTTP(c.Response(), c.Request())
-	return nil
 }

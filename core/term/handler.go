@@ -98,14 +98,14 @@ func LinkTermDataHandler(c *echo.Context) error {
 
 	websocket.Handler(func(ws *websocket.Conn) {
 		defer func() {
-			c.Logger().Info("Destroy term: %s", term.Id)
+			c.Logger().Info("destroy term", "id", term.Id)
 			termMutex.Lock()
 			delete(activeTerms, term.Id)
 			termMutex.Unlock()
 			term.Close()
 			ws.Close()
 		}()
-		c.Logger().Info("Linking term: %s", term.Id)
+		c.Logger().Info("linking term", "id", term.Id)
 		go func() {
 			b := [TermBufferSize]byte{}
 			for {

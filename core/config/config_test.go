@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"testing"
 )
 
@@ -88,6 +89,11 @@ func TestInitCreatesDefaultConfigFile(t *testing.T) {
 
 	if _, err := os.Stat(path); err != nil {
 		t.Fatalf("config file was not created: %v", err)
+	}
+	if info, err := os.Stat(path); err != nil {
+		t.Fatalf("stat config file: %v", err)
+	} else if runtime.GOOS != "windows" && info.Mode().Perm() != 0600 {
+		t.Fatalf("config file mode = %o, want %o", info.Mode().Perm(), 0600)
 	}
 
 	disk := readConfigFileForTest(t, path)

@@ -1,117 +1,131 @@
 package file
 
 import (
-	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/labstack/echo/v5"
+	"github.com/spf13/afero"
 )
 
+type Handler struct {
+	service *LocalFileService
+}
+
+var defaultHandler = NewHandler(afero.NewOsFs(), os.Getenv("FILE_BASE_PATH"))
+
+func NewHandler(fs afero.Fs, basePath string) *Handler {
+	return &Handler{
+		service: NewLocalFileService(fs, basePath),
+	}
+}
+
+func DefaultHandler() *Handler {
+	return defaultHandler
+}
+
 func Process(c *echo.Context) error {
-	path := filepath.Clean(c.QueryParam("path"))
+	return defaultHandler.Process(c)
+}
+
+func Index(c *echo.Context) error {
+	return defaultHandler.Index(c)
+}
+
+func (h *Handler) Process(c *echo.Context) error {
+	requestPath := c.QueryParam("path")
+	if requestPath == "" {
+		requestPath = "/"
+	}
 	mode := c.QueryParam("mode")
+
 	switch c.Request().Method {
-	case "GET":
+	case http.MethodGet:
 		if mode == "edit" {
-			file, err := os.Stat(path)
+			content, err := h.service.ReadEditable(requestPath)
 			if err != nil {
 				return err
 			}
-			if file.Size() > 2*1024*1024 {
-				return echo.NewHTTPError(400, fmt.Sprintf("file too big %d", file.Size()))
-			}
-			data, err := os.ReadFile(path)
-			if err != nil {
-				return err
-			}
-			if !utf8.Valid(data) {
-				return echo.NewHTTPError(400, "not valid UTF-8")
-			}
-			return c.JSON(200, map[string]any{
-				"type": filepath.Ext(file.Name()),
-				"data": string(data),
+			return c.JSON(http.StatusOK, map[string]any{
+				"type": filepath.Ext(filepath.Base(requestPath)),
+				"data": content,
 			})
 		}
-		return c.Attachment(path, filepath.Base(path))
-	case "POST":
-		err := c.Request().ParseMultipartForm(32 << 20)
+
+		file, err := h.service.Open(requestPath)
 		if err != nil {
 			return err
 		}
+		defer file.Close()
+
+		c.Response().Header().Set(echo.HeaderContentDisposition, `attachment; filename="`+filepath.Base(requestPath)+`"`)
+		return c.Stream(http.StatusOK, mime.TypeByExtension(filepath.Ext(requestPath)), file)
+
+	case http.MethodPost:
+		if err := c.Request().ParseMultipartForm(32 << 20); err != nil {
+			return err
+		}
+
 		files := c.Request().MultipartForm.File["files"]
 		for _, fileHeader := range files {
 			file, err := fileHeader.Open()
 			if err != nil {
 				return err
 			}
-			destFile, err := os.Create(filepath.Join(path, fileHeader.Filename))
-			if err != nil {
+			if err := h.service.SaveUploadedFile(requestPath, fileHeader.Filename, file); err != nil {
 				file.Close()
 				return err
 			}
-			_, err = io.Copy(destFile, file)
-			destFile.Close()
 			file.Close()
-			if err != nil {
-				return err
-			}
 		}
-		return c.JSON(200, "success")
-	case "PUT":
+		return c.JSON(http.StatusOK, "success")
+
+	case http.MethodPut:
 		data, err := io.ReadAll(c.Request().Body)
 		defer c.Request().Body.Close()
 		if err != nil {
 			return err
 		}
+
 		switch mode {
 		case "rename":
-			if err = os.Rename(path, string(data)); err != nil {
-				return err
-			}
+			err = h.service.Rename(requestPath, string(data))
 		case "PMSN":
-			perm, err := strconv.ParseUint(string(data), 8, 32)
-			if err != nil {
-				return err
-			}
-			if err = os.Chmod(path, os.FileMode(perm)); err != nil {
-				return err
-			}
+			err = h.service.Chmod(requestPath, string(data))
 		case "update":
-			if err = os.WriteFile(path, data, 0644); err != nil {
-				return err
-			}
+			err = h.service.WriteFile(requestPath, data)
 		case "createFile":
-			file, err := os.Create(path)
-			if err != nil {
-				return err
-			}
-			file.Close()
+			err = h.service.CreateFile(requestPath)
 		case "createFolder":
-			if err = os.MkdirAll(path, 0755); err != nil {
-				return err
-			}
+			err = h.service.CreateFolder(requestPath)
+		default:
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid file operation")
 		}
-		return c.JSON(200, "success")
-	case "DELETE":
-		if err := os.RemoveAll(path); err != nil {
+		if err != nil {
 			return err
 		}
-		return c.JSON(200, "success")
+		return c.JSON(http.StatusOK, "success")
+
+	case http.MethodDelete:
+		if err := h.service.RemoveAll(requestPath); err != nil {
+			return err
+		}
+		return c.JSON(http.StatusOK, "success")
 	}
+
 	return echo.ErrMethodNotAllowed
 }
 
 // Index 主要依靠cookie来进行路径状态管理
-func Index(c *echo.Context) error {
+func (h *Handler) Index(c *echo.Context) error {
 	directory := "/"
 	if dirHistory, err := c.Cookie("dirHistory"); err == nil {
 		if directory, err = url.QueryUnescape(dirHistory.Value); err != nil {
@@ -119,24 +133,26 @@ func Index(c *echo.Context) error {
 		}
 	}
 
-	if strings.HasPrefix(directory, "//") {
-		directory = directory[1:]
+	directory = normalizeLogicalPath(directory)
+	if _, err := h.service.resolve(directory); err != nil {
+		directory = "/"
 	}
 
-	dir, err := os.Open(directory)
+	files, err := h.service.ReadDir(directory)
 	if err != nil {
 		c.SetCookie(&http.Cookie{Name: "dirHistory", Expires: time.Now(), MaxAge: -1})
-		return err
+		directory = "/"
+		files, err = h.service.ReadDir(directory)
+		if err != nil {
+			return err
+		}
 	}
-	defer dir.Close()
 
-	files, err := dir.Readdir(-1)
-	if err != nil {
-		c.SetCookie(&http.Cookie{Name: "dirHistory", Expires: time.Now(), MaxAge: -1})
-		return err
-	}
-	sort.Slice(files, func(i, j int) bool {
-		return files[i].IsDir()
+	sort.SliceStable(files, func(i, j int) bool {
+		if files[i].IsDir() != files[j].IsDir() {
+			return files[i].IsDir()
+		}
+		return files[i].Name() < files[j].Name()
 	})
 
 	c.SetCookie(&http.Cookie{Name: "dirHistory", Value: url.QueryEscape(directory), Expires: time.Now(), MaxAge: 86400})
@@ -144,4 +160,15 @@ func Index(c *echo.Context) error {
 		"Files": files,
 		"Dir":   directory,
 	})
+}
+
+func normalizeLogicalPath(p string) string {
+	if p == "" {
+		return "/"
+	}
+	p = strings.ReplaceAll(p, "\\", "/")
+	if !strings.HasPrefix(p, "/") {
+		p = "/" + p
+	}
+	return path.Clean(p)
 }

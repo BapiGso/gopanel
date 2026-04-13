@@ -3,19 +3,27 @@ module gopanel
 go 1.26.1
 
 require (
+	github.com/alexedwards/scs/v2 v2.9.0
+	github.com/blang/semver v3.5.1+incompatible
 	github.com/caddy-dns/cloudflare v0.2.4
 	github.com/caddyserver/caddy/v2 v2.11.2
+	github.com/ccoveille/go-safecast/v2 v2.0.0
+	github.com/creasty/defaults v1.8.0
 	github.com/docker/docker v28.5.2+incompatible
 	github.com/fatedier/frp v0.68.0
 	github.com/go-co-op/gocron/v2 v2.19.1
 	github.com/go-playground/validator/v10 v10.30.2
-	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/nftables v0.3.0
 	github.com/juanfont/headscale v0.28.0
-	github.com/labstack/echo-jwt/v5 v5.0.1
+	github.com/knadh/koanf/parsers/json v1.0.0
+	github.com/knadh/koanf/providers/file v1.2.1
+	github.com/knadh/koanf/providers/structs v1.0.0
+	github.com/knadh/koanf/v2 v2.3.4
 	github.com/labstack/echo/v5 v5.1.0
 	github.com/labstack/gommon v0.4.2
+	github.com/rhysd/go-github-selfupdate v1.2.3
 	github.com/shirou/gopsutil/v4 v4.26.3
+	github.com/spf13/afero v1.15.0
 	golang.org/x/crypto v0.49.0
 	golang.org/x/net v0.52.0
 	golang.org/x/sys v0.42.0
@@ -67,7 +75,6 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/caddyserver/certmagic v0.25.2 // indirect
 	github.com/caddyserver/zerossl v0.1.5 // indirect
-	github.com/ccoveille/go-safecast/v2 v2.0.0 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -98,6 +105,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/ebitengine/purego v0.10.0 // indirect
 	github.com/fatedier/golib v0.6.0 // indirect
+	github.com/fatih/structs v1.1.0 // indirect
 	github.com/felixge/fgprof v0.9.5 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
@@ -128,6 +136,8 @@ require (
 	github.com/google/cel-go v0.27.0 // indirect
 	github.com/google/certificate-transparency-go v1.3.3 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
+	github.com/google/go-github/v30 v30.1.0 // indirect
+	github.com/google/go-querystring v1.2.0 // indirect
 	github.com/google/go-tpm v0.9.8 // indirect
 	github.com/google/go-tpm-tools v0.4.9-0.20260325175049-22911efba9e5 // indirect
 	github.com/google/go-tspi v0.3.0 // indirect
@@ -143,6 +153,7 @@ require (
 	github.com/hdevalence/ed25519consensus v0.2.0 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/huin/goupnp v1.3.0 // indirect
+	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/insomniacslk/dhcp v0.0.0-20260326115832-991c7910cf36 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
@@ -158,6 +169,7 @@ require (
 	github.com/klauspost/compress v1.18.5 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/klauspost/reedsolomon v1.13.3 // indirect
+	github.com/knadh/koanf/maps v0.1.2 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/lib/pq v1.12.1 // indirect
 	github.com/libdns/cloudflare v0.2.2 // indirect
@@ -227,7 +239,6 @@ require (
 	github.com/smallstep/scep v0.0.0-20260331191114-261f960a40d1 // indirect
 	github.com/smallstep/truststore v0.13.0 // indirect
 	github.com/songgao/water v0.0.0-20200317203138-2b4b6d7c09d8 // indirect
-	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/spf13/cobra v1.10.2 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
@@ -245,10 +256,12 @@ require (
 	github.com/tailscale/web-client-prebuilt v0.0.0-20251127225136-f19339b67368 // indirect
 	github.com/tailscale/wireguard-go v0.0.0-20251121194102-c6fd943bb437 // indirect
 	github.com/tc-hib/winres v0.3.1 // indirect
+	github.com/tcnksm/go-gitconfig v0.1.2 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
 	github.com/tklauser/go-sysconf v0.3.16 // indirect
 	github.com/tklauser/numcpus v0.11.0 // indirect
 	github.com/u-root/u-root v0.16.0 // indirect
+	github.com/ulikunitz/xz v0.5.15 // indirect
 	github.com/urfave/cli v1.22.17 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect

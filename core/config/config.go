@@ -3,45 +3,50 @@ package config
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"net"
 	"os"
 	"sync"
+
+	jsonparser "github.com/knadh/koanf/parsers/json"
+	fileprovider "github.com/knadh/koanf/providers/file"
+	structprovider "github.com/knadh/koanf/providers/structs"
+	"github.com/knadh/koanf/v2"
 )
 
 const filePath = "gopanel_config.json"
 
 type Config struct {
-	Panel  PanelConfig  `json:"panel"`
-	WebDAV WebDAVConfig `json:"webdav"`
-	Enable EnableConfig `json:"enable"`
+	Panel  PanelConfig  `json:"panel" koanf:"panel"`
+	WebDAV WebDAVConfig `json:"webdav" koanf:"webdav"`
+	Enable EnableConfig `json:"enable" koanf:"enable"`
 }
 
 type PanelConfig struct {
-	Port     string `json:"port"`
-	Path     string `json:"path"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Port     string `json:"port" koanf:"port"`
+	Path     string `json:"path" koanf:"path"`
+	Username string `json:"username" koanf:"username"`
+	Password string `json:"password" koanf:"password"`
 }
 
 type WebDAVConfig struct {
-	Enable   bool   `json:"enable"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Enable   bool   `json:"enable" koanf:"enable"`
+	Username string `json:"username" koanf:"username"`
+	Password string `json:"password" koanf:"password"`
 }
 
 type EnableConfig struct {
-	Caddy     bool `json:"caddy"`
-	Frps      bool `json:"frps"`
-	Frpc      bool `json:"frpc"`
-	Headscale bool `json:"headscale"`
+	Caddy     bool `json:"caddy" koanf:"caddy"`
+	Frps      bool `json:"frps" koanf:"frps"`
+	Frpc      bool `json:"frpc" koanf:"frpc"`
+	Headscale bool `json:"headscale" koanf:"headscale"`
 }
 
 type Store struct {
 	path string
 	mu   sync.RWMutex
 	cfg  Config
+	k    *koanf.Koanf
 }
 
 var global = &Store{path: filePath}
@@ -65,17 +70,28 @@ func Snapshot() Config {
 func Get(path string) any {
 	global.mu.RLock()
 	defer global.mu.RUnlock()
-	return get(global.cfg, path)
+	if global.k == nil {
+		return nil
+	}
+	return global.k.Get(path)
 }
 
 func String(path string) string {
-	value, _ := Get(path).(string)
-	return value
+	global.mu.RLock()
+	defer global.mu.RUnlock()
+	if global.k == nil {
+		return ""
+	}
+	return global.k.String(path)
 }
 
 func Bool(path string) bool {
-	value, _ := Get(path).(bool)
-	return value
+	global.mu.RLock()
+	defer global.mu.RUnlock()
+	if global.k == nil {
+		return false
+	}
+	return global.k.Bool(path)
 }
 
 func Write(path string, value any) error {
@@ -104,17 +120,13 @@ func (s *Store) load() error {
 		return err
 	}
 
-	data, err := os.ReadFile(s.path)
+	k, cfg, err := loadKoanf(s.path)
 	if err != nil {
 		return err
 	}
 
-	var cfg Config
-	if err := json.Unmarshal(data, &cfg); err != nil {
-		return err
-	}
-
 	s.cfg = cfg
+	s.k = k
 	return nil
 }
 
@@ -122,8 +134,28 @@ func (s *Store) write(path string, value any) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	next := s.cfg
-	if err := set(&next, path, value); err != nil {
+	if s.k == nil {
+		return fmt.Errorf("config store is not initialized")
+	}
+	if !s.k.Exists(path) {
+		return fmt.Errorf("unknown config key: %s", path)
+	}
+
+	current := s.k.Get(path)
+	if !sameConfigValueType(current, value) {
+		return fmt.Errorf("config %s expects %T", path, current)
+	}
+
+	nextKoanf, err := koanfFromConfig(s.cfg)
+	if err != nil {
+		return err
+	}
+	if err := nextKoanf.Set(path, value); err != nil {
+		return err
+	}
+
+	next, err := configFromKoanf(nextKoanf)
+	if err != nil {
 		return err
 	}
 	if err := writeConfigFile(s.path, next); err != nil {
@@ -131,6 +163,7 @@ func (s *Store) write(path string, value any) error {
 	}
 
 	s.cfg = next
+	s.k = nextKoanf
 	return nil
 }
 
@@ -144,7 +177,13 @@ func (s *Store) update(fn func(*Config)) error {
 		return err
 	}
 
+	nextKoanf, err := koanfFromConfig(next)
+	if err != nil {
+		return err
+	}
+
 	s.cfg = next
+	s.k = nextKoanf
 	return nil
 }
 
@@ -171,11 +210,15 @@ func Default() Config {
 }
 
 func writeConfigFile(path string, cfg Config) error {
-	data, err := json.MarshalIndent(cfg, "", "  ")
+	data, err := koanfFromConfig(cfg)
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(path, data, 0644)
+	out, err := data.Marshal(jsonparser.Parser())
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, out, 0600)
 }
 
 func generateRandomString(n int) string {
@@ -184,108 +227,39 @@ func generateRandomString(n int) string {
 	return hex.EncodeToString(bytes)
 }
 
-func get(cfg Config, path string) any {
-	switch path {
-	case "panel.port":
-		return cfg.Panel.Port
-	case "panel.path":
-		return cfg.Panel.Path
-	case "panel.username":
-		return cfg.Panel.Username
-	case "panel.password":
-		return cfg.Panel.Password
-	case "webdav.enable":
-		return cfg.WebDAV.Enable
-	case "webdav.username":
-		return cfg.WebDAV.Username
-	case "webdav.password":
-		return cfg.WebDAV.Password
-	case "enable.caddy":
-		return cfg.Enable.Caddy
-	case "enable.frps":
-		return cfg.Enable.Frps
-	case "enable.frpc":
-		return cfg.Enable.Frpc
-	case "enable.headscale":
-		return cfg.Enable.Headscale
-	default:
-		return nil
+func loadKoanf(path string) (*koanf.Koanf, Config, error) {
+	k := koanf.New(".")
+	if err := k.Load(fileprovider.Provider(path), jsonparser.Parser()); err != nil {
+		return nil, Config{}, err
 	}
+	cfg, err := configFromKoanf(k)
+	if err != nil {
+		return nil, Config{}, err
+	}
+	return k, cfg, nil
 }
 
-func set(cfg *Config, path string, value any) error {
-	switch path {
-	case "panel.port":
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("config %s expects string", path)
-		}
-		cfg.Panel.Port = v
-	case "panel.path":
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("config %s expects string", path)
-		}
-		cfg.Panel.Path = v
-	case "panel.username":
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("config %s expects string", path)
-		}
-		cfg.Panel.Username = v
-	case "panel.password":
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("config %s expects string", path)
-		}
-		cfg.Panel.Password = v
-	case "webdav.enable":
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("config %s expects bool", path)
-		}
-		cfg.WebDAV.Enable = v
-	case "webdav.username":
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("config %s expects string", path)
-		}
-		cfg.WebDAV.Username = v
-	case "webdav.password":
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("config %s expects string", path)
-		}
-		cfg.WebDAV.Password = v
-	case "enable.caddy":
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("config %s expects bool", path)
-		}
-		cfg.Enable.Caddy = v
-	case "enable.frps":
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("config %s expects bool", path)
-		}
-		cfg.Enable.Frps = v
-	case "enable.frpc":
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("config %s expects bool", path)
-		}
-		cfg.Enable.Frpc = v
-	case "enable.headscale":
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("config %s expects bool", path)
-		}
-		cfg.Enable.Headscale = v
-	default:
-		return fmt.Errorf("unknown config key: %s", path)
+func koanfFromConfig(cfg Config) (*koanf.Koanf, error) {
+	k := koanf.New(".")
+	if err := k.Load(structprovider.Provider(cfg, "koanf"), nil); err != nil {
+		return nil, err
 	}
+	return k, nil
+}
 
-	return nil
+func configFromKoanf(k *koanf.Koanf) (Config, error) {
+	var cfg Config
+	if err := k.UnmarshalWithConf("", &cfg, koanf.UnmarshalConf{Tag: "json"}); err != nil {
+		return Config{}, err
+	}
+	return cfg, nil
+}
+
+func sameConfigValueType(current, next any) bool {
+	if current == nil || next == nil {
+		return current == next
+	}
+	return fmt.Sprintf("%T", current) == fmt.Sprintf("%T", next)
 }
 
 func printStartupInfo(cfg Config) {

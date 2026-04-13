@@ -19,26 +19,49 @@ import (
 
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
+	"net/http"
 )
 
 func (c *Core) Route() {
+	c.setupRoutes()
+
+	certPEM, keyPEM, err := loadOrCreateCertificate()
+	if err != nil {
+		c.e.Logger.Error("failed to load or create tls certificate", "error", err)
+		return
+	}
+
+	sc := echo.StartConfig{Address: config.String("panel.port")}
+	if err := sc.StartTLS(context.Background(), c.e, certPEM, keyPEM); err != nil {
+		c.e.Logger.Error("failed to start server", "error", err)
+	}
+}
+
+func (c *Core) setupRoutes() {
 	c.e.Validator = &mymiddleware.Validator{}
 	c.e.Renderer = mymiddleware.DefaultTemplateRender
 
+	c.e.Use(mymiddleware.Session)
 	c.e.Use(middleware.RequestLogger())
 	c.e.Use(middleware.Recover())
 	c.e.Use(middleware.Gzip())
 
 	c.e.HTTPErrorHandler = func(c *echo.Context, err error) {
-
-		c.JSON(400, err.Error())
+		if err == nil {
+			return
+		}
+		if httpErr, ok := err.(*echo.HTTPError); ok {
+			_ = c.JSON(httpErr.Code, httpErr.Message)
+			return
+		}
+		_ = c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	//限制频率
 	c.e.Any(config.String("panel.path"), login.Login, middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(3)))
 
 	c.e.Match([]string{"GET", "HEAD", "POST", "OPTIONS", "PUT", "MKCOL",
 		"DELETE", "PROPFIND", "PROPPATCH", "COPY", "MOVE", "REPORT",
-		"LOCK", "UNLOCK"}, "/webdav*", webdav.WebDav)
+		"LOCK", "UNLOCK"}, "/webdav*", webdav.FileSystem())
 
 	// 静态资源
 	c.e.StaticFS("/assets", c.assetsFS)
@@ -71,13 +94,7 @@ func (c *Core) Route() {
 	admin.Any("/docker", docker.Index)
 	admin.Any("/frp", frp.Index)
 	// Headscale RESTful 路由
-	admin.Any("/headscale", headscale.Index) // 获取页面
+	admin.Any("/headscale", headscale.Handler()) // 获取页面
 	admin.Any("/firewall", firewall.Index)
 	//admin.Any("/UnblockNeteaseMusic", UnblockNeteaseMusic.Index)
-	//c.e.Start(config.String("panel.port"))
-	//c.e.StartTLS(config.String("panel.port"), []byte(certPEM), []byte(keyPEM))
-	sc := echo.StartConfig{Address: config.String("panel.port")}
-	if err := sc.StartTLS(context.Background(), c.e, certPEM, keyPEM); err != nil {
-		c.e.Logger.Error("failed to start server", "error", err)
-	}
 }
