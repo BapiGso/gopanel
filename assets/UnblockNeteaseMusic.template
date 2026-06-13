@@ -1,54 +1,38 @@
 {{template "header.template"}}
-<h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-    <i class="ri-music-line w-6 h-6 inline mr-2"></i>
-    UnblockNeteaseMusic
-</h3>
+<div class="text-base-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h3 class="text-2xl font-bold tracking-tight flex items-center mb-6">
+        <i class="ri-music-line text-primary mr-2"></i>UnblockNeteaseMusic
+    </h3>
 
-<div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
-    <div class="flex items-center mb-2">
-        <i class="ri-information-line w-5 h-5 text-blue-600 dark:text-blue-400 mr-2"></i>
-        <span class="text-sm font-medium text-blue-800 dark:text-blue-200">Service Information</span>
+    <div class="rounded-2xl p-5 mb-6 bg-info/10 border border-info/20">
+        <div class="flex items-center gap-2 mb-2">
+            <i class="ri-information-line text-info"></i>
+            <span class="text-sm font-bold">Service Information</span>
+        </div>
+        <ul class="text-sm opacity-80 space-y-1 ml-6 list-disc">
+            <li><a href="https://github.com/cnsilvan/UnblockNeteaseMusic?tab=readme-ov-file#%E5%85%B7%E4%BD%93%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E" class="link link-primary">View parameter documentation</a></li>
+            <li>UnblockNeteaseMusic cannot be stopped after it is started unless you restart the panel</li>
+            <li><a href="https://d1.music.126.net/dmusic/cloudmusicsetup2.8.0.198822.exe" class="link link-primary">Windows client version should be less than 2.8.0</a></li>
+        </ul>
     </div>
-    <ul class="text-sm text-blue-700 dark:text-blue-300 space-y-1 ml-7">
-        <li>• <a href="https://github.com/cnsilvan/UnblockNeteaseMusic?tab=readme-ov-file#%E5%85%B7%E4%BD%93%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E"
-                 class="underline hover:text-blue-600 dark:hover:text-blue-400">
-            View parameter documentation
-        </a></li>
-        <li>• UnblockNeteaseMusic cannot be stopped after it is started unless you restart the panel</li>
-        <li>• <a href="https://d1.music.126.net/dmusic/cloudmusicsetup2.8.0.198822.exe"
-                 class="underline hover:text-blue-600 dark:hover:text-blue-400">
-            Windows client version should be less than 2.8.0
-        </a></li>
-    </ul>
-</div>
 
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-    <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
-        <i class="ri-settings-3-line w-5 h-5 mr-2"></i>
-        Configuration
-    </h4>
-    
-    <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Startup Parameters
-        </label>
-        <div id="editor" class="h-32 w-full rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600"></div>
-        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            Example: -p 8081 -sp 8082 -o kuwo
-        </p>
-    </div>
-    
-    <div class="flex gap-3">
-        <button @click="manageUnblock"
-                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center">
-            <i class="ri-play-circle-line w-4 h-4 mr-2"></i>
-            Start Unblock
-        </button>
-        <button @click="downloadCA"
-                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center">
-            <i class="ri-download-line w-4 h-4 mr-2"></i>
-            Download CA Certificate
-        </button>
+    <div class="card surface p-6">
+        <h4 class="text-base font-semibold mb-4 flex items-center"><i class="ri-settings-3-line opacity-50 mr-2"></i>Configuration</h4>
+
+        <div class="mb-4">
+            <span class="eyebrow block mb-2">Startup Parameters</span>
+            <div id="editor" class="h-32 w-full rounded-lg overflow-hidden border border-base-300"></div>
+            <p class="mt-2 text-xs opacity-60">Example: -p 8081 -sp 8082 -o kuwo</p>
+        </div>
+
+        <div class="flex gap-3">
+            <button @click="manageUnblock" class="btn btn-success">
+                <i class="ri-play-circle-line"></i>Start Unblock
+            </button>
+            <button @click="downloadCA" class="btn btn-primary">
+                <i class="ri-download-line"></i>Download CA Certificate
+            </button>
+        </div>
     </div>
 </div>
 

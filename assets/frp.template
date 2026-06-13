@@ -1,120 +1,75 @@
 {{template "header.template"}}
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="frpPanel">
+<div class="text-base-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="frpPanel">
 
-    <!-- Title & Tabs -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-            <h3 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center">
-                <i class="ri-arrow-left-right-line text-blue-600 dark:text-blue-400 mr-3"></i>
-                FRP Manager
+            <h3 class="text-2xl font-bold tracking-tight flex items-center">
+                <i class="ri-arrow-left-right-line text-primary mr-3"></i>FRP Manager
             </h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-9">Manage Fast Reverse Proxy Server & Client</p>
+            <p class="text-sm opacity-60 mt-1 ml-9">Manage Fast Reverse Proxy Server & Client</p>
         </div>
 
-        <!-- Tab Switcher -->
-        <div class="bg-gray-100 dark:bg-gray-800 p-1 rounded-xl flex items-center">
-            <button @click="switchTab('frps')"
-                    :class="currentTab === 'frps' ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
-                    class="px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 flex items-center">
-                <i class="ri-server-line mr-2"></i> Server (FRPS)
-            </button>
-            <button @click="switchTab('frpc')"
-                    :class="currentTab === 'frpc' ? 'bg-white dark:bg-gray-700 text-green-600 dark:text-green-400 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
-                    class="px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 flex items-center">
-                <i class="ri-links-line mr-2"></i> Client (FRPC)
-            </button>
+        <div role="tablist" class="tabs tabs-boxed">
+            <a role="tab" class="tab gap-2" :class="currentTab === 'frps' && 'tab-active'" @click="switchTab('frps')">
+                <i class="ri-server-line"></i>Server
+            </a>
+            <a role="tab" class="tab gap-2" :class="currentTab === 'frpc' && 'tab-active'" @click="switchTab('frpc')">
+                <i class="ri-links-line"></i>Client
+            </a>
         </div>
     </div>
 
-    <!-- Main Content Area -->
-    <div class="transition-all duration-300">
+    <div class="surface rounded-2xl px-6 py-4 mb-6 flex flex-wrap items-center justify-between gap-4">
+        <button @click="manageService('start')" class="btn btn-primary group">
+            <i class="ri-play-circle-line text-lg group-hover:scale-110 transition-transform"></i>
+            <span x-text="'Start ' + (currentTab === 'frps' ? 'Server' : 'Client')"></span>
+        </button>
 
-        <!-- Status Bar -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-white dark:bg-gray-800 px-6 py-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mb-6 gap-4">
-
-            <!-- Left: Manual Actions (Start Service) -->
-            <div class="flex items-center w-full sm:w-auto">
-                <button @click="manageService('start')"
-                        class="w-full sm:w-auto px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center group">
-                    <i class="ri-play-circle-line mr-2 text-lg group-hover:scale-110 transition-transform"></i>
-                    <span x-text="'Start ' + (currentTab === 'frps' ? 'Server' : 'Client')"></span>
-                </button>
-                <!-- Helper text for manual start -->
-                <span class="ml-4 text-xs text-gray-400 hidden sm:inline-block">
-                    Click to start service immediately within this session.
-                </span>
+        <label class="flex items-center gap-3 cursor-pointer">
+            <div class="flex flex-col items-end">
+                <span class="eyebrow">Boot on Start</span>
+                <span class="text-[11px] font-bold" :class="isEnabled ? 'text-success' : 'opacity-50'"
+                      x-text="isEnabled ? 'ENABLED' : 'DISABLED'"></span>
             </div>
+            <input type="checkbox" class="toggle toggle-success" :checked="isEnabled" @change="manageService('enable')">
+        </label>
+    </div>
 
-            <!-- Right: Auto-Boot Configuration (Grouped) -->
-            <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3 bg-gray-50 dark:bg-gray-700/30 px-4 py-2 rounded-xl border border-gray-100 dark:border-gray-600">
-
-                <!-- Label & Status Text -->
-                <div class="flex flex-col items-end mr-1">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Boot on Start</span>
-                    <span class="text-xs font-extrabold transition-colors"
-                          :class="isEnabled ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'"
-                          x-text="isEnabled ? 'ENABLED' : 'DISABLED'">
-                    </span>
-                </div>
-
-                <!-- Toggle Switch -->
-                <button @click="manageService('enable')"
-                        class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
-                        :class="isEnabled ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-600'">
-                    <span class="sr-only">Toggle setting</span>
-                    <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                          :class="isEnabled ? 'translate-x-5' : 'translate-x-0'"></span>
-                </button>
-            </div>
-
-        </div>
-
-
-        <!-- Info Card (Dynamic) -->
-        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-5 border border-blue-100 dark:border-blue-800 mb-6">
-            <div class="flex items-start">
-                <i class="ri-information-fill text-blue-600 dark:text-blue-400 text-xl mr-3 mt-0.5"></i>
-                <div>
-                    <h5 class="text-sm font-bold text-blue-900 dark:text-blue-100 mb-1" x-text="'About ' + (currentTab === 'frps' ? 'FRPS' : 'FRPC')"></h5>
-                    <p class="text-sm text-blue-800 dark:text-blue-300">
-                        <span x-show="currentTab === 'frps'">This acts as the <strong>Server</strong>. Public IPs connect here.</span>
-                        <span x-show="currentTab === 'frpc'">This acts as the <strong>Client</strong>. It connects to a remote server to expose local ports.</span>
-                        <span class="block mt-1 opacity-75 text-xs">Note: Services cannot be stopped directly via UI once started, restart panel if needed.</span>
-                    </p>
+    <div class="rounded-2xl p-5 mb-6 bg-info/10 border border-info/20">
+        <div class="flex items-start gap-3">
+            <i class="ri-information-fill text-info text-xl mt-0.5"></i>
+            <div>
+                <h5 class="text-sm font-bold mb-1" x-text="'About ' + (currentTab === 'frps' ? 'FRPS' : 'FRPC')"></h5>
+                <div class="text-sm opacity-80">
+                    <span x-show="currentTab === 'frps'">This acts as the <strong>Server</strong>. Public IPs connect here.</span>
+                    <span x-show="currentTab === 'frpc'">This acts as the <strong>Client</strong>. It connects to a remote server to expose local ports.</span>
+                    <span class="block mt-1 opacity-70 text-xs">Note: Services cannot be stopped directly via UI once started, restart panel if needed.</span>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Editor Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col h-[calc(100vh-400px)] min-h-[500px]">
-            <!-- Editor Toolbar -->
-            <div class="px-6 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <i class="ri-file-settings-line text-gray-400"></i>
-                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-200 font-mono" x-text="currentTab + '.toml'"></span>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a :href="'https://github.com/fatedier/frp/blob/dev/conf/' + currentTab + '_full_example.toml'" target="_blank"
-                       class="text-xs text-gray-500 hover:text-blue-600 flex items-center transition-colors">
-                        <i class="ri-book-read-line mr-1"></i> Example
-                    </a>
-                    <button @click="saveConfig"
-                            class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-medium flex items-center shadow-sm">
-                        <i class="ri-save-3-line mr-1.5"></i> Save Config
-                    </button>
-                </div>
+    <div class="card surface overflow-hidden flex flex-col h-[calc(100vh-400px)] min-h-[500px]">
+        <div class="row px-6 py-3 border-b border-base-300 bg-base-200/40">
+            <div class="flex items-center gap-2">
+                <i class="ri-file-settings-line opacity-50"></i>
+                <span class="text-sm font-semibold font-mono" x-text="currentTab + '.toml'"></span>
             </div>
+            <div class="flex items-center gap-4 text-xs">
+                <a :href="'https://github.com/fatedier/frp/blob/dev/conf/' + currentTab + '_full_example.toml'" target="_blank"
+                   class="link link-hover text-primary font-medium flex items-center">
+                    <i class="ri-book-read-line mr-1"></i>Example
+                </a>
+                <button @click="saveConfig" class="btn btn-primary btn-sm">
+                    <i class="ri-save-3-line"></i>Save Config
+                </button>
+            </div>
+        </div>
 
-            <!-- Editor Containers (Stacked, toggled by visibility) -->
-            <div class="relative flex-1 w-full bg-[#272822]">
-                <!-- FRPS Editor -->
-                <div id="editor-frps" class="absolute inset-0 w-full h-full text-base"
-                     x-show="currentTab === 'frps'"></div>
-                <!-- FRPC Editor -->
-                <div id="editor-frpc" class="absolute inset-0 w-full h-full text-base"
-                     x-show="currentTab === 'frpc'"></div>
-            </div>
+        <div class="relative flex-1 w-full bg-[#272822]">
+            <div id="editor-frps" class="absolute inset-0 w-full h-full text-base" x-show="currentTab === 'frps'"></div>
+            <div id="editor-frpc" class="absolute inset-0 w-full h-full text-base" x-show="currentTab === 'frpc'"></div>
         </div>
     </div>
 

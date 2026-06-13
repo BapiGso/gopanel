@@ -5,7 +5,6 @@ import (
 	"mime"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
 	"path/filepath"
 	"sort"
@@ -20,7 +19,17 @@ type Handler struct {
 	service *LocalFileService
 }
 
-var defaultHandler = NewHandler(afero.NewOsFs(), os.Getenv("FILE_BASE_PATH"))
+const (
+	modeEdit         = "edit"
+	modeRename       = "rename"
+	modeChmod        = "chmod"
+	modeChmodLegacy  = "PMSN"
+	modeUpdate       = "update"
+	modeCreateFile   = "createFile"
+	modeCreateFolder = "createFolder"
+)
+
+var defaultHandler = NewHandler(afero.NewOsFs(), filesystemRoot())
 
 func NewHandler(fs afero.Fs, basePath string) *Handler {
 	return &Handler{
@@ -41,87 +50,104 @@ func Index(c *echo.Context) error {
 }
 
 func (h *Handler) Process(c *echo.Context) error {
-	requestPath := c.QueryParam("path")
-	if requestPath == "" {
-		requestPath = "/"
-	}
+	requestPath := requestPath(c)
 	mode := c.QueryParam("mode")
 
 	switch c.Request().Method {
 	case http.MethodGet:
-		if mode == "edit" {
-			content, err := h.service.ReadEditable(requestPath)
-			if err != nil {
-				return err
-			}
-			return c.JSON(http.StatusOK, map[string]any{
-				"type": filepath.Ext(filepath.Base(requestPath)),
-				"data": content,
-			})
-		}
-
-		file, err := h.service.Open(requestPath)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-
-		c.Response().Header().Set(echo.HeaderContentDisposition, `attachment; filename="`+filepath.Base(requestPath)+`"`)
-		return c.Stream(http.StatusOK, mime.TypeByExtension(filepath.Ext(requestPath)), file)
-
+		return h.get(c, requestPath, mode)
 	case http.MethodPost:
-		if err := c.Request().ParseMultipartForm(32 << 20); err != nil {
-			return err
-		}
-
-		files := c.Request().MultipartForm.File["files"]
-		for _, fileHeader := range files {
-			file, err := fileHeader.Open()
-			if err != nil {
-				return err
-			}
-			if err := h.service.SaveUploadedFile(requestPath, fileHeader.Filename, file); err != nil {
-				file.Close()
-				return err
-			}
-			file.Close()
-		}
-		return c.JSON(http.StatusOK, "success")
-
+		return h.upload(c, requestPath)
 	case http.MethodPut:
-		data, err := io.ReadAll(c.Request().Body)
-		defer c.Request().Body.Close()
-		if err != nil {
-			return err
-		}
-
-		switch mode {
-		case "rename":
-			err = h.service.Rename(requestPath, string(data))
-		case "PMSN":
-			err = h.service.Chmod(requestPath, string(data))
-		case "update":
-			err = h.service.WriteFile(requestPath, data)
-		case "createFile":
-			err = h.service.CreateFile(requestPath)
-		case "createFolder":
-			err = h.service.CreateFolder(requestPath)
-		default:
-			return echo.NewHTTPError(http.StatusBadRequest, "invalid file operation")
-		}
-		if err != nil {
-			return err
-		}
-		return c.JSON(http.StatusOK, "success")
-
+		return h.mutate(c, requestPath, mode)
 	case http.MethodDelete:
 		if err := h.service.RemoveAll(requestPath); err != nil {
 			return err
 		}
-		return c.JSON(http.StatusOK, "success")
+		return success(c)
 	}
 
 	return echo.ErrMethodNotAllowed
+}
+
+func requestPath(c *echo.Context) string {
+	requestPath := c.QueryParam("path")
+	if requestPath == "" {
+		return "/"
+	}
+	return requestPath
+}
+
+func (h *Handler) get(c *echo.Context, requestPath, mode string) error {
+	if mode == modeEdit {
+		content, err := h.service.ReadEditable(requestPath)
+		if err != nil {
+			return err
+		}
+		return c.JSON(http.StatusOK, map[string]any{
+			"type": filepath.Ext(filepath.Base(requestPath)),
+			"data": content,
+		})
+	}
+
+	file, err := h.service.Open(requestPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	c.Response().Header().Set(echo.HeaderContentDisposition, `attachment; filename="`+filepath.Base(requestPath)+`"`)
+	return c.Stream(http.StatusOK, mime.TypeByExtension(filepath.Ext(requestPath)), file)
+}
+
+func (h *Handler) upload(c *echo.Context, dir string) error {
+	if err := c.Request().ParseMultipartForm(32 << 20); err != nil {
+		return err
+	}
+
+	for _, fileHeader := range c.Request().MultipartForm.File["files"] {
+		file, err := fileHeader.Open()
+		if err != nil {
+			return err
+		}
+		if err := h.service.SaveUploadedFile(dir, fileHeader.Filename, file); err != nil {
+			file.Close()
+			return err
+		}
+		file.Close()
+	}
+	return success(c)
+}
+
+func (h *Handler) mutate(c *echo.Context, requestPath, mode string) error {
+	data, err := io.ReadAll(c.Request().Body)
+	defer c.Request().Body.Close()
+	if err != nil {
+		return err
+	}
+
+	switch mode {
+	case modeRename:
+		err = h.service.Rename(requestPath, string(data))
+	case modeChmod, modeChmodLegacy:
+		err = h.service.Chmod(requestPath, string(data))
+	case modeUpdate:
+		err = h.service.WriteFile(requestPath, data)
+	case modeCreateFile:
+		err = h.service.CreateFile(requestPath)
+	case modeCreateFolder:
+		err = h.service.CreateFolder(requestPath)
+	default:
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid file operation")
+	}
+	if err != nil {
+		return err
+	}
+	return success(c)
+}
+
+func success(c *echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]string{"message": "success"})
 }
 
 // Index 主要依靠cookie来进行路径状态管理

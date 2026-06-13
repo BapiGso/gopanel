@@ -1,72 +1,54 @@
 {{template "header.template"}}
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-            <h3 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center">
-                <i class="ri-hub-line text-blue-600 dark:text-blue-400 mr-3"></i>
-                Headscale Control
-            </h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-9">Self-hosted Tailscale control server</p>
-        </div>
+<div class="text-base-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h3 class="text-2xl font-bold tracking-tight flex items-center">
+            <i class="ri-hub-line text-primary mr-3"></i>Headscale Control
+        </h3>
+        <p class="text-sm opacity-60 mt-1 ml-9">Self-hosted Tailscale control server</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" x-data="headscalePanel">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" x-data="panel">
 
-        <!-- Left Column: Status & Actions -->
         <div class="lg:col-span-1 space-y-6">
-            <!-- Status Card -->
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Service Status</h4>
+            <div class="card surface p-6">
+                <h4 class="eyebrow mb-4">Service Status</h4>
 
                 <div class="flex items-center justify-center mb-6">
                     <div class="relative">
-                        <!-- Pulsing Ring -->
-                        <div class="absolute -inset-4 rounded-full opacity-20 animate-ping"
-                             :class="status === 'running' ? 'bg-green-500' : 'hidden'"></div>
+                        <div class="absolute -inset-4 rounded-full opacity-20 animate-ping" :class="status === 'running' ? 'bg-success' : 'hidden'"></div>
 
-                        <!-- Main Icon -->
                         <div class="relative w-20 h-20 rounded-full flex items-center justify-center transition-colors duration-300"
-                             :class="status === 'running' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500'">
+                             :class="status === 'running' ? 'bg-success/15 text-success' : 'bg-base-200 text-base-content/40'">
                             <i class="text-4xl" :class="status === 'running' ? 'ri-shield-check-line' : 'ri-shut-down-line'"></i>
                         </div>
 
-                        <!-- Status Badge -->
-                        <div class="absolute bottom-0 right-0 px-2 py-0.5 text-xs font-bold rounded-full border-2 border-white dark:border-gray-800"
-                             :class="status === 'running' ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'">
+                        <div class="absolute bottom-0 right-0 px-2 py-0.5 text-xs font-bold rounded-full border-2 border-base-100"
+                             :class="status === 'running' ? 'bg-success text-white' : 'bg-base-300 text-base-content/70'">
                             <span x-text="status === 'running' ? 'ON' : 'OFF'"></span>
                         </div>
                     </div>
                 </div>
 
                 <div class="space-y-3">
-                    <button x-show="status !== 'running'" @click="startHeadscale"
-                            class="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-sm transition-all flex items-center justify-center font-medium">
-                        <i class="ri-play-circle-fill mr-2 text-lg"></i>
-                        Start Service
+                    <button x-show="status !== 'running'" @click="startHeadscale" class="btn btn-success btn-block">
+                        <i class="ri-play-circle-fill text-lg"></i>Start Service
                     </button>
-
-                    <button x-show="status === 'running'" @click="stopHeadscale"
-                            class="w-full py-2.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl shadow-sm transition-all flex items-center justify-center font-medium">
-                        <i class="ri-stop-circle-line mr-2 text-lg"></i>
-                        Stop Service
+                    <button x-show="status === 'running'" @click="stopHeadscale" class="btn btn-outline btn-error btn-block">
+                        <i class="ri-stop-circle-line text-lg"></i>Stop Service
                     </button>
-
-                    <button @click="checkStatus"
-                            class="w-full py-2 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 text-sm transition-colors flex items-center justify-center">
-                        <i class="ri-refresh-line mr-1"></i> Refresh Status
+                    <button @click="checkStatus" class="btn btn-ghost btn-sm btn-block">
+                        <i class="ri-refresh-line"></i>Refresh Status
                     </button>
                 </div>
             </div>
 
-            <!-- Info Box -->
-            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-5 border border-blue-100 dark:border-blue-800">
-                <div class="flex items-start">
-                    <i class="ri-information-fill text-blue-600 dark:text-blue-400 text-xl mr-3 mt-0.5"></i>
+            <div class="rounded-2xl p-5 bg-info/10 border border-info/20">
+                <div class="flex items-start gap-3">
+                    <i class="ri-information-fill text-info text-xl mt-0.5"></i>
                     <div>
-                        <h5 class="text-sm font-bold text-blue-900 dark:text-blue-100 mb-1">About Headscale</h5>
-                        <p class="text-xs text-blue-800 dark:text-blue-300 leading-relaxed">
+                        <h5 class="text-sm font-bold mb-1">About Headscale</h5>
+                        <p class="text-xs opacity-70 leading-relaxed">
                             Headscale is an open-source implementation of the Tailscale control server, allowing you to create your own secure mesh network.
                         </p>
                     </div>
@@ -74,131 +56,122 @@
             </div>
         </div>
 
-        <!-- Right Column: Configuration -->
         <div class="lg:col-span-2">
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 flex justify-between items-center">
-                    <h4 class="text-base font-semibold text-gray-900 dark:text-white flex items-center">
-                        <i class="ri-settings-4-line text-gray-400 mr-2"></i>
-                        Configuration
-                    </h4>
+            <div class="card surface overflow-hidden">
+                <div class="row px-6 py-4 border-b border-base-300">
+                    <h4 class="text-base font-semibold flex items-center"><i class="ri-settings-4-line opacity-50 mr-2"></i>Configuration</h4>
                 </div>
 
                 <div class="p-6">
                     <form id="headscaleForm" @submit.prevent="saveConfig">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                            <!-- Network Settings -->
                             <div class="md:col-span-2">
-                                <h5 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">Network</h5>
+                                <h5 class="eyebrow border-b border-base-300 pb-2">Network</h5>
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Server URL</label>
-                                <input name="server_url" type="url" value="https://myheadscale.example.com:443" required
-                                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                <span class="eyebrow block mb-1.5">Server URL</span>
+                                <input name="server_url" type="url" value="https://myheadscale.example.com:443" required class="input input-bordered input-sm w-full">
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Base Domain</label>
-                                <input name="base_domain" type="text" value="example.com" required
-                                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                <span class="eyebrow block mb-1.5">Base Domain</span>
+                                <input name="base_domain" type="text" value="example.com" required class="input input-bordered input-sm w-full">
                             </div>
 
-                            <!-- Listen Addresses -->
                             <div class="md:col-span-2 mt-2">
-                                <h5 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">Interfaces</h5>
+                                <h5 class="eyebrow border-b border-base-300 pb-2">Interfaces</h5>
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Listen Address</label>
-                                <input name="listen_addr" type="text" value="0.0.0.0:8080" required
-                                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono">
+                                <span class="eyebrow block mb-1.5">Listen Address</span>
+                                <input name="listen_addr" type="text" value="0.0.0.0:8080" required class="input input-bordered input-sm w-full font-mono">
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Metrics Address</label>
-                                <input name="metrics_listen_addr" type="text" value="127.0.0.1:9090" required
-                                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono">
+                                <span class="eyebrow block mb-1.5">Metrics Address</span>
+                                <input name="metrics_listen_addr" type="text" value="127.0.0.1:9090" required class="input input-bordered input-sm w-full font-mono">
                             </div>
 
-                            <!-- IP Ranges -->
                             <div class="md:col-span-2 mt-2">
-                                <h5 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">IP Allocation</h5>
+                                <h5 class="eyebrow border-b border-base-300 pb-2">IP Allocation</h5>
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">IPv4 Prefix</label>
-                                <input name="ipv4_prefix" type="text" value="100.64.0.0/10" required
-                                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono">
+                                <span class="eyebrow block mb-1.5">IPv4 Prefix</span>
+                                <input name="ipv4_prefix" type="text" value="100.64.0.0/10" required class="input input-bordered input-sm w-full font-mono">
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">IPv6 Prefix</label>
-                                <input name="ipv6_prefix" type="text" value="fd7a:115c:a1e0::/48" required
-                                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono">
+                                <span class="eyebrow block mb-1.5">IPv6 Prefix</span>
+                                <input name="ipv6_prefix" type="text" value="fd7a:115c:a1e0::/48" required class="input input-bordered input-sm w-full font-mono">
                             </div>
 
-                            <!-- DERP Server -->
                             <div class="md:col-span-2 mt-2">
-                                <h5 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">DERP Server</h5>
+                                <h5 class="eyebrow border-b border-base-300 pb-2">STUN Server</h5>
+                            </div>
+
+                            <div class="md:col-span-2" x-data="{ stunEnabled: true }">
+                                <input type="hidden" name="stun_enabled" :value="stunEnabled">
+                                <label class="flex items-center gap-2 cursor-pointer mb-4">
+                                    <input type="checkbox" x-model="stunEnabled" class="checkbox checkbox-sm checkbox-primary">
+                                    <span class="text-sm font-medium">Enable STUN Server</span>
+                                </label>
+
+                                <div x-show="stunEnabled" x-transition>
+                                    <span class="eyebrow block mb-1.5">STUN Listen Address</span>
+                                    <input name="stun_listen_addr" type="text" value="0.0.0.0:3478" class="input input-bordered input-sm w-full font-mono">
+                                    <p class="text-xs opacity-60 mt-2">
+                                        DERP uses this STUN address when embedded DERP is enabled; standalone STUN starts only when DERP is disabled.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="md:col-span-2 mt-2">
+                                <h5 class="eyebrow border-b border-base-300 pb-2">DERP Server</h5>
                             </div>
 
                             <div class="md:col-span-2" x-data="{ derpEnabled: false }">
                                 <input type="hidden" name="derp_enabled" :value="derpEnabled">
-                                <label class="flex items-center cursor-pointer mb-4">
-                                    <input type="checkbox" x-model="derpEnabled"
-                                           class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
-                                    <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Enable Embedded DERP Server</span>
+                                <label class="flex items-center gap-2 cursor-pointer mb-4">
+                                    <input type="checkbox" x-model="derpEnabled" class="checkbox checkbox-sm checkbox-primary">
+                                    <span class="text-sm font-medium">Enable Embedded DERP Server</span>
                                 </label>
 
                                 <div x-show="derpEnabled" x-transition class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">STUN Address</label>
-                                        <input name="derp_stun_addr" type="text" value="0.0.0.0:3478"
-                                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono">
+                                        <span class="eyebrow block mb-1.5">Region ID</span>
+                                        <input name="derp_region_id" type="number" value="999" class="input input-bordered input-sm w-full font-mono">
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Region ID</label>
-                                        <input name="derp_region_id" type="number" value="999"
-                                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono">
+                                        <span class="eyebrow block mb-1.5">Region Code</span>
+                                        <input name="derp_region_code" type="text" value="gopanel" class="input input-bordered input-sm w-full font-mono">
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Region Code</label>
-                                        <input name="derp_region_code" type="text" value="gopanel"
-                                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono">
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Region Name</label>
-                                        <input name="derp_region_name" type="text" value="GoPanel Embedded DERP"
-                                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                        <span class="eyebrow block mb-1.5">Region Name</span>
+                                        <input name="derp_region_name" type="text" value="GoPanel Embedded DERP" class="input input-bordered input-sm w-full">
                                     </div>
 
                                     <div class="md:col-span-2">
-                                        <label class="flex items-center cursor-pointer">
-                                            <input name="derp_verify_clients" type="checkbox"
-                                                   class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
-                                            <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Verify Clients</span>
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input name="derp_verify_clients" type="checkbox" class="checkbox checkbox-sm checkbox-primary">
+                                            <span class="text-sm font-medium">Verify Clients</span>
                                         </label>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Private Key -->
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Private Key Path</label>
-                                <input name="private_key_path" type="text" value="/var/lib/headscale/noise_private.key" required
-                                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono">
+                                <span class="eyebrow block mb-1.5">Private Key Path</span>
+                                <input name="private_key_path" type="text" value="/var/lib/headscale/noise_private.key" required class="input input-bordered input-sm w-full font-mono">
                             </div>
                         </div>
 
-                        <div class="flex justify-end pt-4 border-t border-gray-100 dark:border-gray-700">
-                            <button type="submit"
-                                    class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm transition-all flex items-center font-medium text-sm">
-                                <i class="ri-save-3-line mr-2 text-lg"></i>
-                                Save Configuration
+                        <div class="flex justify-end pt-4 border-t border-base-300">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ri-save-3-line text-lg"></i>Save Configuration
                             </button>
                         </div>
                     </form>

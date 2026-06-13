@@ -1,11 +1,33 @@
 package file
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/spf13/afero"
 )
+
+func TestNormalizeBasePathDefaultsToFilesystemRoot(t *testing.T) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Getwd() error = %v", err)
+	}
+
+	got := normalizeBasePath("")
+	want := string(os.PathSeparator)
+	if volume := filepath.VolumeName(cwd); volume != "" {
+		want = volume + string(os.PathSeparator)
+	}
+
+	if got != want {
+		t.Fatalf("normalizeBasePath(\"\") = %q, want filesystem root %q", got, want)
+	}
+	if got == cwd {
+		t.Fatalf("normalizeBasePath(\"\") = cwd %q, want filesystem root", cwd)
+	}
+}
 
 func TestLocalFileServiceReadEditable(t *testing.T) {
 	fs := afero.NewMemMapFs()

@@ -6,6 +6,8 @@ access.log
 /.idea
 /.claude
 /.vscode
+/.gocache
+/.tmp
 server.crt
 server.key
 

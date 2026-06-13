@@ -1,76 +1,63 @@
 {{template "header.template"}}
 
-<div class="min-h-[calc(100vh-100px)] p-4 sm:p-6 lg:p-8 flex flex-col gap-6" x-data="sshPanel">
+<div class="text-base-content min-h-[calc(100vh-100px)] p-4 sm:p-6 lg:p-8 flex flex-col gap-6" x-data="sshPanel">
 
     <div>
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h3 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                    <i class="ri-terminal-box-line text-blue-600 dark:text-blue-400"></i>
-                    Web Terminal
-                </h3>
-                <p class="text-sm text-gray-500 mt-1">Connect via SSH protocol</p>
-            </div>
+        <div class="mb-6">
+            <h3 class="text-2xl font-bold tracking-tight flex items-center gap-3">
+                <i class="ri-terminal-box-line text-primary"></i>Web Terminal
+            </h3>
+            <p class="text-sm opacity-60 mt-1">Connect via SSH protocol</p>
         </div>
 
-        <details class="group bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 overflow-hidden"
-                 :open="!hasSaved">
-
-            <summary class="flex items-center justify-between px-6 py-4 cursor-pointer list-none select-none hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                <span class="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    <i class="ri-server-line text-gray-400"></i>
-                    Connection Details
+        <details class="group card surface overflow-hidden" :open="!hasSaved">
+            <summary class="row px-6 py-4 cursor-pointer list-none select-none hover:bg-base-200/50 transition-colors">
+                <span class="font-semibold flex items-center gap-2">
+                    <i class="ri-server-line opacity-50"></i>Connection Details
                 </span>
-                <i class="ri-arrow-down-s-line text-gray-400 transition-transform duration-300 group-open:rotate-180"></i>
+                <i class="ri-arrow-down-s-line opacity-50 transition-transform duration-300 group-open:rotate-180"></i>
             </summary>
 
-            <div class="px-6 pb-6 pt-2 border-t border-gray-100 dark:border-gray-700/50">
+            <div class="px-6 pb-6 pt-2 border-t border-base-300">
                 <form @submit.prevent="connect" class="flex flex-wrap items-end gap-4">
-                    <div class="flex-1 min-w-[150px] space-y-1.5">
-                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Host</label>
-                        <div class="relative">
-                            <i class="ri-global-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                            <input x-model="form.host" type="text" placeholder="127.0.0.1" required
-                                   class="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono">
-                        </div>
+                    <div class="flex-1 min-w-[150px]">
+                        <span class="eyebrow block mb-1.5">Host</span>
+                        <label class="input input-bordered input-sm flex items-center gap-2">
+                            <i class="ri-global-line opacity-50"></i>
+                            <input x-model="form.host" type="text" placeholder="127.0.0.1" required class="grow font-mono">
+                        </label>
                     </div>
 
-                    <div class="w-24 space-y-1.5">
-                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Port</label>
-                        <div class="relative">
-                            <i class="ri-door-lock-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                            <input x-model="form.port" type="number" placeholder="22" required
-                                   class="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono">
-                        </div>
+                    <div class="w-28">
+                        <span class="eyebrow block mb-1.5">Port</span>
+                        <label class="input input-bordered input-sm flex items-center gap-2">
+                            <i class="ri-door-lock-line opacity-50"></i>
+                            <input x-model="form.port" type="number" placeholder="22" required class="grow font-mono">
+                        </label>
                     </div>
 
-                    <div class="flex-1 min-w-[120px] space-y-1.5">
-                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">User</label>
-                        <div class="relative">
-                            <i class="ri-user-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                            <input x-model="form.user" type="text" placeholder="root" required
-                                   class="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono">
-                        </div>
+                    <div class="flex-1 min-w-[120px]">
+                        <span class="eyebrow block mb-1.5">User</span>
+                        <label class="input input-bordered input-sm flex items-center gap-2">
+                            <i class="ri-user-line opacity-50"></i>
+                            <input x-model="form.user" type="text" placeholder="root" required class="grow font-mono">
+                        </label>
                     </div>
 
-                    <div class="flex-1 min-w-[120px] space-y-1.5">
-                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Password</label>
-                        <div class="relative">
-                            <i class="ri-key-2-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                            <input x-model="form.pwd" type="password" placeholder="Optional"
-                                   class="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono">
-                        </div>
+                    <div class="flex-1 min-w-[120px]">
+                        <span class="eyebrow block mb-1.5">Password</span>
+                        <label class="input input-bordered input-sm flex items-center gap-2">
+                            <i class="ri-key-2-line opacity-50"></i>
+                            <input x-model="form.pwd" type="password" placeholder="Optional" class="grow font-mono">
+                        </label>
                     </div>
 
                     <div class="flex gap-2">
-                        <button type="submit" :disabled="isConnecting"
-                                class="h-[38px] px-5 bg-blue-600 hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed text-white rounded-lg shadow-sm transition-all flex items-center text-sm font-medium whitespace-nowrap">
-                            <i class="mr-2 text-lg" :class="isConnecting ? 'ri-loader-4-line animate-spin' : 'ri-plug-line'"></i>
+                        <button type="submit" :disabled="isConnecting" class="btn btn-primary btn-sm">
+                            <i :class="isConnecting ? 'ri-loader-4-line animate-spin' : 'ri-plug-line'" class="text-lg"></i>
                             <span x-text="isConnecting ? 'Connecting...' : 'Connect'"></span>
                         </button>
-
-                        <button type="button" @click="clearSaved" x-show="hasSaved"
-                                class="h-[38px] px-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-gray-200 dark:border-gray-700 rounded-lg transition-all flex items-center text-sm font-medium whitespace-nowrap" title="Clear Saved">
+                        <button type="button" @click="clearSaved" x-show="hasSaved" class="btn btn-outline btn-sm btn-error" title="Clear Saved">
                             <i class="ri-delete-bin-line text-lg"></i>
                         </button>
                     </div>
@@ -79,7 +66,7 @@
         </details>
     </div>
 
-    <div class="flex-1 min-h-[500px] flex flex-col bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-800 dark:border-gray-700">
+    <div class="flex-1 min-h-[500px] flex flex-col bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-800">
         <div class="bg-[#1a1b1e] px-4 py-2 border-b border-gray-800 flex items-center justify-between shrink-0">
             <div class="flex gap-2">
                 <div class="w-3 h-3 rounded-full bg-[#FF5F56]"></div>

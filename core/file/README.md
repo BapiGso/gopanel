@@ -36,7 +36,7 @@
 ### 2. 依赖注入
 ```go
 // 生产环境
-handler := file.NewHandler("/var/www")
+handler := file.NewHandler(afero.NewOsFs(), "/var/www")
 
 // 测试环境 - 使用内存文件系统
 memFS := afero.NewMemMapFs()
@@ -67,13 +67,17 @@ func TestUpload(t *testing.T) {
 
 ### 基本使用
 ```go
-import "gopanel/core/file"
+import (
+    "gopanel/core/file"
 
-// 自动使用 FILE_BASE_PATH 环境变量
+    "github.com/spf13/afero"
+)
+
+// 默认使用系统根目录作为文件管理根目录
 handler := file.DefaultHandler()
 
 // 或指定路径
-handler := file.NewHandler("/var/www")
+handler := file.NewHandler(afero.NewOsFs(), "/var/www")
 
 // 注册路由
 e.GET("/admin/file", handler.Index)

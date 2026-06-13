@@ -54,6 +54,34 @@
             }
         });
     </script>
+
+    <!-- daisyUI：组件 CSS 层；主题随站点 .dark class 自动切换 -->
+    <link rel="stylesheet" href="/assets/css/daisyui.min.css">
+    <style>
+        /* 把 daisyUI 的 primary/secondary 覆盖成站点品牌色（紫 #943DA5 / 绿 #10B981），
+           使 btn-primary、badge-primary、text-primary 等组件自动上品牌色。须在 daisyUI 之后加载。 */
+        [data-theme="light"], [data-theme="dark"] {
+            --p: 52.016% 0.1755 320.77;  --pc: 98% 0.01 320;
+            --s: 69.587% 0.1491 162.48;  --sc: 98% 0.01 162;
+        }
+    </style>
+    <style type="text/tailwindcss">
+        /* 各页用 daisyUI 的 base/语义色即可自动适配明暗，不必再写 dark: 变体 */
+        @layer components {
+            .surface { background: oklch(var(--b1)); border: 1px solid oklch(var(--b3)); box-shadow: 0 1px 2px 0 rgb(0 0 0 / .05); }
+            .eyebrow { @apply text-xs font-bold uppercase tracking-wider opacity-60; }
+            .row     { @apply flex items-center justify-between gap-2; }
+        }
+    </style>
+    <script>
+        // 把 data-theme 同步到站点既有的 .dark class（toggleDarkMode 切换），供 daisyUI 主题用
+        (() => {
+            const root = document.documentElement;
+            const sync = () => root.dataset.theme = root.classList.contains('dark') ? 'dark' : 'light';
+            new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ['class'] });
+            sync();
+        })();
+    </script>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 min-h-screen" x-data="panel">
     <div class="flex h-screen">

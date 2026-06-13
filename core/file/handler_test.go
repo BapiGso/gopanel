@@ -62,6 +62,36 @@ func TestHandlerFallsBackToRootWhenCookiePathIsInvalid(t *testing.T) {
 	}
 }
 
+func TestHandlerSupportsChmodMode(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	if err := fs.MkdirAll("/app", 0755); err != nil {
+		t.Fatalf("MkdirAll() error = %v", err)
+	}
+	if err := afero.WriteFile(fs, "/app/note.txt", []byte("ok"), 0644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+	handler := NewHandler(fs, "/app")
+	e := echo.New()
+
+	req := httptest.NewRequest(http.MethodPut, "/admin/file/process?path=/note.txt&mode=chmod", strings.NewReader("0600"))
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	if err := handler.Process(c); err != nil {
+		t.Fatalf("Process() error = %v", err)
+	}
+	if !strings.Contains(rec.Body.String(), `"message":"success"`) {
+		t.Fatalf("Process() body = %q, want success message", rec.Body.String())
+	}
+	info, err := fs.Stat("/app/note.txt")
+	if err != nil {
+		t.Fatalf("Stat() error = %v", err)
+	}
+	if got := info.Mode().Perm(); got != 0600 {
+		t.Fatalf("file mode = %v, want 0600", got)
+	}
+}
+
 type testRenderer struct{}
 
 func (testRenderer) Render(_ *echo.Context, w io.Writer, _ string, _ any) error {

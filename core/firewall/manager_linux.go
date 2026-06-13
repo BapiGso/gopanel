@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ccoveille/go-safecast/v2"
 	"github.com/google/nftables"
 	"github.com/google/nftables/expr"
 	"golang.org/x/sys/unix"
@@ -184,7 +185,11 @@ func (m *nftManager) Delete(id string) error {
 		return err
 	}
 
-	table := &nftables.Table{Name: nftTableName, Family: nftables.TableFamily(familyNum)}
+	familyValue, err := safecast.Convert[uint8](familyNum)
+	if err != nil {
+		return fmt.Errorf("invalid family in id: %s", id)
+	}
+	table := &nftables.Table{Name: nftTableName, Family: nftables.TableFamily(familyValue)}
 	chain := &nftables.Chain{Name: chainName, Table: table}
 
 	if err := conn.DelRule(&nftables.Rule{

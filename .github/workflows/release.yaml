@@ -20,6 +20,12 @@ jobs:
 
       - name: Build all platforms
         run: |
+          version="${GITHUB_REF_NAME}"
+          if [[ "$version" != v* ]]; then
+            version="v0.0.0"
+          fi
+          echo "Embedding version: ${version}"
+
           # 定义构建目标
           targets=(
             "linux/amd64"
@@ -47,7 +53,7 @@ jobs:
             [ "$GOOS" = "darwin" ] && output="gopanel_mac_${GOARCH}"
             
             echo "Building $output..."
-            if CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH go build -o $output 2>&1; then
+            if CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH go build -ldflags="-s -w -X=gopanel/core/security.buildVersion=${version}" -o "$output" . 2>&1; then
               echo "✅ Successfully built $output"
               successful_builds+=("$output")
             else

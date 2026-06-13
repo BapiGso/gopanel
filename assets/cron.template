@@ -1,66 +1,49 @@
 {{template "header.template"}}
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-        <div>
-            <h3 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center">
-                <i class="ri-time-line text-blue-600 dark:text-blue-400 mr-3"></i>
-                Cron Scheduler
-            </h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-9">Manage scheduled tasks and automation</p>
-        </div>
+<div class="text-base-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h3 class="text-2xl font-bold tracking-tight flex items-center">
+            <i class="ri-time-line text-primary mr-3"></i>Cron Scheduler
+        </h3>
+        <p class="text-sm opacity-60 mt-1 ml-9">Manage scheduled tasks and automation</p>
     </div>
 
-    <!-- Warning Banner -->
-    <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 mb-8 flex items-start">
-        <div class="p-2 bg-amber-100 dark:bg-amber-800 rounded-lg mr-4 shrink-0">
-            <i class="ri-flask-line text-amber-600 dark:text-amber-400 text-xl"></i>
-        </div>
+    <div role="alert" class="alert alert-warning mb-8">
+        <i class="ri-flask-line text-xl"></i>
         <div>
-            <h4 class="text-sm font-bold text-amber-900 dark:text-amber-100">Experimental Feature</h4>
-            <p class="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                Scheduled tasks are currently stored in memory. <span class="font-semibold">They will be lost if the panel restarts.</span>
-            </p>
+            <h4 class="font-bold">Experimental Feature</h4>
+            <p class="text-sm opacity-90">Scheduled tasks are currently stored in memory. <span class="font-semibold">They will be lost if the panel restarts.</span></p>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Left Column: Create Form -->
         <div class="lg:col-span-1">
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 sticky top-6">
-                <div class="flex items-center space-x-2 mb-6">
-                    <div class="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                        <i class="ri-add-circle-line text-blue-600 dark:text-blue-400"></i>
-                    </div>
-                    <h4 class="text-base font-semibold text-gray-900 dark:text-white">New Task</h4>
+            <div class="card surface p-6 sticky top-6">
+                <div class="flex items-center gap-2 mb-6">
+                    <i class="ri-add-circle-line text-primary text-lg"></i>
+                    <h4 class="text-base font-semibold">New Task</h4>
                 </div>
 
                 <form action="/admin/cron" @submit.prevent="createCron" class="space-y-5">
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Job Name</label>
+                        <span class="eyebrow block mb-1.5">Job Name</span>
                         <input name="name" type="text" placeholder="e.g., Daily Backup" required
-                               class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                               class="input input-bordered input-sm w-full">
                     </div>
 
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Template</label>
-                        <div class="relative">
-                            <i class="ri-magic-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                            <select required x-model="script"
-                                    class="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm appearance-none">
-                                <option selected disabled value="">Select a template...</option>
-                                <option value="">Custom Shell Script</option>
-                                <option value="tar -czvf name.tar.gz /home/user/mydir">Backup Directory (Tar)</option>
-                                <option value="curl -L https://www.example.com">Ping URL (Curl)</option>
-                            </select>
-                        </div>
+                        <span class="eyebrow block mb-1.5">Template</span>
+                        <select required x-model="script" class="select select-bordered select-sm w-full">
+                            <option selected disabled value="">Select a template...</option>
+                            <option value="">Custom Shell Script</option>
+                            <option value="tar -czvf name.tar.gz /home/user/mydir">Backup Directory (Tar)</option>
+                            <option value="curl -L https://www.example.com">Ping URL (Curl)</option>
+                        </select>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Frequency Base</label>
-                        <select name="frequency" required x-model="freMax"
-                                class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                        <span class="eyebrow block mb-1.5">Frequency Base</span>
+                        <select name="frequency" required x-model="freMax" class="select select-bordered select-sm w-full">
                             <option selected disabled value="">Select frequency...</option>
                             <option value="43199">Monthly</option>
                             <option value="10079">Weekly</option>
@@ -70,94 +53,62 @@
                     </div>
 
                     <div>
-                        <label class="flex justify-between text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                            <span>Execution Time</span>
-                            <span class="text-blue-600 dark:text-blue-400 font-mono" x-text="formatTimestamp(sliderValue)"></span>
-                        </label>
-                        <input x-ref="timeSlider" :max="freMax" min="1" name="attime"
-                               x-model="sliderValue"
-                               type="range"
-                               class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-blue-600">
+                        <div class="row mb-2">
+                            <span class="eyebrow">Execution Time</span>
+                            <span class="text-primary font-mono text-xs" x-text="formatTimestamp(sliderValue)"></span>
+                        </div>
+                        <input x-ref="timeSlider" :max="freMax" min="1" name="attime" x-model="sliderValue" type="range"
+                               class="range range-primary range-sm">
                     </div>
 
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Script Content</label>
-                        <textarea name="script" rows="5" x-model="script" required
-                                  class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-xs"
-                                  placeholder="#!/bin/bash..."></textarea>
+                        <span class="eyebrow block mb-1.5">Script Content</span>
+                        <textarea name="script" rows="5" x-model="script" required placeholder="#!/bin/bash..."
+                                  class="textarea textarea-bordered w-full font-mono text-xs"></textarea>
                     </div>
 
-                    <button type="submit"
-                            class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center text-sm font-medium">
-                        <i class="ri-add-line mr-2"></i>
-                        Create Cron Job
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="ri-add-line"></i>Create Cron Job
                     </button>
                 </form>
             </div>
         </div>
 
-        <!-- Right Column: Job List -->
         <div class="lg:col-span-2">
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
-                    <h4 class="text-base font-semibold text-gray-900 dark:text-white flex items-center">
-                        <i class="ri-list-check text-gray-400 mr-2"></i>
-                        Scheduled Jobs
-                    </h4>
+            <div class="card surface overflow-hidden">
+                <div class="px-6 py-4 border-b border-base-300">
+                    <h4 class="text-base font-semibold flex items-center"><i class="ri-list-check opacity-50 mr-2"></i>Scheduled Jobs</h4>
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full whitespace-nowrap">
-                        <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
+                    <table class="table">
+                        <thead>
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Run</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Next Run</th>
-                            <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                            <th>Name</th><th>Status</th><th>Last Run</th><th>Next Run</th><th class="text-right">Actions</th>
                         </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        <tbody>
                         {{range $k,$v:= .}}
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{{$v.Name}}</td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
-                                          :class="{{$v.Paused}} ?
-                                              'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800' :
-                                              'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'">
-                                        <span class="w-1.5 h-1.5 rounded-full mr-1.5"
-                                              :class="{{$v.Paused}} ? 'bg-yellow-500' : 'bg-green-500'"></span>
-                                        <span x-text="{{$v.Paused}} ? 'Paused' : 'Active'"></span>
-                                    </span>
+                            <tr class="hover">
+                                <td class="font-medium">{{$v.Name}}</td>
+                                <td>
+                                    <span class="badge badge-sm badge-outline" :class="{{$v.Paused}} ? 'badge-warning' : 'badge-success'"
+                                          x-text="{{$v.Paused}} ? 'Paused' : 'Active'"></span>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 font-mono text-xs">{{$v.LastRun}}</td>
-                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 font-mono text-xs">{{$v.NextRun}}</td>
-                                <td class="px-6 py-4 text-right">
-                                    <div class="flex items-center justify-end space-x-2">
-                                        <button @click="Action('runnow', `{{$k}}`)"
-                                                class="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-                                                title="Run Now">
+                                <td class="font-mono text-xs opacity-70">{{$v.LastRun}}</td>
+                                <td class="font-mono text-xs opacity-70">{{$v.NextRun}}</td>
+                                <td class="text-right">
+                                    <div class="flex items-center justify-end gap-1">
+                                        <button @click="Action('runnow', `{{$k}}`)" class="btn btn-ghost btn-xs text-info" title="Run Now">
                                             <i class="ri-play-circle-line text-lg"></i>
                                         </button>
-
-                                        <button x-show="{{$v.Paused}}" @click="Action('unpause', `{{$k}}`)"
-                                                class="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors"
-                                                title="Resume">
+                                        <button x-show="{{$v.Paused}}" @click="Action('unpause', `{{$k}}`)" class="btn btn-ghost btn-xs text-success" title="Resume">
                                             <i class="ri-play-line text-lg"></i>
                                         </button>
-
-                                        <button x-show="{{not $v.Paused}}" @click="Action('pause', `{{$k}}`)"
-                                                class="p-1.5 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-lg transition-colors"
-                                                title="Pause">
+                                        <button x-show="{{not $v.Paused}}" @click="Action('pause', `{{$k}}`)" class="btn btn-ghost btn-xs text-warning" title="Pause">
                                             <i class="ri-pause-line text-lg"></i>
                                         </button>
-
-                                        <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1"></div>
-
-                                        <button @click="confirm('Are you sure you want to delete this job?') && Action('remove',`{{$k}}`)"
-                                                class="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                                                title="Delete">
+                                        <button @click="confirm('Are you sure you want to delete this job?') && Action('remove',`{{$k}}`)" class="btn btn-ghost btn-xs text-error" title="Delete">
                                             <i class="ri-delete-bin-line text-lg"></i>
                                         </button>
                                     </div>
@@ -169,10 +120,10 @@
 
                     {{if not .}}
                         <div class="px-6 py-12 text-center">
-                            <div class="w-12 h-12 bg-gray-50 dark:bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i class="ri-calendar-check-line text-2xl text-gray-400"></i>
+                            <div class="w-12 h-12 bg-base-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="ri-calendar-check-line text-2xl opacity-40"></i>
                             </div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">No scheduled tasks defined</p>
+                            <p class="text-sm opacity-60">No scheduled tasks defined</p>
                         </div>
                     {{end}}
                 </div>

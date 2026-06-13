@@ -1,152 +1,107 @@
 {{template "header.template"}}
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-        <div>
-            <h3 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center">
-                <i class="ri-hard-drive-2-line text-blue-600 dark:text-blue-400 mr-3"></i>
-                WebDAV Manager
-            </h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-9">Access your files remotely via WebDAV protocol</p>
-        </div>
+<div class="text-base-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h3 class="text-2xl font-bold tracking-tight flex items-center">
+            <i class="ri-hard-drive-2-line text-primary mr-3"></i>WebDAV Manager
+        </h3>
+        <p class="text-sm opacity-60 mt-1 ml-9">Access your files remotely via WebDAV protocol</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Left Column: Configuration -->
         <div class="lg:col-span-2 space-y-6">
-
-            <!-- Settings Card -->
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 flex items-center justify-between">
-                    <h4 class="text-base font-semibold text-gray-900 dark:text-white flex items-center">
-                        <i class="ri-settings-4-line mr-2 text-gray-400"></i>
-                        Service Configuration
-                    </h4>
+            <div class="card surface overflow-hidden">
+                <div class="row px-6 py-4 border-b border-base-300">
+                    <h4 class="text-base font-semibold flex items-center"><i class="ri-settings-4-line mr-2 opacity-50"></i>Service Configuration</h4>
                 </div>
 
-                <div class="p-6">
-                    <form action="/admin/webdav" method="post" @submit.prevent="saveConfig">
-                        <!-- Enable Switch -->
-                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-700 mb-6">
-                            <div>
-                                <span class="text-sm font-medium text-gray-900 dark:text-white block">Enable WebDAV</span>
-                                <span class="text-xs text-gray-500 dark:text-gray-400">Turn the service on or off</span>
-                            </div>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" name="enable" {{if (call .getPanelConfig "webdav.enable")}}checked{{end}} class="sr-only peer">
-                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                <form action="/admin/webdav" method="post" @submit.prevent="saveConfig" class="p-6">
+                    <label class="row p-4 bg-base-200/50 rounded-xl border border-base-300 mb-6 cursor-pointer">
+                        <span>
+                            <span class="text-sm font-medium block">Enable WebDAV</span>
+                            <span class="text-xs opacity-60">Turn the service on or off</span>
+                        </span>
+                        <input type="checkbox" name="enable" {{if (call .getPanelConfig "webdav.enable")}}checked{{end}} class="toggle toggle-success">
+                    </label>
+
+                    <div class="space-y-5">
+                        <div>
+                            <span class="text-sm font-medium block mb-1.5">Username</span>
+                            <label class="input input-bordered flex items-center gap-2">
+                                <i class="ri-user-3-line opacity-50"></i>
+                                <input type="text" name="username" value="{{call .getPanelConfig "webdav.username"}}" required class="grow">
                             </label>
                         </div>
-
-                        <div class="space-y-5">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Username</label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="ri-user-3-line text-gray-400"></i>
-                                    </div>
-                                    <input type="text" name="username" value="{{call .getPanelConfig "webdav.username"}}" required
-                                           class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow sm:text-sm">
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="ri-lock-password-line text-gray-400"></i>
-                                    </div>
-                                    <input type="password" name="password" value="{{call .getPanelConfig "webdav.password"}}" required
-                                           class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow sm:text-sm">
-                                </div>
-                            </div>
+                        <div>
+                            <span class="text-sm font-medium block mb-1.5">Password</span>
+                            <label class="input input-bordered flex items-center gap-2">
+                                <i class="ri-lock-password-line opacity-50"></i>
+                                <input type="password" name="password" value="{{call .getPanelConfig "webdav.password"}}" required class="grow">
+                            </label>
                         </div>
+                    </div>
 
-                        <div class="mt-8 flex justify-end">
-                            <button type="submit"
-                                    class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow transition-all flex items-center font-medium text-sm">
-                                <i class="ri-save-3-line mr-2 text-lg"></i>
-                                Save Configuration
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="mt-8 flex justify-end">
+                        <button type="submit" class="btn btn-primary"><i class="ri-save-3-line text-lg"></i>Save Configuration</button>
+                    </div>
+                </form>
             </div>
 
-            <!-- Windows Specific Fix -->
-            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-5 border border-blue-100 dark:border-blue-800">
-                <div class="flex items-start mb-3">
-                    <i class="ri-windows-fill text-blue-600 dark:text-blue-400 text-xl mr-3 mt-0.5"></i>
+            <div class="rounded-2xl p-5 bg-info/10 border border-info/20">
+                <div class="flex items-start gap-3 mb-3">
+                    <i class="ri-windows-fill text-info text-xl mt-0.5"></i>
                     <div>
-                        <h5 class="text-sm font-bold text-blue-900 dark:text-blue-100">Windows Explorer Native Support</h5>
-                        <p class="text-sm text-blue-700 dark:text-blue-300 mt-1 leading-relaxed">
+                        <h5 class="text-sm font-bold">Windows Explorer Native Support</h5>
+                        <p class="text-sm opacity-70 mt-1 leading-relaxed">
                             Windows only supports HTTPS WebDAV by default. To allow HTTP connections, you must modify the registry.
                         </p>
                     </div>
                 </div>
-                <div class="bg-[#1e1e1e] rounded-lg p-3 mt-2 border border-gray-700 shadow-inner group relative">
-                    <code class="font-mono text-xs text-green-400 block overflow-x-auto whitespace-pre-wrap select-all">reg add "HKLM\SYSTEM\CurrentControlSet\Services\WebClient\Parameters" /v BasicAuthLevel /t REG_DWORD /d 2 /f
+                <div class="bg-[#1e1e1e] rounded-lg p-3 border border-white/10 shadow-inner">
+                    <code class="font-mono text-xs text-success block overflow-x-auto whitespace-pre-wrap select-all">reg add "HKLM\SYSTEM\CurrentControlSet\Services\WebClient\Parameters" /v BasicAuthLevel /t REG_DWORD /d 2 /f
                         Restart-Service -Name "WebClient"</code>
                 </div>
             </div>
         </div>
 
-        <!-- Right Column: Connection Info -->
         <div class="lg:col-span-1 space-y-6">
-            <!-- Server Address -->
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                <h5 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Server Address</h5>
-                <div class="relative group">
-                    <div class="p-3 bg-gray-100 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 font-mono text-sm text-gray-700 dark:text-gray-300 break-all"
-                         x-text="`${location.origin}/webdav`">
-                    </div>
-                </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    Use this URL to connect your WebDAV clients.
-                </p>
+            <div class="surface rounded-2xl p-6">
+                <h5 class="eyebrow mb-3">Server Address</h5>
+                <div class="bg-base-200 rounded-xl border border-base-300 p-3 font-mono text-sm break-all" x-text="`${location.origin}/webdav`"></div>
+                <p class="text-xs opacity-60 mt-2">Use this URL to connect your WebDAV clients.</p>
             </div>
 
-            <!-- Client Guide -->
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
-                    <h4 class="text-base font-semibold text-gray-900 dark:text-white">Connection Guide</h4>
+            <div class="card surface overflow-hidden">
+                <div class="px-6 py-4 border-b border-base-300">
+                    <h4 class="text-base font-semibold">Connection Guide</h4>
                 </div>
-                <div class="divide-y divide-gray-100 dark:divide-gray-700">
-                    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors flex items-start">
-                        <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg mr-3">
-                            <i class="ri-windows-line text-blue-600 dark:text-blue-400"></i>
-                        </div>
+                <div class="divide-y divide-base-300">
+                    <div class="p-4 flex items-start gap-3 hover:bg-base-200/50 transition-colors">
+                        <div class="p-2 bg-base-200 rounded-lg"><i class="ri-windows-line text-info"></i></div>
                         <div>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">Windows</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">This PC > Map network drive</p>
+                            <p class="text-sm font-medium">Windows</p>
+                            <p class="text-xs opacity-60">This PC > Map network drive</p>
                         </div>
                     </div>
-                    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors flex items-start">
-                        <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg mr-3">
-                            <i class="ri-apple-line text-gray-800 dark:text-white"></i>
-                        </div>
+                    <div class="p-4 flex items-start gap-3 hover:bg-base-200/50 transition-colors">
+                        <div class="p-2 bg-base-200 rounded-lg"><i class="ri-apple-line"></i></div>
                         <div>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">macOS</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">Finder > Go > Connect to Server</p>
+                            <p class="text-sm font-medium">macOS</p>
+                            <p class="text-xs opacity-60">Finder > Go > Connect to Server</p>
                         </div>
                     </div>
-                    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors flex items-start">
-                        <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg mr-3">
-                            <i class="ri-ubuntu-line text-orange-600"></i>
-                        </div>
+                    <div class="p-4 flex items-start gap-3 hover:bg-base-200/50 transition-colors">
+                        <div class="p-2 bg-base-200 rounded-lg"><i class="ri-ubuntu-line text-warning"></i></div>
                         <div>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">Linux</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">File Manager > Other Locations</p>
+                            <p class="text-sm font-medium">Linux</p>
+                            <p class="text-xs opacity-60">File Manager > Other Locations</p>
                         </div>
                     </div>
-                    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors flex items-start">
-                        <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg mr-3">
-                            <i class="ri-smartphone-line text-purple-600"></i>
-                        </div>
+                    <div class="p-4 flex items-start gap-3 hover:bg-base-200/50 transition-colors">
+                        <div class="p-2 bg-base-200 rounded-lg"><i class="ri-smartphone-line text-primary"></i></div>
                         <div>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">Mobile</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">Use Apps like Documents/FE File Explorer</p>
+                            <p class="text-sm font-medium">Mobile</p>
+                            <p class="text-xs opacity-60">Use Apps like Documents/FE File Explorer</p>
                         </div>
                     </div>
                 </div>
@@ -174,8 +129,8 @@
                     if (response.ok) {
                         // Small visual success indicator before reload
                         btn.innerHTML = '<i class="ri-check-line mr-2"></i> Saved';
-                        btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                        btn.classList.add('bg-green-600', 'hover:bg-green-700');
+                        btn.classList.remove('btn-primary');
+                        btn.classList.add('btn-success');
 
                         setTimeout(() => {
                             alert('Configuration saved successfully');

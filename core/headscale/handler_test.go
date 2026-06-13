@@ -123,11 +123,12 @@ func TestLoadServerConfig_DERPEnabled(t *testing.T) {
 		IPv4Prefix:        "100.64.0.0/10",
 		IPv6Prefix:        "fd7a:115c:a1e0::/48",
 		BaseDomain:        "example.com",
+		STUNEnabled:       true,
+		STUNListenAddr:    "0.0.0.0:3479",
 		DERPEnabled:       true,
 		DERPRegionID:      100,
 		DERPRegionCode:    "my-region",
 		DERPRegionName:    "My Custom DERP",
-		DERPSTUNAddr:      "0.0.0.0:3479",
 		DERPVerifyClient:  "on",
 	}
 
@@ -192,6 +193,84 @@ func TestLoadServerConfig_DERPDisabled(t *testing.T) {
 	}
 	if result.DERP.AutomaticallyAddEmbeddedDerpRegion {
 		t.Error("DERP.AutomaticallyAddEmbeddedDerpRegion should be false")
+	}
+}
+
+func TestLoadServerConfig_STUNOnly(t *testing.T) {
+	cfg := &headscaleConfig{
+		ServerURL:         "https://stun.example.com:443",
+		ListenAddr:        "0.0.0.0:8080",
+		MetricsListenAddr: "127.0.0.1:9090",
+		PrivateKeyPath:    "/tmp/key",
+		IPv4Prefix:        "100.64.0.0/10",
+		IPv6Prefix:        "fd7a:115c:a1e0::/48",
+		BaseDomain:        "example.com",
+		STUNEnabled:       true,
+		STUNListenAddr:    "0.0.0.0:3480",
+		DERPEnabled:       false,
+		DERPRegionID:      200,
+		DERPRegionCode:    "stun-only",
+		DERPRegionName:    "Standalone STUN",
+	}
+
+	result, err := loadServerConfig(cfg)
+	if err != nil {
+		t.Fatalf("loadServerConfig failed: %v", err)
+	}
+
+	if result.DERP.ServerEnabled {
+		t.Error("DERP.ServerEnabled should be false")
+	}
+	if result.DERP.STUNAddr != "0.0.0.0:3480" {
+		t.Errorf("DERP.STUNAddr = %q, want %q", result.DERP.STUNAddr, "0.0.0.0:3480")
+	}
+	if result.DERP.DERPMap == nil {
+		t.Fatal("DERP.DERPMap should include a STUN-only node")
+	}
+
+	region := result.DERP.DERPMap.Regions[200]
+	if region == nil {
+		t.Fatal("STUN-only DERP region missing")
+	}
+	if region.RegionCode != "stun-only" {
+		t.Errorf("RegionCode = %q, want %q", region.RegionCode, "stun-only")
+	}
+	if len(region.Nodes) != 1 {
+		t.Fatalf("STUN-only node count = %d, want 1", len(region.Nodes))
+	}
+
+	node := region.Nodes[0]
+	if !node.STUNOnly {
+		t.Error("STUN-only node should set STUNOnly")
+	}
+	if node.HostName != "stun.example.com" {
+		t.Errorf("HostName = %q, want %q", node.HostName, "stun.example.com")
+	}
+	if node.STUNPort != 3480 {
+		t.Errorf("STUNPort = %d, want 3480", node.STUNPort)
+	}
+}
+
+func TestLoadServerConfig_LegacyDERPSTUNAddr(t *testing.T) {
+	cfg := &headscaleConfig{
+		ServerURL:         "https://example.com",
+		ListenAddr:        "0.0.0.0:8080",
+		MetricsListenAddr: "127.0.0.1:9090",
+		PrivateKeyPath:    "/tmp/key",
+		IPv4Prefix:        "100.64.0.0/10",
+		IPv6Prefix:        "fd7a:115c:a1e0::/48",
+		BaseDomain:        "example.com",
+		DERPEnabled:       true,
+		DERPSTUNAddr:      "0.0.0.0:3490",
+	}
+
+	result, err := loadServerConfig(cfg)
+	if err != nil {
+		t.Fatalf("loadServerConfig failed: %v", err)
+	}
+
+	if result.DERP.STUNAddr != "0.0.0.0:3490" {
+		t.Errorf("DERP.STUNAddr = %q, want legacy value", result.DERP.STUNAddr)
 	}
 }
 
@@ -376,11 +455,12 @@ func TestHeadscaleStartAndConnect(t *testing.T) {
 		"ipv4_prefix":         {"100.64.0.0/10"},
 		"ipv6_prefix":         {"fd7a:115c:a1e0::/48"},
 		"base_domain":         {"test.example.com"},
+		"stun_enabled":        {"true"},
+		"stun_listen_addr":    {"0.0.0.0:3478"},
 		"derp_enabled":        {"true"},
 		"derp_region_id":      {"999"},
 		"derp_region_code":    {"gopanel"},
 		"derp_region_name":    {"GoPanel Embedded DERP"},
-		"derp_stun_addr":      {"0.0.0.0:3478"},
 	}
 
 	// 1. 启动 Headscale

@@ -1,83 +1,52 @@
 {{template "header.template"}}
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="panel">
-    <!-- Header & Status Section -->
+<div class="text-base-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="panel">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-            <h3 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center">
-                <i class="ri-global-line text-blue-600 dark:text-blue-400 mr-3"></i>
-                Website Manage
+            <h3 class="text-2xl font-bold tracking-tight flex items-center">
+                <i class="ri-global-line text-primary mr-3"></i>Website Manage
             </h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-9">Configure your Caddy web server</p>
+            <p class="text-sm opacity-60 mt-1 ml-9">Configure your Caddy web server</p>
         </div>
 
-        <!-- Merged Status & Control Toggle -->
-        <div class="flex items-center gap-4 bg-white dark:bg-gray-800 px-5 py-2.5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <label class="surface rounded-xl px-5 py-2.5 flex items-center gap-4 cursor-pointer">
             <div class="flex flex-col items-end">
-                <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Service Boot</span>
-                <span class="text-[11px] font-bold transition-colors"
-                      :class="caddyEnabled ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'"
-                      x-text="caddyEnabled ? 'ENABLED' : 'DISABLED'">
-                </span>
+                <span class="eyebrow">Service Boot</span>
+                <span class="text-[11px] font-bold" :class="caddyEnabled ? 'text-success' : 'opacity-50'"
+                      x-text="caddyEnabled ? 'ENABLED' : 'DISABLED'"></span>
             </div>
-
-            <!-- Toggle Switch -->
-            <button @click="manageCaddy('enable')"
-                    class="relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
-                    :class="caddyEnabled ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'">
-                <span class="sr-only">Toggle setting</span>
-                <span class="pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                      :class="caddyEnabled ? 'translate-x-5' : 'translate-x-0'"></span>
-            </button>
-        </div>
+            <input type="checkbox" class="toggle toggle-success" :checked="caddyEnabled" @change="manageCaddy('enable')">
+        </label>
     </div>
 
-    <!-- Control Toolbar -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 mb-6 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-wrap gap-3 items-center justify-between">
-        <!-- Service Controls (Removed the old Toggle button) -->
+    <div class="surface rounded-2xl p-4 mb-6 flex flex-wrap gap-3 items-center justify-between">
         <div class="flex flex-wrap gap-2">
-            <button @click="manageCaddy('restart')"
-                    class="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-lg text-sm font-medium transition-all flex items-center shadow-sm group">
-                <i class="ri-restart-line mr-2 text-blue-500 group-hover:rotate-180 transition-transform duration-500"></i>
-                Restart Service
+            <button @click="manageCaddy('restart')" class="btn btn-sm btn-outline group">
+                <i class="ri-restart-line text-primary group-hover:rotate-180 transition-transform duration-500"></i>Restart Service
             </button>
-            <button @click="manageCaddy('stop')"
-                    class="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-sm font-medium transition-all flex items-center shadow-sm">
-                <i class="ri-stop-circle-line mr-2"></i>
-                Stop Service
+            <button @click="manageCaddy('stop')" class="btn btn-sm btn-outline btn-error">
+                <i class="ri-stop-circle-line"></i>Stop Service
             </button>
         </div>
-
-        <!-- Save Action (Primary) -->
-        <button @click="updateConfig"
-                class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all flex items-center text-sm font-medium ml-auto">
-            <i class="ri-save-3-line mr-2 text-lg"></i>
-            Save Configuration
+        <button @click="updateConfig" class="btn btn-sm btn-primary ml-auto">
+            <i class="ri-save-3-line text-lg"></i>Save Configuration
         </button>
     </div>
 
-    <!-- Editor Card -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col h-[calc(100vh-300px)] min-h-[500px]">
-        <!-- Editor Header -->
-        <div class="px-6 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800 flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-                <i class="ri-code-s-slash-line text-gray-400"></i>
-                <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">Caddyfile</span>
+    <div class="card surface overflow-hidden flex flex-col h-[calc(100vh-300px)] min-h-[500px]">
+        <div class="row px-6 py-3 border-b border-base-300 bg-base-200/40">
+            <div class="flex items-center gap-2">
+                <i class="ri-code-s-slash-line opacity-50"></i>
+                <span class="text-sm font-semibold">Caddyfile</span>
             </div>
-            <div class="flex items-center space-x-4">
-                <span class="text-xs text-gray-500 dark:text-gray-400 hidden sm:flex items-center">
-                    <i class="ri-command-line mr-1"></i> Cmd/Ctrl + S to save
-                </span>
-                <div class="h-4 w-px bg-gray-200 dark:bg-gray-600 hidden sm:block"></div>
+            <div class="flex items-center gap-4 text-xs">
+                <span class="opacity-60 hidden sm:flex items-center"><i class="ri-command-line mr-1"></i>Cmd/Ctrl + S to save</span>
                 <a href="https://caddyserver.com/docs/caddyfile" target="_blank"
-                   class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium flex items-center transition-colors">
-                    <i class="ri-book-open-line mr-1.5"></i>
-                    Docs
+                   class="link link-hover text-primary font-medium flex items-center">
+                    <i class="ri-book-open-line mr-1.5"></i>Docs
                 </a>
             </div>
         </div>
-
-        <!-- Editor Container -->
         <div class="relative flex-1 w-full bg-[#272822]">
             <div id="editor" class="absolute inset-0 w-full h-full text-base"></div>
         </div>

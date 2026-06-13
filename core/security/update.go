@@ -19,6 +19,8 @@ import (
 
 const repoSlug = "BapiGso/gopanel"
 
+var buildVersion = ""
+
 type release struct {
 	TagName     string    `json:"tag_name"`
 	PublishedAt time.Time `json:"published_at"`
@@ -122,10 +124,9 @@ func getLatestReleaseVersion() (semver.Version, string, error) {
 		return semver.Version{}, "", err
 	}
 
-	tag := strings.TrimPrefix(rel.TagName, "v")
-	version, err := semver.Parse(tag)
-	if err != nil {
-		return semver.Version{}, "", fmt.Errorf("invalid release tag %q: %w", rel.TagName, err)
+	version, ok := parseVersion(rel.TagName)
+	if !ok {
+		return semver.Version{}, "", fmt.Errorf("invalid release tag %q", rel.TagName)
 	}
 
 	downloadURL, err := pickReleaseAssetURL(rel.Assets)
@@ -180,14 +181,47 @@ func releaseAssetCandidates() []string {
 }
 
 func currentVersion() (semver.Version, bool) {
+	if version, ok := parseVersion(buildVersion); ok {
+		return version, true
+	}
+
 	info, ok := debug.ReadBuildInfo()
-	if !ok || info.Main.Version == "" || info.Main.Version == "(devel)" {
+	if !ok {
 		return semver.Version{}, false
 	}
-	versionText := strings.TrimPrefix(info.Main.Version, "v")
+
+	return parseVersion(info.Main.Version)
+}
+
+func parseVersion(versionText string) (semver.Version, bool) {
+	versionText = strings.TrimSpace(versionText)
+	if versionText == "" || versionText == "(devel)" {
+		return semver.Version{}, false
+	}
+	versionText = strings.TrimPrefix(versionText, "v")
+	versionText = normalizeVersion(versionText)
 	version, err := semver.Parse(versionText)
 	if err != nil {
 		return semver.Version{}, false
 	}
 	return version, true
+}
+
+func normalizeVersion(versionText string) string {
+	suffixIndex := strings.IndexAny(versionText, "-+")
+	core := versionText
+	suffix := ""
+	if suffixIndex >= 0 {
+		core = versionText[:suffixIndex]
+		suffix = versionText[suffixIndex:]
+	}
+
+	switch len(strings.Split(core, ".")) {
+	case 1:
+		core += ".0.0"
+	case 2:
+		core += ".0"
+	}
+
+	return core + suffix
 }

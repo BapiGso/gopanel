@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	pathpkg "path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -171,13 +172,18 @@ func (s *LocalFileService) resolve(path string) (string, error) {
 
 func normalizeBasePath(path string) string {
 	if path == "" {
-		if cwd, err := os.Getwd(); err == nil {
-			path = cwd
-		} else {
-			path = "."
-		}
+		return filesystemRoot()
 	}
 	return path
+}
+
+func filesystemRoot() string {
+	if cwd, err := os.Getwd(); err == nil {
+		if volume := filepath.VolumeName(cwd); volume != "" {
+			return volume + string(os.PathSeparator)
+		}
+	}
+	return string(os.PathSeparator)
 }
 
 func normalizeRequestPath(pathValue string) string {
