@@ -1,6 +1,9 @@
 package monitor
 
 import (
+	"path/filepath"
+	"slices"
+	"strings"
 	"time" // sync removed
 
 	"github.com/labstack/gommon/log"
@@ -75,28 +78,23 @@ func (m *Monitor) fetchAllStats() {
 		log.Errorf("Error fetching host info: %v", err)
 	}
 
-	partitions, err := disk.Partitions(true)
+	partitions, err := disk.Partitions(false)
 	if err != nil {
 		log.Errorf("Failed to get disk partitions: %v", err)
 		m.DiskUsage = []DiskUsageInfo{}
 	} else {
 		var diskInfos []DiskUsageInfo
-		for _, p := range partitions {
-			if p.Mountpoint == "" || p.Fstype == "squashfs" || p.Fstype == "iso9660" ||
-				p.Fstype == "udf" || p.Fstype == "tmpfs" || p.Fstype == "devtmpfs" ||
-				p.Fstype == "autofs" || p.Fstype == "cgroup" || p.Fstype == "pstore" ||
-				p.Fstype == "configfs" || p.Fstype == "debugfs" || p.Fstype == "fuse.gvfsd-fuse" ||
-				p.Fstype == "fusectl" || p.Fstype == "securityfs" || p.Fstype == "sysfs" ||
-				p.Fstype == "proc" || p.Device == "none" {
+		for _, partition := range partitions {
+			usageStat, usageErr := disk.Usage(partition.Mountpoint)
+			if usageErr != nil {
 				continue
 			}
-			usageStat, usageErr := disk.Usage(p.Mountpoint)
-			if usageErr != nil {
+			if !isDisplayableDiskPartition(partition, usageStat) {
 				continue
 			}
 			diskInfos = append(diskInfos, DiskUsageInfo{
 				Path:        usageStat.Path,
-				Device:      p.Device,
+				Device:      partition.Device,
 				Fstype:      usageStat.Fstype,
 				Total:       usageStat.Total,
 				Free:        usageStat.Free,
@@ -106,4 +104,26 @@ func (m *Monitor) fetchAllStats() {
 		}
 		m.DiskUsage = diskInfos
 	}
+}
+
+func isDisplayableDiskPartition(partition disk.PartitionStat, usage *disk.UsageStat) bool {
+	if partition.Mountpoint == "" || partition.Device == "" || partition.Device == "none" {
+		return false
+	}
+	if usage == nil || usage.Total == 0 {
+		return false
+	}
+	if hasMountOption(partition, "bind") {
+		return false
+	}
+
+	mountpoint := filepath.ToSlash(partition.Mountpoint)
+	if strings.EqualFold(partition.Fstype, "overlay") && mountpoint != "/" {
+		return false
+	}
+	return true
+}
+
+func hasMountOption(partition disk.PartitionStat, option string) bool {
+	return slices.Contains(partition.Opts, option)
 }

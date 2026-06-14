@@ -55,9 +55,65 @@ fi
 WORKDIR="/opt/gopanel"
 # Set download link
 DOWNLOAD_URL="https://github.com/BapiGso/gopanel/releases/latest/download/gopanel_${OS_LOWER}_${GOARCH}"
+TARGET_BIN="/usr/local/bin/gopanel"
+TMP_BIN=""
+
+cleanup_tmp_bin() {
+    if [ -n "$TMP_BIN" ]; then
+        sudo rm -f "$TMP_BIN" 2>/dev/null
+    fi
+}
+trap cleanup_tmp_bin EXIT
+
+download_and_install_binary() {
+    TMP_BIN=$(sudo mktemp "${TARGET_BIN}.download.XXXXXX") || fail_install "Failed to create temporary binary file."
+
+    sudo wget "$DOWNLOAD_URL" -O "$TMP_BIN"
+    if [ $? -ne 0 ]; then
+        fail_install "Failed to download gopanel. Please check your network connection or download manually."
+    fi
+
+    if ! sudo test -s "$TMP_BIN"; then
+        fail_install "Downloaded gopanel binary is empty. Please download manually."
+    fi
+
+    if ! sudo chmod 755 "$TMP_BIN"; then
+        fail_install "Failed to mark downloaded gopanel binary executable."
+    fi
+
+    if ! sudo mv -f "$TMP_BIN" "$TARGET_BIN"; then
+        fail_install "Failed to replace gopanel binary."
+    fi
+    TMP_BIN=""
+}
+
+start_existing_service() {
+    if [ "$OS" = "Linux" ]; then
+        if [ "$INIT_SYSTEM" = "systemd" ]; then
+            sudo systemctl reset-failed gopanel 2>/dev/null
+            sudo systemctl start gopanel
+        elif [ "$INIT_SYSTEM" = "openrc" ]; then
+            sudo rc-service gopanel start
+        fi
+    elif [ "$OS" = "FreeBSD" ]; then
+        sudo service gopanel start
+    elif [ "$OS" = "Darwin" ]; then
+        sudo launchctl load -w /Library/LaunchDaemons/com.gopanel.service.plist
+    fi
+}
+
+fail_install() {
+    echo "$1"
+    if [ "$IS_UPDATE" = true ] && [ -x "$TARGET_BIN" ]; then
+        echo "Restarting existing gopanel binary..."
+        start_existing_service
+    fi
+    exit 1
+}
+
 # Check if this is an update
 IS_UPDATE=false
-if [ -f /usr/local/bin/gopanel ]; then
+if [ -f "$TARGET_BIN" ]; then
     IS_UPDATE=true
     echo "Detected existing gopanel installation, updating..."
     # Stop service before update
@@ -73,28 +129,12 @@ if [ -f /usr/local/bin/gopanel ]; then
         sudo launchctl unload /Library/LaunchDaemons/com.gopanel.service.plist 2>/dev/null
     fi
 fi
-# Download gopanel
-sudo wget "$DOWNLOAD_URL" -O /usr/local/bin/gopanel
-# Check if download succeeded
-if [ $? -ne 0 ]; then
-    echo "Failed to download gopanel. Please check your network connection or download manually."
-    exit 1
-fi
-# Grant execute permission
-sudo chmod +x /usr/local/bin/gopanel
+# Download to a hidden file next to the target and atomically move it into
+# place, so systemd never tries to execute a partially downloaded binary.
+download_and_install_binary
 # If updating, restart service and exit
 if [ "$IS_UPDATE" = true ]; then
-    if [ "$OS" = "Linux" ]; then
-        if [ "$INIT_SYSTEM" = "systemd" ]; then
-            sudo systemctl start gopanel
-        elif [ "$INIT_SYSTEM" = "openrc" ]; then
-            sudo rc-service gopanel start
-        fi
-    elif [ "$OS" = "FreeBSD" ]; then
-        sudo service gopanel start
-    elif [ "$OS" = "Darwin" ]; then
-        sudo launchctl load -w /Library/LaunchDaemons/com.gopanel.service.plist
-    fi
+    start_existing_service
     sleep 2
     echo "gopanel update success!"
     exit 0
@@ -113,6 +153,7 @@ Type=simple
 User=root
 ExecStart=/usr/local/bin/gopanel -w ${WORKDIR}
 Restart=on-failure
+RestartSec=2
 WorkingDirectory=${WORKDIR}
 [Install]
 WantedBy=multi-user.target

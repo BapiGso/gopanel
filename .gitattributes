@@ -1,3 +1,4 @@
-*.sh linguist-language=Go
+/.gitattributes text eol=lf
+*.sh text eol=lf linguist-language=Go
 *.js linguist-language=Go
 *.css linguist-language=Go

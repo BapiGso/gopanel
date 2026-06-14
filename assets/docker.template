@@ -18,6 +18,11 @@
         </div>
     </div>
 
+    <div x-show="error" x-cloak class="alert alert-warning mb-6">
+        <i class="ri-error-warning-line text-xl"></i>
+        <span x-text="error"></span>
+    </div>
+
     <div class="mb-6 flex justify-end" x-show="false">
         <button @click="dockerRunModal=true" class="btn btn-primary btn-sm">
             <i class="ri-terminal-window-line text-lg"></i>Run Command
@@ -178,20 +183,28 @@
     document.addEventListener('alpine:init', () => {
         Alpine.data('panel', () => ({
             data: null,
+            error: '',
+            isConnected: false,
             dockerRunModal: false,
 
             init() {
                 const eventSource = new EventSource('/admin/docker?type=info');
+                eventSource.onopen = () => {
+                    this.isConnected = true;
+                };
                 eventSource.onmessage = (event) => {
                     try {
-                        this.data = JSON.parse(event.data);
+                        const payload = JSON.parse(event.data);
+                        this.data = payload;
+                        this.error = payload.error || '';
                     } catch (e) {
                         console.error("Error parsing Docker data:", e);
                     }
                 };
                 eventSource.onerror = (error) => {
-                    console.error("EventSource error:", error);
-                    eventSource.close();
+                    this.isConnected = false;
+                    this.error = 'Docker status stream disconnected. Retrying...';
+                    console.warn("EventSource error:", error);
                 };
             },
 
