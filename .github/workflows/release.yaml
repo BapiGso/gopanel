@@ -16,7 +16,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.26'
+          go-version: '1.27'
 
       - name: Build all platforms
         run: |
@@ -39,11 +39,11 @@ jobs:
             "darwin/arm64"
             "freebsd/amd64"
           )
-          
+
           # 记录失败的构建
           failed_builds=()
           successful_builds=()
-          
+
           # 批量构建（带错误处理）
           for target in "${targets[@]}"; do
             GOOS=${target%/*}
@@ -51,7 +51,7 @@ jobs:
             output="gopanel_${GOOS}_${GOARCH}"
             [ "$GOOS" = "windows" ] && output="${output}.exe"
             [ "$GOOS" = "darwin" ] && output="gopanel_mac_${GOARCH}"
-            
+
             echo "Building $output..."
             if CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH go build -ldflags="-s -w -X=gopanel/core/security.buildVersion=${version}" -o "$output" . 2>&1; then
               echo "✅ Successfully built $output"
@@ -61,7 +61,7 @@ jobs:
               failed_builds+=("$target")
             fi
           done
-          
+
           # 输出构建摘要
           echo ""
           echo "========== Build Summary =========="
@@ -71,7 +71,7 @@ jobs:
               echo "   - $build"
             done
           fi
-          
+
           if [ ${#failed_builds[@]} -gt 0 ]; then
             echo ""
             echo "❌ Failed builds (${#failed_builds[@]}):"
@@ -80,13 +80,13 @@ jobs:
             done
           fi
           echo "==================================="
-          
+
           # 如果没有任何成功的构建，则失败
           if [ ${#successful_builds[@]} -eq 0 ]; then
             echo "❌ All builds failed!"
             exit 1
           fi
-          
+
           # 如果有失败的构建，输出警告但不中断流程
           if [ ${#failed_builds[@]} -gt 0 ]; then
             echo "⚠️ Some builds failed, but will proceed with successful ones"
@@ -96,7 +96,7 @@ jobs:
         run: |
           echo "Files to be released:"
           ls -lh gopanel_* 2>/dev/null || echo "No files found"
-      
+
       - name: Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
