@@ -9,7 +9,6 @@ require (
 	github.com/caddyserver/caddy/v2 v2.11.4
 	github.com/ccoveille/go-safecast/v2 v2.0.1
 	github.com/creasty/defaults v1.8.0
-	github.com/docker/docker v28.5.2+incompatible
 	github.com/fatedier/frp v0.71.0
 	github.com/go-co-op/gocron/v2 v2.22.0
 	github.com/go-playground/validator/v10 v10.30.3
@@ -21,6 +20,7 @@ require (
 	github.com/knadh/koanf/v2 v2.3.6
 	github.com/labstack/echo/v5 v5.3.1
 	github.com/labstack/gommon v0.5.0
+	github.com/moby/moby/client v0.5.1
 	github.com/rhysd/go-github-selfupdate v1.2.3
 	github.com/shirou/gopsutil/v4 v4.26.7
 	github.com/spf13/afero v1.15.0
@@ -180,7 +180,7 @@ require (
 	github.com/mitchellh/go-ps v1.0.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
-	github.com/moby/sys/sequential v0.7.0 // indirect
+	github.com/moby/moby/api v1.55.0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/onsi/gomega v1.42.1 // indirect
@@ -328,7 +328,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/postgres v1.6.2 // indirect
 	gorm.io/gorm v1.31.2 // indirect
-	gotest.tools/v3 v3.5.2 // indirect
 	gvisor.dev/gvisor v0.0.0-20260613051822-57efc92f6df8 // indirect
 	howett.net/plist v1.0.2-0.20250314012144-ee69052608d9 // indirect
 	k8s.io/apimachinery v0.36.3 // indirect

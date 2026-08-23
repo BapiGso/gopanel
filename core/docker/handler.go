@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/image"
+	"github.com/moby/moby/client"
+	
 	"github.com/labstack/echo/v5"
 	"net/http"
 	"time"
@@ -24,27 +24,27 @@ func Index(c *echo.Context) error {
 		}
 		switch c.QueryParam("type") {
 		case "pause":
-			if err := apiClient.ContainerPause(context.Background(), c.QueryParam("id")); err != nil {
+			if _, err := apiClient.ContainerPause(context.Background(), c.QueryParam("id"), client.ContainerPauseOptions{}); err != nil {
 				return err
 			}
 		case "unpause":
-			if err := apiClient.ContainerUnpause(context.Background(), c.QueryParam("id")); err != nil {
+			if _, err := apiClient.ContainerUnpause(context.Background(), c.QueryParam("id"), client.ContainerUnpauseOptions{}); err != nil {
 				return err
 			}
 		case "stop":
-			if err := apiClient.ContainerStop(context.Background(), c.QueryParam("id"), container.StopOptions{}); err != nil {
+			if _, err := apiClient.ContainerStop(context.Background(), c.QueryParam("id"), client.ContainerStopOptions{}); err != nil {
 				return err
 			}
 		case "restart":
-			if err := apiClient.ContainerRestart(context.Background(), c.QueryParam("id"), container.StopOptions{}); err != nil {
+			if _, err := apiClient.ContainerRestart(context.Background(), c.QueryParam("id"), client.ContainerRestartOptions{}); err != nil {
 				return err
 			}
 		case "remove":
-			if err := apiClient.ContainerRemove(context.Background(), c.QueryParam("id"), container.RemoveOptions{}); err != nil {
+			if _, err := apiClient.ContainerRemove(context.Background(), c.QueryParam("id"), client.ContainerRemoveOptions{}); err != nil {
 				return err
 			}
 		case "ImageRemove":
-			if remove, err := apiClient.ImageRemove(context.Background(), c.QueryParam("id"), image.RemoveOptions{}); err != nil {
+			if remove, err := apiClient.ImageRemove(context.Background(), c.QueryParam("id"), client.ImageRemoveOptions{}); err != nil {
 				return err
 			} else {
 				return c.JSON(200, remove)
@@ -87,11 +87,11 @@ func writeDockerInfo(c *echo.Context) error {
 	if apiClientErr != nil {
 		payload["error"] = apiClientErr.Error()
 	} else {
-		images, err := apiClient.ImageList(c.Request().Context(), image.ListOptions{All: true})
+		images, err := apiClient.ImageList(c.Request().Context(), client.ImageListOptions{All: true})
 		if err != nil {
 			payload["error"] = err.Error()
 		} else {
-			containers, err := apiClient.ContainerList(c.Request().Context(), container.ListOptions{All: true})
+			containers, err := apiClient.ContainerList(c.Request().Context(), client.ContainerListOptions{All: true})
 			if err != nil {
 				payload["error"] = err.Error()
 			} else {
@@ -111,3 +111,7 @@ func writeDockerInfo(c *echo.Context) error {
 	}
 	return http.NewResponseController(c.Response()).Flush()
 }
+
+
+
+
