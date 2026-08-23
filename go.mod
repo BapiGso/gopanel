@@ -344,6 +344,7 @@ require (
 )
 
 replace (
+	github.com/google/cel-go => github.com/google/cel-go v0.28.1 // indirect
 	//github.com/slackhq/nebula => github.com/slackhq/nebula v1.9.7 // indirect
 	github.com/tdakkota/asciicheck => github.com/golangci/asciicheck v0.4.0 // indirect
 	gvisor.dev/gvisor => gvisor.dev/gvisor v0.0.0-20260224225140-573d5e7127a8 // indirect
