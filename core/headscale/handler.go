@@ -243,7 +243,11 @@ func loadServerConfig(c *headscaleConfig) (*types.Config, error) {
 		MetricsAddr:                    c.MetricsListenAddr,
 		GRPCAddr:                       "127.0.0.1:50443",
 		GRPCAllowInsecure:              true,
-		EphemeralNodeInactivityTimeout: 30 * time.Minute,
+		Node: types.NodeConfig{
+			Ephemeral: types.EphemeralConfig{
+				InactivityTimeout: 30 * time.Minute,
+			},
+		},
 		PrefixV4:                       &prefix4,
 		PrefixV6:                       &prefix6,
 		IPAllocation:                   types.IPAllocationStrategySequential,
