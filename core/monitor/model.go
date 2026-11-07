@@ -82,6 +82,8 @@ type ClusterView struct {
 	HealthyCandidates int    `json:"healthy_candidates"`
 	CandidateCount    int    `json:"candidate_count"`
 	Degraded          bool   `json:"degraded"`
+	PeerCount         int    `json:"peer_count,omitempty"`
+	HealthyPeers      int    `json:"healthy_peers,omitempty"`
 }
 
 func (configuration Config) node() Node {

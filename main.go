@@ -40,7 +40,11 @@ func main() {
 		}
 		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer stop()
-		service.Start(ctx)
+		if err := service.Start(ctx); err != nil {
+			service.Close(context.Background())
+			fmt.Fprintln(os.Stderr, "start probe:", err)
+			os.Exit(1)
+		}
 		service.Wait()
 		return
 	}

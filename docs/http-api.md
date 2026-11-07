@@ -99,7 +99,7 @@ Invoke-RestMethod -Uri "$base/webdav/settings" -Method Patch -ContentType 'appli
 | Docker | `GET /docker/status`、`GET /docker/containers`、`GET /docker/images` | `POST /docker/containers/{id}/{action}`（`start`、`stop`、`restart`、`pause`、`unpause`）、`DELETE /docker/containers/{id}`、`DELETE /docker/images/{id}` |
 | 防火墙 | `GET /firewall/rules` | `POST /firewall/rules`、`DELETE /firewall/rules/{id}` |
 | SSH 终端 | `GET /terminals`、`GET /terminals/{id}` | `POST /terminals`、`PATCH /terminals/{id}`、`DELETE /terminals/{id}` |
-| 监控 | `GET /monitor/status`、`GET /monitor/nodes`、节点详情/历史、`GET /monitor/cluster` | 无管理写操作；候选的 `POST /monitor/reports` 仅接收独立监控凭据的指标报告 |
+| 监控 | `GET /monitor/status`、`GET /monitor/nodes`、节点详情/历史、`GET /monitor/cluster` | 无管理写操作；人工指定汇总机主动读取探针，旧候选模式的 `POST /monitor/reports` 保留兼容 |
 | Headscale | `GET /headscale/config`、`GET /headscale/status` | `PUT /headscale/config`、`POST /headscale/start`、受限制的 `POST /headscale/stop` |
 
 `{service}` 只能是 `frps` 或 `frpc`。Caddy 保留原生 Caddyfile，FRP 保留现有原生配置文件，未增加网站/代理/证书的另一套配置 DSL。
@@ -137,7 +137,9 @@ Caddy 是面板进程中的同一个实例；HTTP 的启动、重载和停止都
 
 监控提供普通 JSON 快照，Agent 无需打开长连接。Docker 和系统库返回的原生对象保留其原生字段，面板自身的资源字段使用明确的 JSON 名称。
 
-监控现在读取后台采集缓存，不再为每个请求重新阻塞采样；`/monitor/status` 返回规范化的本机节点视图，旧的底层 gopsutil 对象字段不再作为监控协议暴露。默认公开只读页面 `/status/monitor`，公开 JSON/SSE 位于 `/api/v1/public/monitor`。其他管理资源仍需认证；监控集群密钥只允许上报，不能用于面板管理。角色、TLS、地图位置、简化选主与内存历史边界见 [探针与全球监控说明](monitoring.md)。
+监控读取后台采集缓存，不再为每个请求重新阻塞采样；`/monitor/status` 返回规范化的本机节点视图，旧的底层 gopsutil 对象字段不再作为监控协议暴露。默认公开只读页面 `/status/monitor`，公开 JSON/SSE 位于 `/api/v1/public/monitor`。新部署只在汇总机配置 `peers` IP 列表和共享 `key`，探针只配置相同的 `key`，角色和节点身份自动补齐；`/monitor/cluster` 的 `coordination: manual` 表示人工指定汇总机，不再自动选主。
+
+探针默认在独立的 TCP 9555 端口提供 `GET /api/v1/probe/report`，不注册任何面板管理路由。请求及响应使用带时间戳/随机挑战的 HMAC-SHA256 身份校验，密钥不在 HTTP 中明文传输；HTTP 指标本身不加密，需要保密时使用私网或 HTTPS。这个独立协议由汇总端实现，普通 LLM HTTP 工具仍通过汇总端的 JSON 读取 API 查看节点，无需自己实现签名。其他管理资源仍需原有面板认证；监控密钥不能用于面板管理。部署、TLS、地图位置、旧配置兼容和内存历史边界见 [探针与全球监控说明](monitoring.md)。
 
 ### 已知边界
 

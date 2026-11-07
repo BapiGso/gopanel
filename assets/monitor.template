@@ -7,7 +7,7 @@
             <span class="font-semibold tracking-tight" x-text="title">GoPanel Observatory</span>
         </a>
         <div class="flex items-center gap-2">
-            <span class="badge badge-sm gap-2 border-base-300" :class="connected || preview ? 'badge-success badge-outline' : 'badge-warning badge-outline'"><span class="h-1.5 w-1.5 rounded-full bg-current" :class="connected && 'animate-pulse'"></span><span x-text="preview ? '演示数据' : connected ? '实时连接' : '连接中'"></span></span>
+            <span class="badge badge-sm gap-2 border-base-300" :class="connected ? 'badge-success badge-outline' : 'badge-warning badge-outline'"><span class="h-1.5 w-1.5 rounded-full bg-current" :class="connected && 'animate-pulse'"></span><span x-text="connected ? '实时连接' : '连接中'"></span></span>
             <a x-show="!publicView" href="/admin/security" class="btn btn-circle btn-ghost btn-sm" title="返回管理面板">⌂</a>
             <button class="btn btn-circle btn-ghost btn-sm text-lg" @click="toggleTheme" aria-label="切换主题" x-text="dark ? '☾' : '☀'"></button>
         </div>
@@ -19,11 +19,10 @@
             <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">全球节点概览<span class="ml-2 inline-block h-2 w-2 rounded-full bg-success align-middle" :class="connected && 'animate-pulse'"></span></h1>
             <p class="mt-2 text-xs text-base-content/45">最近采样 <span class="ml-1 font-mono text-base-content/70" x-text="lastUpdated">—</span><span class="mx-2">·</span><span x-text="clusterLabel"></span></p>
         </div>
-        <button class="btn btn-ghost btn-sm gap-2 border border-base-300 text-xs" @click="togglePreview"><span x-text="preview ? '↺ 返回实时数据' : '◉ 预览多节点效果'"></span></button>
     </section>
 
-    <div x-show="preview" class="alert alert-warning mb-6 py-3 text-xs" role="status"><span>当前是明确标记的演示数据，仅用于预览地图和布局；不会上报、保存或替代真实监控。</span></div>
-    <div x-show="error && !preview" class="alert alert-warning mb-6 py-3 text-xs" role="status"><span x-text="error"></span></div>
+    <div x-show="error" class="alert alert-warning mb-6 py-3 text-xs" role="status"><span x-text="error"></span></div>
+    <div x-show="overview.cluster.coordination === 'manual' && overview.cluster.degraded" class="alert alert-warning mb-6 py-3 text-xs" role="status"><span>部分探针尚未连接或已经失联，请检查汇总机到探针的网络、9555 端口和共享监控密钥；列表保留最近一次有效采样。</span></div>
 
     <section class="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-5" aria-label="监控概况">
         <div class="card border border-base-300 bg-base-200/60 shadow-sm"><div class="card-body gap-3 p-5"><div class="flex items-center gap-2 text-sm text-base-content/70"><span>▤</span><span>服务器总数</span></div><div class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-info"></span><span class="font-mono text-2xl font-semibold" x-text="loading ? '—' : overview.total"></span></div></div></div>
@@ -38,7 +37,7 @@
             <div role="tablist" class="tabs tabs-boxed max-w-[70vw] flex-nowrap overflow-x-auto rounded-full p-1 text-xs"><template x-for="tag in tags" :key="tag"><button role="tab" class="tab h-8 whitespace-nowrap rounded-full px-4 text-xs" :class="selectedTag === tag && 'tab-active'" @click="selectTag(tag)" x-text="tag === 'All' ? '全部节点' : tag"></button></template></div>
         </div>
         <div class="flex items-center gap-2">
-            <input x-ref="search" x-model="search" @input="scheduleMap" type="search" placeholder="搜索节点 / 区域" aria-label="搜索节点" class="input input-sm input-bordered w-40 text-xs sm:w-48">
+            <input x-ref="search" x-model.debounce.150ms="search" type="search" placeholder="搜索节点 / 区域" aria-label="搜索节点" class="input input-sm input-bordered w-40 text-xs sm:w-48">
             <select x-model="sort" class="select select-sm select-bordered text-xs" aria-label="节点排序"><option value="name">名称排序</option><option value="cpu">CPU 使用</option><option value="memory">内存使用</option><option value="traffic">实时流量</option><option value="online">在线优先</option></select>
         </div>
     </section>
@@ -53,9 +52,9 @@
     <section class="mt-7" aria-label="服务器列表">
         <div class="mb-3 flex items-center justify-between text-xs text-base-content/40"><span><span class="font-mono" x-text="filteredNodes.length"></span> 台节点<span x-show="selectedCountry"> · <span x-text="countryName(selectedCountry)"></span></span></span><span>点击节点查看详情</span></div>
         <div x-show="loading" class="space-y-3"><div class="skeleton h-24 w-full rounded-2xl"></div><div class="skeleton h-24 w-full rounded-2xl"></div></div>
-        <div x-show="!loading && !filteredNodes.length" class="card border border-dashed border-base-300 bg-base-200/30"><div class="card-body items-center py-12 text-center"><span class="text-3xl text-success/70">◎</span><h2 class="card-title text-base" x-text="overview.total ? '没有符合筛选条件的节点' : '等待第一台节点连接'"></h2><p class="max-w-lg text-xs leading-relaxed text-base-content/45">本机采样和探针上报会自动出现在这里。节点名称、分组和地理位置在 gopanel_monitor.json 中配置；也可以先预览多节点效果。</p></div></div>
+        <div x-show="!loading && !filteredNodes.length" class="card border border-dashed border-base-300 bg-base-200/30"><div class="card-body items-center py-12 text-center"><span class="text-3xl text-success/70">◎</span><h2 class="card-title text-base" x-text="overview.total ? '没有符合筛选条件的节点' : '等待第一台节点连接'"></h2><p class="max-w-lg text-xs leading-relaxed text-base-content/45">这里只显示真实采样。汇总机读取 peers 中的探针；名称、分组和地理位置可在各节点的 gopanel_monitor.json 中选填。</p></div></div>
         <div class="space-y-2.5">
-            <template x-for="node in filteredNodes" :key="node.id">
+            <template x-for="node in pageNodes" :key="node.id">
                 <button class="card block w-full overflow-hidden border border-base-300 bg-base-200/50 text-left shadow-sm transition-colors hover:border-success/40 hover:bg-base-200" @click="openNode(node)" :aria-label="'查看 ' + node.name">
                     <div class="overflow-x-auto"><div class="grid min-w-[980px] grid-cols-[210px_85px_85px_80px_80px_80px_85px_85px_100px_100px] items-center gap-4 px-5 py-5 lg:min-w-0 lg:grid-cols-[minmax(150px,1.7fr)_repeat(9,minmax(55px,1fr))] lg:gap-3">
                         <div class="flex min-w-0 items-center gap-3 border-r border-base-300 pr-4"><span class="h-2 w-2 shrink-0 rounded-full" :class="node.online ? 'bg-success' : 'bg-error'"></span><span class="shrink-0 text-base" x-text="flag(node.country)"></span><div class="min-w-0"><p class="truncate text-xs font-semibold" x-text="node.name"></p><p x-show="node.price" class="mt-0.5 truncate text-[10px] text-base-content/40" x-text="'价格: ' + node.price"></p><p x-show="node.expires_at" class="mt-0.5 text-[10px] text-base-content/40" x-text="expiry(node.expires_at)"></p><div class="mt-1 flex gap-1"><template x-for="tag in node.tags.slice(0, 2)" :key="tag"><span class="badge badge-xs border-0 bg-base-300 text-[9px]" x-text="tag"></span></template></div></div></div>
@@ -74,9 +73,15 @@
         </div>
     </section>
 
-    <p x-show="overview.cluster?.coordination === 'best_effort'" class="mt-6 text-center text-[10px] leading-relaxed text-base-content/30">候选节点按配置顺序选择首个可达的汇总节点；网络分区可能产生多个只读视图，不承担任何管理选主或远程执行功能。</p>
+    <nav x-show="pageCount > 1" class="mt-5 flex flex-wrap items-center justify-between gap-3 text-xs text-base-content/50" aria-label="节点分页">
+        <span>每页最多 <span x-text="pageSize"></span> 台 · 地图与统计包含所有节点</span>
+        <div class="join"><button class="btn btn-sm join-item" :disabled="page === 1" @click="changePage(-1)">上一页</button><span class="btn btn-sm join-item pointer-events-none font-mono" x-text="page + ' / ' + pageCount"></span><button class="btn btn-sm join-item" :disabled="page === pageCount" @click="changePage(1)">下一页</button></div>
+    </nav>
 
-    <dialog x-ref="details" class="modal">
+    <p x-show="overview.cluster?.coordination === 'best_effort'" class="mt-6 text-center text-[10px] leading-relaxed text-base-content/30">候选节点按配置顺序选择首个可达的汇总节点；网络分区可能产生多个只读视图，不承担任何管理选主或远程执行功能。</p>
+    <p x-show="overview.cluster.coordination === 'manual'" class="mt-6 text-center text-[10px] leading-relaxed text-base-content/30">汇总机由人工指定，主动读取配置中的探针 IP；探针接口只提供缓存指标，不提供系统配置或远程执行。</p>
+
+    <dialog x-ref="details" class="modal" @close="closeDetails">
         <div class="modal-box max-w-2xl border border-base-300 bg-base-100">
             <form method="dialog"><button class="btn btn-circle btn-ghost btn-sm absolute right-3 top-3" aria-label="关闭详情">✕</button></form>
             <template x-if="selectedNode"><div>
@@ -85,7 +90,7 @@
                 <div class="grid grid-cols-2 gap-5 text-xs"><div><p class="text-base-content/40">节点状态</p><p class="mt-2" :class="selectedNode.online ? 'text-success' : 'text-error'" x-text="selectedNode.online ? '在线' : '失联 / 离线'"></p></div><div><p class="text-base-content/40">运行时间</p><p class="mt-2 font-mono" x-text="uptime(selectedNode.metrics.uptime_seconds)"></p></div><div><p class="text-base-content/40">最近上报</p><p class="mt-2 font-mono" x-text="timestamp(selectedNode.last_seen)"></p></div><div><p class="text-base-content/40">节点标识</p><p class="mt-2 break-all font-mono text-base-content/60" x-text="selectedNode.id"></p></div></div>
                 <div class="divider text-[10px] text-base-content/35">最近采样 · 内存中的有限历史</div>
                 <div x-show="historyLoading" class="flex justify-center py-4"><span class="loading loading-dots loading-sm text-success"></span></div>
-                <div x-show="!historyLoading" class="overflow-x-auto rounded-xl border border-base-300 bg-base-200"><table class="table table-xs"><thead><tr><th>时间</th><th>CPU</th><th>内存</th><th>上传</th><th>下载</th></tr></thead><tbody><template x-for="(sample, index) in history.slice(-8).reverse()" :key="index"><tr class="font-mono text-xs"><td x-text="timestamp(sample.time)"></td><td x-text="sample.cpu_percent.toFixed(1) + '%'"></td><td x-text="sample.memory_percent.toFixed(1) + '%'"></td><td x-text="rate(sample.upload_rate)"></td><td x-text="rate(sample.download_rate)"></td></tr></template></tbody></table></div>
+                <div x-show="!historyLoading" class="overflow-x-auto rounded-xl border border-base-300 bg-base-200"><table class="table table-xs"><thead><tr><th>时间</th><th>CPU</th><th>内存</th><th>上传</th><th>下载</th></tr></thead><tbody><template x-for="(sample, index) in history" :key="index"><tr class="font-mono text-xs"><td x-text="timestamp(sample.time)"></td><td x-text="sample.cpu_percent.toFixed(1) + '%'"></td><td x-text="sample.memory_percent.toFixed(1) + '%'"></td><td x-text="rate(sample.upload_rate)"></td><td x-text="rate(sample.download_rate)"></td></tr></template></tbody></table></div>
                 <p class="mt-4 text-[10px] text-base-content/35">公开页面不提供命令执行、系统配置、真实 IP、主机名、进程列表或磁盘路径。</p>
             </div></template>
         </div>

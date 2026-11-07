@@ -35,20 +35,22 @@ type peerReply struct {
 }
 
 type Service struct {
-	settings  Config
-	collector Collector
-	registry  *Registry
-	client    *http.Client
-	logger    *slog.Logger
-	bootID    string
-	mutex     sync.RWMutex
-	latest    Report
-	peers     map[string]candidateHealth
-	started   bool
-	closed    bool
-	cancel    context.CancelFunc
-	done      chan struct{}
-	streams   chan struct{}
+	settings    Config
+	collector   Collector
+	registry    *Registry
+	client      *http.Client
+	logger      *slog.Logger
+	bootID      string
+	mutex       sync.RWMutex
+	latest      Report
+	peers       map[string]candidateHealth
+	started     bool
+	closed      bool
+	cancel      context.CancelFunc
+	done        chan struct{}
+	streams     chan struct{}
+	probeServer *http.Server
+	peerErrors  map[string]string
 }
 
 func NewService(settings Config, collector Collector, logger *slog.Logger) (*Service, error) {
@@ -58,6 +60,10 @@ func NewService(settings Config, collector Collector, logger *slog.Logger) (*Ser
 	settings.Tags = append([]string{}, settings.Tags...)
 	settings.Candidates = append([]string{}, settings.Candidates...)
 	settings.Interfaces = append([]string{}, settings.Interfaces...)
+	settings.Peers = append([]string{}, settings.Peers...)
+	for index, peer := range settings.Peers {
+		settings.Peers[index], _ = peerAddress(peer)
+	}
 	if settings.Latitude != nil {
 		latitude, longitude := *settings.Latitude, *settings.Longitude
 		settings.Latitude, settings.Longitude = &latitude, &longitude
@@ -97,7 +103,7 @@ func NewService(settings Config, collector Collector, logger *slog.Logger) (*Ser
 		settings: settings, collector: collector,
 		registry: NewRegistry(time.Duration(settings.OfflineSeconds)*time.Second, settings.HistorySamples, settings.MaximumNodes),
 		client:   &http.Client{Transport: transport, Timeout: 3 * time.Second, CheckRedirect: func(request *http.Request, via []*http.Request) error { return http.ErrUseLastResponse }},
-		logger:   logger, bootID: rand.Text(), peers: map[string]candidateHealth{}, done: make(chan struct{}), streams: make(chan struct{}, 64),
+		logger:   logger, bootID: rand.Text(), peers: map[string]candidateHealth{}, done: make(chan struct{}), streams: make(chan struct{}, 64), peerErrors: map[string]string{},
 	}
 	if settings.Role == "candidate" {
 		service.peers[settings.AdvertiseURL] = candidateHealth{ID: settings.NodeID, Name: settings.Name, LastSeen: time.Now()}
@@ -105,17 +111,23 @@ func NewService(settings Config, collector Collector, logger *slog.Logger) (*Ser
 	return service, nil
 }
 
-func (service *Service) Start(ctx context.Context) {
+func (service *Service) Start(ctx context.Context) error {
 	service.mutex.Lock()
 	if service.started || service.closed {
 		service.mutex.Unlock()
-		return
+		return nil
 	}
-	service.started = true
 	runContext, cancel := context.WithCancel(ctx)
 	service.cancel = cancel
+	if err := service.startProbeServer(); err != nil {
+		cancel()
+		service.mutex.Unlock()
+		return err
+	}
+	service.started = true
 	service.mutex.Unlock()
 	go service.run(runContext)
+	return nil
 }
 
 func (service *Service) Wait() {
@@ -149,8 +161,11 @@ func (service *Service) run(ctx context.Context) {
 	defer close(service.done)
 	defer service.client.CloseIdleConnections()
 	defer service.collector.Close(context.Background())
+	defer service.stopProbeServer()
 	var reporters sync.WaitGroup
-	if service.settings.Role != "standalone" {
+	if service.settings.Role == "master" {
+		reporters.Go(func() { service.pullLoop(ctx) })
+	} else if len(service.settings.Candidates) > 0 && service.settings.Role != "standalone" {
 		reporters.Go(func() { service.reportLoop(ctx) })
 	}
 	ticker := time.NewTicker(time.Duration(service.settings.SampleSeconds) * time.Second)
@@ -260,6 +275,22 @@ func (service *Service) Cluster(now time.Time) ClusterView {
 	service.mutex.RLock()
 	defer service.mutex.RUnlock()
 	view := ClusterView{Role: service.settings.Role, Coordination: "best_effort", CandidateCount: len(service.settings.Candidates)}
+	if service.settings.Role == "master" {
+		view.Coordination, view.LeaderID, view.LeaderName = "manual", service.settings.NodeID, service.settings.Name
+		view.CandidateCount, view.HealthyCandidates, view.PeerCount = 1, 1, len(service.settings.Peers)
+		for _, address := range service.settings.Peers {
+			peer := service.peers[address]
+			if !peer.LastSeen.IsZero() && now.Sub(peer.LastSeen) <= time.Duration(service.settings.OfflineSeconds)*time.Second {
+				view.HealthyPeers++
+			}
+		}
+		view.Degraded = view.HealthyPeers < view.PeerCount
+		return view
+	}
+	if service.settings.Role == "probe" && len(service.settings.Candidates) == 0 {
+		view.Coordination = "probe"
+		return view
+	}
 	if service.settings.Role == "standalone" {
 		view.Coordination = "standalone"
 		view.LeaderID = service.settings.NodeID

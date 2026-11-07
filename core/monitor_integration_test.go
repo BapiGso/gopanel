@@ -35,7 +35,7 @@ func TestPublicMonitorDoesNotGrantPanelOrProbePermissions(t *testing.T) {
 	t.Cleanup(func() { panel.monitoring.Close(context.Background()) })
 	panel.setupRoutes()
 	report := monitor.Report{
-		Node: monitor.Node{ID: "external-probe-123", Name: "Public alias", Country: "DE", Tags: []string{"Relay"}},
+		Node:   monitor.Node{ID: "external-probe-123", Name: "Public alias", Country: "DE", Tags: []string{"Relay"}},
 		BootID: "test-boot-123", Sequence: 1, CollectedAt: time.Now().UTC(),
 		Metrics: monitor.Metrics{CPUPercent: 10, MemoryPercent: 25, MemoryTotal: 1024, MemoryUsed: 256, Available: true, UnavailableFields: []string{}},
 	}
@@ -80,5 +80,43 @@ func TestPublicMonitorDoesNotGrantPanelOrProbePermissions(t *testing.T) {
 	panel.e.ServeHTTP(response, request)
 	if response.Code != http.StatusMethodNotAllowed && response.Code != http.StatusNotFound {
 		t.Fatalf("public monitoring exposed a mutation: %d", response.Code)
+	}
+}
+
+func TestManualMonitorIdentityDoesNotGrantPanelPermissions(t *testing.T) {
+	useTempCoreConfig(t, config.Config{
+		Panel: config.PanelConfig{Port: ":8443", Path: "login", Username: "paneluser", Password: "panelpass123"},
+	})
+	key := strings.Repeat("m", 32)
+	content := `{"peers":["192.0.2.10"],"key":"` + key + `"}`
+	if err := storage.AtomicWrite(filepath.Join(config.Directory(), monitor.ConfigFileName), []byte(content)); err != nil {
+		t.Fatal(err)
+	}
+	panel := New()
+	if panel.startupError != nil {
+		t.Fatal(panel.startupError)
+	}
+	t.Cleanup(func() { panel.monitoring.Close(context.Background()) })
+	panel.setupRoutes()
+	for _, path := range []string{"/api/v1/public/monitor/nodes", "/api/v1/public/monitor/config", "/api/v1/public/monitor/cluster", "/status/monitor"} {
+		response := httptest.NewRecorder()
+		panel.e.ServeHTTP(response, httptest.NewRequest(http.MethodGet, path, nil))
+		if response.Code != http.StatusOK {
+			t.Fatalf("public manual monitor %s = %d %s", path, response.Code, response.Body.String())
+		}
+		for _, secret := range []string{key, "192.0.2.10", "panelpass123", "预览多节点"} {
+			if strings.Contains(response.Body.String(), secret) {
+				t.Fatalf("public monitor %s exposes private state or a demo", path)
+			}
+		}
+	}
+	for _, path := range []string{"/api/v1/caddy/stop", "/api/v1/panel/restart", "/api/v1/monitor/reports"} {
+		request := httptest.NewRequest(http.MethodPost, path, nil)
+		request.Header.Set("Authorization", "Bearer "+key)
+		response := httptest.NewRecorder()
+		panel.e.ServeHTTP(response, request)
+		if response.Code != http.StatusUnauthorized && response.Code != http.StatusNotFound {
+			t.Fatalf("manual probe key gained a write permission: %s = %d", path, response.Code)
+		}
 	}
 }

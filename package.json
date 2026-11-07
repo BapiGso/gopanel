@@ -1,0 +1,12 @@
+{
+  "name": "gopanel-ui",
+  "private": true,
+  "scripts": {
+    "build:monitor": "tailwindcss -c frontend/tailwind.config.cjs -i frontend/monitor.css -o assets/css/observatory.min.css --minify",
+    "test:monitor": "node --test frontend/observatory.test.cjs"
+  },
+  "devDependencies": {
+    "daisyui": "4.12.24",
+    "tailwindcss": "3.4.17"
+  }
+}

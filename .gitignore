@@ -10,6 +10,7 @@ access.log
 /.vscode
 /.gocache
 /.tmp
+/node_modules
 server.crt
 server.key
 

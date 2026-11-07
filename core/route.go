@@ -43,7 +43,11 @@ func (c *Core) Route() {
 	go c.autostartServices()
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	c.monitoring.Start(ctx)
+	if err := c.monitoring.Start(ctx); err != nil {
+		c.monitoring.Close(context.Background())
+		c.e.Logger.Error("failed to start monitoring", "error", err)
+		return
+	}
 	sc := echo.StartConfig{Address: settings.Port}
 	if err := sc.StartTLS(ctx, c.e, certPEM, keyPEM); err != nil {
 		c.e.Logger.Error("failed to start server", "error", err)

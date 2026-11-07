@@ -94,7 +94,9 @@ Uninstall stops and disables the service before removing its files. Configuratio
 
 The monitor now supports a global map, multi-node lists, tags, search, live updates, and bounded in-memory history. `/status/monitor` is a sanitized read-only dashboard built with Tailwind + daisyUI and locally bundled jsVectorMap assets.
 
-Configure `gopanel_monitor.json` for standalone, candidate aggregator, or outbound-only probe roles. Probes fan out reports to trusted candidates; ordered, best-effort aggregator preference is deliberately not a consensus leader or a remote-management system. No monitoring database or Raft cluster is introduced. See [monitoring and probe setup](docs/monitoring.md) for roles, TLS, public access, and limitations.
+For new deployments, manually select a master and put the other servers' IPs in its `gopanel_monitor.json` `peers` list, with one shared monitoring `key`. Each probe needs only the same `key`; roles and stable node IDs are automatic. The master pulls signed, read-only snapshots from TCP port 9555, without peer discovery, elections, a monitoring database, or Raft. Probe-only processes expose no administration routes. Legacy candidate/push configurations remain supported. See [monitoring and probe setup](docs/monitoring.md) for examples and network/security boundaries.
+
+The dashboard contains only real metrics, with no preview/demo mode. Tailwind + daisyUI styles are precompiled and embedded; browsers do not run a Tailwind compiler. Updates reuse node objects and map markers, hidden tabs stop streaming, and node lists render at most 50 rows per page while the map and totals cover the entire fleet. To rebuild styles after frontend changes, run `npm ci --ignore-scripts` and `npm run build:monitor`; `npm run test:monitor` runs the frontend regression tests. Normal Go builds need no Node.js.
 
 ## Agent HTTP API
 

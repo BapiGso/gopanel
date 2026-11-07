@@ -7,18 +7,14 @@
     <meta name="color-scheme" content="dark light">
     <title>{{.title}}</title>
     <link rel="icon" href="/assets/img/avatar.webp">
-    <link rel="stylesheet" href="/assets/css/daisyui.min.css">
     <link rel="stylesheet" href="/assets/vendor/jsvectormap/jsvectormap.min.css">
-    <script src="/assets/js/tailwind.js"></script>
-    <script src="/assets/js/ui-theme.js"></script>
+    <link rel="stylesheet" href="/assets/css/observatory.min.css">
     <script src="/assets/vendor/jsvectormap/jsvectormap.min.js" defer></script>
     <script src="/assets/vendor/jsvectormap/world.js" defer></script>
     <script src="/assets/js/observatory.js" defer></script>
     <script src="/assets/js/alpine.min.js" defer></script>
 </head>
 <body class="min-h-screen bg-base-100 text-base-content antialiased" x-data="observatory">
-<input type="radio" name="observatory-theme" class="theme-controller hidden" value="business" :checked="dark" aria-hidden="true" tabindex="-1">
-<input type="radio" name="observatory-theme" class="theme-controller hidden" value="winter" :checked="!dark" aria-hidden="true" tabindex="-1">
 <script type="application/json" id="observatory-bootstrap">{{.bootstrap}}</script>
 {{end}}
 
