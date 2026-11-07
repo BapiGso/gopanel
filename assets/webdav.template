@@ -21,7 +21,7 @@
                             <span class="text-sm font-medium block">Enable WebDAV</span>
                             <span class="text-xs opacity-60">Turn the service on or off</span>
                         </span>
-                        <input type="checkbox" name="enable" {{if (call .getPanelConfig "webdav.enable")}}checked{{end}} class="toggle toggle-success">
+                        <input type="checkbox" name="enable" {{if .webdavConfig.Enable}}checked{{end}} class="toggle toggle-success">
                     </label>
 
                     <div class="space-y-5">
@@ -29,14 +29,14 @@
                             <span class="text-sm font-medium block mb-1.5">Username</span>
                             <label class="input input-bordered flex items-center gap-2">
                                 <i class="ri-user-3-line opacity-50"></i>
-                                <input type="text" name="username" value="{{call .getPanelConfig "webdav.username"}}" required class="grow">
+                                <input type="text" name="username" value="{{.webdavConfig.Username}}" required class="grow">
                             </label>
                         </div>
                         <div>
                             <span class="text-sm font-medium block mb-1.5">Password</span>
                             <label class="input input-bordered flex items-center gap-2">
                                 <i class="ri-lock-password-line opacity-50"></i>
-                                <input type="password" name="password" value="{{call .getPanelConfig "webdav.password"}}" required class="grow">
+                                <input type="password" name="password" value="{{.webdavConfig.Password}}" required class="grow">
                             </label>
                         </div>
                     </div>
@@ -113,37 +113,33 @@
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('panel', () => ({
-            async saveConfig(e) {
+            settingsRevision: '{{.settingsRevision}}',
+            async saveConfig(event) {
+                const btn = event.target.querySelector('button[type="submit"]');
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = '<i class="ri-loader-4-line animate-spin mr-2"></i> Saving...';
+                btn.disabled = true;
                 try {
-                    // Add loading state visual feedback if desired
-                    const btn = e.target.querySelector('button[type="submit"]');
-                    const originalContent = btn.innerHTML;
-                    btn.innerHTML = '<i class="ri-loader-4-line animate-spin mr-2"></i> Saving...';
-                    btn.disabled = true;
-
-                    const response = await fetch(e.target.action, {
-                        method: 'POST',
-                        body: new FormData(e.target)
+                    const result = await panelAPI('/webdav/settings', {
+                        method: 'PATCH',
+                        body: {
+                            revision: this.settingsRevision,
+                            enable: event.target.elements.enable.checked,
+                            username: event.target.elements.username.value,
+                            password: event.target.elements.password.value,
+                        },
                     });
+                    this.settingsRevision = result.revision;
 
-                    if (response.ok) {
-                        // Small visual success indicator before reload
-                        btn.innerHTML = '<i class="ri-check-line mr-2"></i> Saved';
-                        btn.classList.remove('btn-primary');
-                        btn.classList.add('btn-success');
-
-                        setTimeout(() => {
-                            alert('Configuration saved successfully');
-                            location.reload();
-                        }, 500);
-                    } else {
-                        alert('Failed to save configuration');
-                        btn.innerHTML = originalContent;
-                        btn.disabled = false;
-                    }
+                    btn.innerHTML = '<i class="ri-check-line mr-2"></i> Saved';
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-success');
+                    setTimeout(() => {
+                        alert('Configuration saved successfully');
+                        location.reload();
+                    }, 500);
                 } catch (error) {
                     alert('Error: ' + error.message);
-                    const btn = e.target.querySelector('button[type="submit"]');
                     btn.innerHTML = originalContent;
                     btn.disabled = false;
                 }

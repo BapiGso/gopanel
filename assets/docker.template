@@ -87,7 +87,7 @@
                         <td class="opacity-60 tabular-nums" x-text="timeAgo(d.Created)"></td>
                         <td class="text-right">
                             <div class="flex items-center justify-end gap-0.5 opacity-80 group-hover:opacity-100 transition-opacity">
-                                <button x-show="d.State !== 'running'" @click="Action('unpause', d.Id)" class="btn btn-ghost btn-xs text-success" title="Start">
+                                <button x-show="d.State !== 'running'" @click="Action(d.State === 'paused' ? 'unpause' : 'start', d.Id)" class="btn btn-ghost btn-xs text-success" title="Start">
                                     <i class="ri-play-fill text-lg"></i>
                                 </button>
                                 <button x-show="d.State === 'running'" @click="Action('pause', d.Id)" class="btn btn-ghost btn-xs text-warning" title="Pause">
@@ -188,15 +188,15 @@
             dockerRunModal: false,
 
             init() {
-                const eventSource = new EventSource('/admin/docker?type=info');
+                const eventSource = new EventSource('/api/v1/docker/events');
                 eventSource.onopen = () => {
                     this.isConnected = true;
                 };
                 eventSource.onmessage = (event) => {
                     try {
                         const payload = JSON.parse(event.data);
-                        this.data = payload;
-                        this.error = payload.error || '';
+                        if (payload.data) this.data = payload.data;
+                        this.error = payload.error?.message || '';
                     } catch (e) {
                         console.error("Error parsing Docker data:", e);
                     }
@@ -210,14 +210,9 @@
 
             async Action(action, id) {
                 try {
-                    const response = await fetch(`/admin/docker?type=${action}&id=${id}`, {
-                        method: 'PUT'
-                    });
-                    if (response.ok) {
-                        // Silent update, data will refresh via SSE
-                    } else {
-                        alert(await response.text());
-                    }
+                    const resource = action === 'ImageRemove' ? 'images' : 'containers';
+                    const remove = action === 'ImageRemove' || action === 'remove';
+                    await panelAPI(`/docker/${resource}/${encodeURIComponent(id)}${remove ? '' : '/' + action}`, {method: remove ? 'DELETE' : 'POST'});
                 } catch (error) {
                     alert('Action failed: ' + error.message);
                 }

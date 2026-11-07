@@ -8,6 +8,8 @@ import (
 	"io"
 	"net/http"
 	"sync"
+
+	"gopanel/core/httpapi"
 )
 
 var (
@@ -26,16 +28,18 @@ func Index(c *echo.Context) error {
 }
 
 func CreateTermHandler(c *echo.Context) error {
-	req := &struct {
-		Host     string `query:"host" form:"host" json:"host" validate:"required"`
-		Port     int    `query:"port" form:"port" json:"port" validate:"required"`
-		Username string `query:"user" form:"user" json:"user" validate:"required"`
-		Password string `query:"pwd"  form:"pwd" json:"pwd"`
-		Rows     int    `query:"rows" form:"rows" json:"rows"`
-		Cols     int    `query:"cols" form:"cols" json:"cols"`
-	}{}
-	if err := c.Bind(req); err != nil {
+	req := &terminalCreate{}
+	if err := httpapi.Decode(c, req); err != nil {
 		return err
+	}
+	if req.Port == 0 {
+		req.Port = 22
+	}
+	if req.Rows == 0 {
+		req.Rows = 24
+	}
+	if req.Cols == 0 {
+		req.Cols = 80
 	}
 	term, err := NewTerm(TermOption{
 		Host:     req.Host,
@@ -46,42 +50,35 @@ func CreateTermHandler(c *echo.Context) error {
 		Cols:     req.Cols,
 	})
 	if err != nil {
-		return err
+		return httpapi.NewError(http.StatusBadGateway, "ssh_connection_failed", err.Error())
 	}
 
 	termMutex.Lock()
 	activeTerms[term.Id] = term
 	termMutex.Unlock()
 
-	return c.JSON(200, term)
+	return httpapi.Respond(c, http.StatusCreated, term.view())
 }
 
 func SetTermWindowSizeHandler(c *echo.Context) error {
-	req := &struct {
-		Id   string `query:"id" form:"id" json:"id"`
-		Rows int    `query:"rows" form:"rows" json:"rows"`
-		Cols int    `query:"cols" form:"cols" json:"cols"`
-	}{}
-	if err := c.Bind(req); err != nil {
+	req := &terminalResize{}
+	if err := httpapi.Decode(c, req); err != nil {
 		return err
-	}
-	if req.Rows == 0 || req.Cols == 0 {
-		return c.JSON(http.StatusBadRequest, "Rows or Cols can't be zero")
 	}
 
 	termMutex.Lock()
-	term, exists := activeTerms[req.Id]
+	term, exists := activeTerms[c.Param("id")]
 	termMutex.Unlock()
 
 	if !exists {
-		return c.JSON(http.StatusNotFound, "Terminal not found")
+		return httpapi.NewError(http.StatusNotFound, "not_found", "Terminal not found")
 	}
 
 	err := term.SetWindowSize(req.Rows, req.Cols)
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, term)
+	return httpapi.OK(c, term.view())
 }
 
 func LinkTermDataHandler(c *echo.Context) error {
@@ -93,7 +90,7 @@ func LinkTermDataHandler(c *echo.Context) error {
 	termMutex.Unlock()
 
 	if !exists {
-		return c.JSON(http.StatusNotFound, "Terminal not found")
+		return httpapi.NewError(http.StatusNotFound, "not_found", "Terminal not found")
 	}
 
 	websocket.Handler(func(ws *websocket.Conn) {

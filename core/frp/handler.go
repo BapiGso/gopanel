@@ -1,212 +1,62 @@
 package frp
 
 import (
-	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
-
-	"github.com/fatedier/frp/pkg/policy/security"
-
-	// 合并引用
-	"github.com/fatedier/frp/client"
-	"github.com/fatedier/frp/pkg/config"
-	configsource "github.com/fatedier/frp/pkg/config/source"
-	"github.com/fatedier/frp/pkg/config/v1/validation"
-	"github.com/fatedier/frp/pkg/util/log"
-	"github.com/fatedier/frp/server"
-
-	appconfig "gopanel/core/config"
+	"path/filepath"
 
 	"github.com/labstack/echo/v5"
+
+	"gopanel/core/config"
+	"gopanel/core/storage"
 )
 
-var (
-	svr *server.Service
-	cli *client.Service
-)
-
-// Index 处理统一的入口 /admin/frp
-func Index(c *echo.Context) error {
-	serviceType := c.QueryParam("type") // "frps" or "frpc"
-
-	switch c.Request().Method {
-	case "POST":
-		action := c.QueryParam("status") // "start", "enable", "stop"
-
-		switch action {
-		case "start":
-			switch serviceType {
-			case "frps":
-				if err := runFRPSServer(); err != nil {
-					return c.String(500, err.Error())
-				}
-			case "frpc":
-				// FRPC start is async in original code
-				go func() {
-					if err := runFRPCClient(); err != nil {
-						fmt.Printf("FRPC Start Error: %v\n", err)
-					}
-				}()
-				// Give it a moment to try starting
-				time.Sleep(500 * time.Millisecond)
-			}
-			return c.String(200, "Service started successfully")
-		case "enable":
-			configKey := fmt.Sprintf("enable.%s", serviceType)
-			currentVal := appconfig.Bool(configKey)
-			if err := appconfig.Write(configKey, !currentVal); err != nil {
-				return c.String(500, "Failed to write config: "+err.Error())
-			}
-			return c.String(200, fmt.Sprintf("%s auto-boot toggled", serviceType))
-		}
-
-		// Optional: Stop logic (Complex for FRP, usually requires restart)
-		// if action == "stop" { ... }
-
-		return c.String(200, "success")
-
-	case "PUT":
-		// Save Config File
-		data, err := io.ReadAll(c.Request().Body)
-		defer c.Request().Body.Close()
-		if err != nil {
-			return err
-		}
-
-		filename := ""
-		if serviceType == "frps" {
-			filename = "gopanel_frps.conf"
-		} else if serviceType == "frpc" {
-			filename = "gopanel_frpc.conf"
-		} else {
-			return c.String(400, "Invalid type")
-		}
-
-		if err := os.WriteFile(filename, data, 0644); err != nil {
-			return err
-		}
-		return c.String(200, "Configuration saved successfully")
-
-	case "GET":
-		// Read both configs to render the merged page
-		frpsFile, _ := os.ReadFile("gopanel_frps.conf")
-		frpcFile, _ := os.ReadFile("gopanel_frpc.conf")
-
-		return c.Render(http.StatusOK, "frp.template", map[string]any{
-			"frpsConfig": string(frpsFile),
-			"frpcConfig": string(frpcFile),
-			"frpsEnable": appconfig.Bool("enable.frps"),
-			"frpcEnable": appconfig.Bool("enable.frpc"),
-		})
-	}
-
-	return echo.ErrMethodNotAllowed
+var configFiles = map[string]*storage.File{
+	"frps": {Path: "gopanel_frps.conf"},
+	"frpc": {Path: "gopanel_frpc.conf"},
 }
 
-// --- Service Runners ---
-
-func runFRPSServer() error {
-	// 如果已经运行，先尝试关闭 (简单处理，视FRP版本支持情况而定)
-	if svr != nil {
-		svr.Close()
-	}
-
-	cfg, _, err := config.LoadServerConfig("gopanel_frps.conf", false)
+func Index(ctx *echo.Context) error {
+	settings, err := config.Read()
 	if err != nil {
 		return err
 	}
-	unsafeFeatures := security.NewUnsafeFeatures([]string{})
-	validator := validation.NewConfigValidator(unsafeFeatures)
-	if _, err := validator.ValidateServerConfig(cfg); err != nil {
-		return err
-	}
-
-	log.InitLogger(cfg.Log.To, cfg.Log.Level, int(cfg.Log.MaxDays), cfg.Log.DisablePrintColor)
-
-	svr, err = server.NewService(cfg)
+	serverConfig, err := configFiles["frps"].Read()
 	if err != nil {
 		return err
 	}
-
-	go svr.Run(context.Background())
-	return nil
-}
-
-func runFRPCClient() error {
-	// 如果已经运行，尝试优雅关闭
-	if cli != nil {
-		cli.GracefulClose(500 * time.Millisecond)
-	}
-	cfg, proxyCfgs, visitorCfgs, _, err := config.LoadClientConfig("gopanel_frpc.conf", false)
+	clientConfig, err := configFiles["frpc"].Read()
 	if err != nil {
 		return err
 	}
-	warning, err := validation.ValidateAllClientConfig(cfg, proxyCfgs, visitorCfgs, nil)
-	if warning != nil {
-		fmt.Printf("WARNING: %v\n", warning)
-	}
+	serverContent, err := json.Marshal(serverConfig.Content)
 	if err != nil {
 		return err
 	}
-
-	log.InitLogger(cfg.Log.To, cfg.Log.Level, int(cfg.Log.MaxDays), cfg.Log.DisablePrintColor)
-
-	configSource := configsource.NewConfigSource()
-	if err := configSource.ReplaceAll(proxyCfgs, visitorCfgs); err != nil {
+	clientContent, err := json.Marshal(clientConfig.Content)
+	if err != nil {
 		return err
 	}
-	configAggregator := configsource.NewAggregator(configSource)
-
-	cli, err = client.NewService(client.ServiceOptions{
-		Common:                 cfg,
-		ConfigSourceAggregator: configAggregator,
+	return ctx.Render(http.StatusOK, "frp.template", map[string]any{
+		"frpsConfig": string(serverContent), "frpcConfig": string(clientContent),
+		"frpsRevision": serverConfig.Revision, "frpcRevision": clientConfig.Revision,
+		"frpsEnable": settings.Config.Enable.Frps, "frpcEnable": settings.Config.Enable.Frpc,
+		"settingsRevision": settings.Revision,
 	})
-	if err != nil {
-		return err
-	}
-
-	shouldGracefulClose := cfg.Transport.Protocol == "kcp" || cfg.Transport.Protocol == "quic"
-	if shouldGracefulClose {
-		go handleTermSignal(cli)
-	}
-
-	return cli.Run(context.Background())
 }
 
-func handleTermSignal(svr *client.Service) {
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	<-ch
-	svr.GracefulClose(500 * time.Millisecond)
-}
-
-// --- Initialization ---
-
-func init() {
-	// 1. 初始化 FRPS 默认配置
-	frpsPath := "gopanel_frps.conf"
-	if _, err := os.Stat(frpsPath); os.IsNotExist(err) {
-		content := `# frps.conf
-bindPort = 7000
+func Initialize(directory string) error {
+	defaults := map[string]string{
+		"frps": `bindPort = 7000
 auth.token = "public"
 webServer.addr = "0.0.0.0"
 webServer.port = 7500
 webServer.user = "admin"
 webServer.password = "admin"
-`
-		_ = os.WriteFile(frpsPath, []byte(content), 0644)
-	}
-
-	// 2. 初始化 FRPC 默认配置
-	frpcPath := "gopanel_frpc.conf"
-	if _, err := os.Stat(frpcPath); os.IsNotExist(err) {
-		content := `# frpc.conf
-serverAddr = "0.0.0.0"
+`,
+		"frpc": `serverAddr = "0.0.0.0"
 serverPort = 7000
 auth.token = "public"
 [[proxies]]
@@ -215,24 +65,30 @@ type = "tcp"
 localIP = "127.0.0.1"
 localPort = 22
 remotePort = 6000
-`
-		_ = os.WriteFile(frpcPath, []byte(content), 0644)
+`,
 	}
+	for name, content := range defaults {
+		configFiles[name] = &storage.File{Path: filepath.Join(directory, "gopanel_"+name+".conf")}
+		if err := configFiles[name].Ensure([]byte(content)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
-	// 3. 异步启动逻辑
-	go func() {
-		if appconfig.Bool("enable.frps") {
-			fmt.Println("[FRPS] Auto-starting...")
-			if err := runFRPSServer(); err != nil {
-				fmt.Printf("[FRPS] Start failed: %v\n", err)
+func Autostart() error {
+	settings := config.Snapshot().Enable
+	var failures []error
+	for _, name := range []string{"frps", "frpc"} {
+		enabled := settings.Frps
+		if name == "frpc" {
+			enabled = settings.Frpc
+		}
+		if enabled {
+			if err := startService(name, false); err != nil {
+				failures = append(failures, fmt.Errorf("%s: %w", name, err))
 			}
 		}
-
-		if appconfig.Bool("enable.frpc") {
-			fmt.Println("[FRPC] Auto-starting...")
-			if err := runFRPCClient(); err != nil {
-				fmt.Printf("[FRPC] Start failed: %v\n", err)
-			}
-		}
-	}()
+	}
+	return errors.Join(failures...)
 }

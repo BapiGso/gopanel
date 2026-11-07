@@ -69,6 +69,7 @@ func TestUpload(t *testing.T) {
 ```go
 import (
     "gopanel/core/file"
+    "gopanel/core/httpapi"
 
     "github.com/spf13/afero"
 )
@@ -81,15 +82,14 @@ handler := file.NewHandler(afero.NewOsFs(), "/var/www")
 
 // 注册路由
 e.GET("/admin/file", handler.Index)
-e.Any("/admin/file/process", handler.Process)
+handler.RegisterAPI(httpapi.NewRouter(e.Group(httpapi.Prefix)))
 ```
 
-### 兼容旧代码
-```go
-// 旧代码仍然可以工作
-e.GET("/admin/file", file.Index)
-e.Any("/admin/file/process", file.Process)
-```
+### HTTP API 迁移
+
+`/admin/file` 只渲染页面，原有 `/admin/file/process?path=...&mode=...` 已移除。文件路径放在 `/api/v1/files/{path}` 中，写入、改名和权限修改使用 JSON 请求体；上传与下载使用独立协议入口。API Group 需要接入面板的认证中间件。
+
+完整请求示例见 [HTTP API 文档](../../docs/http-api.md)。
 
 ## 扩展指南
 

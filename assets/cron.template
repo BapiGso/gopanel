@@ -27,7 +27,7 @@
                 <form action="/admin/cron" @submit.prevent="createCron" class="space-y-5">
                     <div>
                         <span class="eyebrow block mb-1.5">Job Name</span>
-                        <input name="name" type="text" placeholder="e.g., Daily Backup" required
+                        <input name="name" type="text" placeholder="e.g., daily-backup" required
                                class="input input-bordered input-sm w-full">
                     </div>
 
@@ -99,16 +99,16 @@
                                 <td class="font-mono text-xs opacity-70">{{$v.NextRun}}</td>
                                 <td class="text-right">
                                     <div class="flex items-center justify-end gap-1">
-                                        <button @click="Action('runnow', `{{$k}}`)" class="btn btn-ghost btn-xs text-info" title="Run Now">
+                                        <button @click="Action('runnow', `{{$v.Name}}`)" class="btn btn-ghost btn-xs text-info" title="Run Now">
                                             <i class="ri-play-circle-line text-lg"></i>
                                         </button>
-                                        <button x-show="{{$v.Paused}}" @click="Action('unpause', `{{$k}}`)" class="btn btn-ghost btn-xs text-success" title="Resume">
+                                        <button x-show="{{$v.Paused}}" @click="Action('unpause', `{{$v.Name}}`)" class="btn btn-ghost btn-xs text-success" title="Resume">
                                             <i class="ri-play-line text-lg"></i>
                                         </button>
-                                        <button x-show="{{not $v.Paused}}" @click="Action('pause', `{{$k}}`)" class="btn btn-ghost btn-xs text-warning" title="Pause">
+                                        <button x-show="{{not $v.Paused}}" @click="Action('pause', `{{$v.Name}}`)" class="btn btn-ghost btn-xs text-warning" title="Pause">
                                             <i class="ri-pause-line text-lg"></i>
                                         </button>
-                                        <button @click="confirm('Are you sure you want to delete this job?') && Action('remove',`{{$k}}`)" class="btn btn-ghost btn-xs text-error" title="Delete">
+                                        <button @click="confirm('Are you sure you want to delete this job?') && Action('remove',`{{$v.Name}}`)" class="btn btn-ghost btn-xs text-error" title="Delete">
                                             <i class="ri-delete-bin-line text-lg"></i>
                                         </button>
                                     </div>
@@ -148,36 +148,38 @@
                 let minutes = Math.floor(totalSeconds / 60);
                 return `${days}D ${hours}H ${minutes}M`;
             },
-            // ... methods unchanged ...
-            async createCron(e) {
+            async createCron(event) {
                 try {
-                    const response = await fetch(e.target.action || '/admin/cron', {
-                        method: "POST",
-                        body: new FormData(e.target)
-                    });
-                    const result = await response.json();
-                    if (response.ok) {
-                        alert(result.message || 'Cron job created successfully');
-                        location.reload();
+                    const fields = new FormData(event.target);
+                    const frequency = Number(fields.get('frequency'));
+                    const minutes = Number(fields.get('attime'));
+                    const hour = Math.floor(minutes / 60) % 24;
+                    const minute = minutes % 60;
+                    const day = Math.floor(minutes / 1440);
+                    const body = {name: fields.get('name'), script: fields.get('script')};
+                    if (frequency === 43200) {
+                        body.interval_seconds = minutes * 60;
                     } else {
-                        alert(result.error || 'Failed to create cron job');
+                        body.schedule = frequency === 43199 ? `${minute} ${hour} ${Math.max(1, day)} * *`
+                            : frequency === 10079 ? `${minute} ${hour} * * ${day % 7}`
+                            : `${minute} ${hour} * * *`;
                     }
+                    await panelAPI('/cron/jobs', {method: 'POST', body});
+                    alert('Cron job created successfully');
+                    location.reload();
                 } catch (error) {
                     alert('Failed to create cron job: ' + error.message);
                 }
             },
 
-            async Action(action, index) {
+            async Action(action, name) {
                 try {
-                    const response = await fetch(`/admin/cron?type=${action}&index=${index}`, {
-                        method: 'PUT'
-                    });
-                    if (response.ok) {
-                        alert(`${action} successful`);
-                        location.reload();
-                    } else {
-                        alert(await response.text());
-                    }
+                    const path = `/cron/jobs/${encodeURIComponent(name)}`;
+                    if (action === 'remove') await panelAPI(path, {method: 'DELETE'});
+                    else if (action === 'runnow') await panelAPI(`${path}/run`, {method: 'POST'});
+                    else await panelAPI(path, {method: 'PATCH', body: {paused: action === 'pause'}});
+                    alert(`${action} successful`);
+                    location.reload();
                 } catch (error) {
                     alert('Action failed: ' + error.message);
                 }

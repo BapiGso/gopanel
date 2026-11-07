@@ -2,23 +2,26 @@ package website
 
 import (
 	"gopanel/core/config"
-	"os"
+	"gopanel/core/storage"
+	"path/filepath"
 )
 
-func init() {
-	filePath := "gopanel_Caddyfile"
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		content :=
-			`{
+func Initialize(directory string) error {
+	caddyFile = &storage.File{Path: filepath.Join(directory, "gopanel_Caddyfile")}
+	content :=
+		`{
 admin off
 }
 
 :2015
 respond "Hello, world!"
 `
-		_ = os.WriteFile(filePath, []byte(content), 0644)
+	return caddyFile.Ensure([]byte(content))
+}
+
+func Autostart() error {
+	if config.Snapshot().Enable.Caddy {
+		return caddyStart()
 	}
-	if config.Bool("enable.caddy") {
-		_ = caddyStart()
-	}
+	return nil
 }

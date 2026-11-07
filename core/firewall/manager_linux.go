@@ -55,18 +55,17 @@ func (m *nftManager) List() ([]Rule, error) {
 		return nil, err
 	}
 
-	families := []nftables.TableFamily{nftables.TableFamilyIPv4, nftables.TableFamilyIPv6}
-	for _, f := range families {
-		m.ensureChains(conn, f)
-	}
-	if err := conn.Flush(); err != nil {
+	tables, err := conn.ListTables()
+	if err != nil {
 		return nil, err
 	}
 
 	var rules []Rule
 	chainNames := []string{"gopanel-input", "gopanel-output"}
-	for _, family := range families {
-		table := &nftables.Table{Name: nftTableName, Family: family}
+	for _, table := range tables {
+		if table.Name != nftTableName || (table.Family != nftables.TableFamilyIPv4 && table.Family != nftables.TableFamilyIPv6) {
+			continue
+		}
 		for _, chainName := range chainNames {
 			chain := &nftables.Chain{Name: chainName, Table: table}
 			nfRules, err := conn.GetRules(table, chain)

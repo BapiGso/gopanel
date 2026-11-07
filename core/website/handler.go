@@ -1,52 +1,31 @@
 package website
 
 import (
-	"github.com/caddyserver/caddy/v2"
-	"github.com/labstack/echo/v5"
-	"gopanel/core/config"
-	"io"
+	"encoding/json"
 	"net/http"
-	"os"
+
+	"github.com/labstack/echo/v5"
+
+	"gopanel/core/config"
 )
 
-func Index(c *echo.Context) error {
-	switch c.Request().Method {
-	case "POST":
-		if c.QueryParam("status") == "restart" {
-			if err := caddyStart(); err != nil {
-				return err
-			}
-		}
-		if c.QueryParam("status") == "stop" {
-			if err := caddy.Stop(); err != nil {
-				return err
-			}
-		}
-		if c.QueryParam("status") == "enable" {
-			if err := config.Write("enable.caddy", !config.Bool("enable.caddy")); err != nil {
-				return err
-			}
-		}
-		return c.JSON(200, "success")
-	case "PUT":
-		data, err := io.ReadAll(c.Request().Body)
-		defer c.Request().Body.Close()
-		if err != nil {
-			return err
-		}
-		if err := os.WriteFile("gopanel_Caddyfile", data, 0644); err != nil {
-			return err
-		}
-		return c.JSON(200, "success")
-	case "GET":
-		file, err := os.ReadFile("gopanel_Caddyfile")
-		if err != nil {
-			return err
-		}
-		return c.Render(http.StatusOK, "website.template", map[string]any{
-			"caddyFile":   string(file),
-			"caddyEnable": config.Bool("enable.caddy"),
-		})
+func Index(ctx *echo.Context) error {
+	settings, err := config.Read()
+	if err != nil {
+		return err
 	}
-	return echo.ErrMethodNotAllowed
+	document, err := caddyFile.Read()
+	if err != nil {
+		return err
+	}
+	content, err := json.Marshal(document.Content)
+	if err != nil {
+		return err
+	}
+	return ctx.Render(http.StatusOK, "website.template", map[string]any{
+		"caddyFile":        string(content),
+		"caddyRevision":    document.Revision,
+		"caddyEnable":      settings.Config.Enable.Caddy,
+		"settingsRevision": settings.Revision,
+	})
 }

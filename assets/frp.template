@@ -21,9 +21,9 @@
     </div>
 
     <div class="surface rounded-2xl px-6 py-4 mb-6 flex flex-wrap items-center justify-between gap-4">
-        <button @click="manageService('start')" class="btn btn-primary group">
+        <button @click="manageService('reload')" class="btn btn-primary group">
             <i class="ri-play-circle-line text-lg group-hover:scale-110 transition-transform"></i>
-            <span x-text="'Start ' + (currentTab === 'frps' ? 'Server' : 'Client')"></span>
+            <span x-text="'Apply ' + (currentTab === 'frps' ? 'Server' : 'Client')"></span>
         </button>
 
         <label class="flex items-center gap-3 cursor-pointer">
@@ -44,7 +44,7 @@
                 <div class="text-sm opacity-80">
                     <span x-show="currentTab === 'frps'">This acts as the <strong>Server</strong>. Public IPs connect here.</span>
                     <span x-show="currentTab === 'frpc'">This acts as the <strong>Client</strong>. It connects to a remote server to expose local ports.</span>
-                    <span class="block mt-1 opacity-70 text-xs">Note: Services cannot be stopped directly via UI once started, restart panel if needed.</span>
+                    <span class="block mt-1 opacity-70 text-xs">Saving updates the config file only. Apply validates it and replaces the running service.</span>
                 </div>
             </div>
         </div>
@@ -83,13 +83,15 @@
             currentTab: 'frps', // 'frps' or 'frpc'
             // Config content and status from Go template
             configs: {
-                frps: `{{.frpsConfig}}`,
-                frpc: `{{.frpcConfig}}`
+                frps: {{.frpsConfig}},
+                frpc: {{.frpcConfig}}
             },
             status: {
                 frps: {{.frpsEnable}},
                 frpc: {{.frpcEnable}}
             },
+            revisions: {frps: '{{.frpsRevision}}', frpc: '{{.frpcRevision}}'},
+            settingsRevision: '{{.settingsRevision}}',
             editors: {},
 
             init() {
@@ -139,40 +141,28 @@
             async saveConfig() {
                 const content = this.editors[this.currentTab].getValue();
                 try {
-                    // PUT /admin/frp?type=frps (or frpc)
-                    const response = await fetch(`/admin/frp?type=${this.currentTab}`, {
+                    const result = await panelAPI(`/frp/${this.currentTab}/config`, {
                         method: 'PUT',
-                        body: content,
+                        body: {content, revision: this.revisions[this.currentTab]},
                     });
-                    const result = await response.text();
-                    alert(result);
-                    // Update local state if needed, or reload
-                    // location.reload();
+                    this.revisions[this.currentTab] = result.revision;
+                    alert('Configuration saved. Apply it to reload the service.');
                 } catch (error) {
                     alert('Failed to save: ' + error.message);
                 }
             },
 
             async manageService(action) {
-                // action: 'enable' or 'start'
                 const type = this.currentTab;
-
-                // Optimistic UI update for toggle
-                if (action === 'enable') {
-                    this.status[type] = !this.status[type];
-                }
-
                 try {
-                    // POST /admin/frp?type=frps&status=enable
-                    const response = await fetch(`/admin/frp?type=${type}&status=${action}`, {
-                        method: "POST"
-                    });
-                    const result = await response.text();
-                    alert(result);
+                    const result = action === 'enable'
+                        ? await panelAPI(`/frp/${type}/settings`, {method: 'PATCH', body: {autostart: !this.status[type], revision: this.settingsRevision}})
+                        : await panelAPI(`/frp/${type}/${action}`, {method: 'POST'});
+                    this.status[type] = result.autostart;
+                    this.settingsRevision = result.settings_revision;
+                    alert(action === 'enable' ? 'Autostart saved' : 'Service start accepted. Check status for startup errors.');
                     if (action !== 'enable') location.reload();
                 } catch (error) {
-                    // Revert UI on error
-                    if (action === 'enable') this.status[type] = !this.status[type];
                     alert('Operation failed: ' + error.message);
                 }
             }

@@ -63,6 +63,9 @@ func (s *LocalFileService) Open(path string) (afero.File, error) {
 }
 
 func (s *LocalFileService) SaveUploadedFile(dir, filename string, src io.Reader) error {
+	if filename == "" || filename == "." || filename == ".." || strings.ContainsAny(filename, "/\\") {
+		return ErrPathNotAllowed
+	}
 	allowedDir, err := s.resolve(dir)
 	if err != nil {
 		return err
@@ -119,7 +122,7 @@ func (s *LocalFileService) CreateFile(path string) error {
 	if err != nil {
 		return err
 	}
-	file, err := s.fs.Create(allowedPath)
+	file, err := s.fs.OpenFile(allowedPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
@@ -151,6 +154,14 @@ func (s *LocalFileService) ReadDir(path string) ([]os.FileInfo, error) {
 		return nil, err
 	}
 	return afero.ReadDir(s.fs, allowedPath)
+}
+
+func (s *LocalFileService) Stat(path string) (os.FileInfo, error) {
+	allowedPath, err := s.resolve(path)
+	if err != nil {
+		return nil, err
+	}
+	return s.fs.Stat(allowedPath)
 }
 
 func (s *LocalFileService) Root() string {

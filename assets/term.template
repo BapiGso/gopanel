@@ -84,22 +84,20 @@
 
 </div>
 
-<link rel="stylesheet" href="/assets/css/xterm.css" />
+<link rel="stylesheet" href="/assets/css/xterm.css?v=6.0.0" />
 <style>
-    /* Clean scrollbar for terminal */
-    .custom-scrollbar .xterm-viewport::-webkit-scrollbar { width: 8px; }
-    .custom-scrollbar .xterm-viewport::-webkit-scrollbar-track { background: #1a1b1e; }
-    .custom-scrollbar .xterm-viewport::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-    .custom-scrollbar .xterm-viewport::-webkit-scrollbar-thumb:hover { background: #444; }
+    /* xterm 6 uses custom scrollbars rather than native viewport scrollbars. */
+    .custom-scrollbar .xterm-scrollable-element > .scrollbar { background: #1a1b1e; }
+    .custom-scrollbar .xterm-scrollable-element > .scrollbar > .slider { border-radius: 4px; }
     /* Hide default details marker */
     summary::marker { content: ""; display: none; }
     summary::-webkit-details-marker { display: none; }
 </style>
 
-<script src="/assets/js/xterm.js"></script>
-<script src="/assets/js/xterm-addon-attach.js"></script>
-<script src="/assets/js/xterm-addon-fit.js"></script>
-<script src="/assets/js/xterm-addon-web-links.js"></script>
+<script src="/assets/js/xterm.js?v=6.0.0"></script>
+<script src="/assets/js/xterm-addon-attach.js?v=0.12.0"></script>
+<script src="/assets/js/xterm-addon-fit.js?v=0.11.0"></script>
+<script src="/assets/js/xterm-addon-web-links.js?v=0.12.0"></script>
 
 <script>
     document.addEventListener('alpine:init', () => {
@@ -137,15 +135,10 @@
 
                 // 1. Create Connection ID
                 try {
-                    // Create FormData from object
-                    const formData = new FormData();
-                    Object.keys(this.form).forEach(key => formData.append(key, this.form[key]));
-
-                    const res = await fetch('', { method: 'POST', body: formData });
-
-                    if (!res.ok) throw new Error(await res.text());
-
-                    const data = await res.json();
+                    const data = await panelAPI('/terminals', {
+                        method: 'POST',
+                        body: {host: this.form.host, port: Number(this.form.port), username: this.form.user, password: this.form.pwd},
+                    });
                     if (!data.id) throw new Error("Invalid server response");
 
                     // 2. Save Success
@@ -189,7 +182,7 @@
 
                 // Setup Websocket
                 const protocol = location.protocol === "https:" ? "wss://" : "ws://";
-                const ws = new WebSocket(`${protocol}${location.host}/admin/term/${id}/data`);
+                const ws = new WebSocket(`${protocol}${location.host}/api/v1/terminals/${id}/data`);
 
                 // Addons
                 const attachAddon = new AttachAddon.AttachAddon(ws);
@@ -200,8 +193,13 @@
                     fontFamily: "'JetBrains Mono', monospace",
                     fontSize: 14,
                     cursorBlink: true,
-                    background: '#000000',
-                    theme: { background: '#000000', foreground: '#d4d4d4' }
+                    theme: {
+                        background: '#000000',
+                        foreground: '#d4d4d4',
+                        scrollbarSliderBackground: '#333333',
+                        scrollbarSliderHoverBackground: '#444444',
+                        scrollbarSliderActiveBackground: '#555555'
+                    }
                 });
 
                 this.term.loadAddon(new WebLinksAddon.WebLinksAddon());
@@ -212,7 +210,7 @@
 
                 // Resize sync
                 this.term.onResize(({cols, rows}) => {
-                    fetch(`/admin/term/resize?id=${id}&cols=${cols}&rows=${rows}`);
+                    panelAPI(`/terminals/${id}`, {method: 'PATCH', body: {cols, rows}}).catch(error => console.error('Resize failed:', error));
                 });
 
                 // Initial fit

@@ -34,12 +34,13 @@
                     <button x-show="status !== 'running'" @click="startHeadscale" class="btn btn-success btn-block">
                         <i class="ri-play-circle-fill text-lg"></i>Start Service
                     </button>
-                    <button x-show="status === 'running'" @click="stopHeadscale" class="btn btn-outline btn-error btn-block">
+                    <button x-show="status === 'running'" :disabled="!stopSupported" @click="stopHeadscale" class="btn btn-outline btn-error btn-block">
                         <i class="ri-stop-circle-line text-lg"></i>Stop Service
                     </button>
                     <button @click="checkStatus" class="btn btn-ghost btn-sm btn-block">
                         <i class="ri-refresh-line"></i>Refresh Status
                     </button>
+                    <p x-show="status === 'running' && !stopSupported" class="text-xs opacity-70">Embedded Headscale cannot be stopped safely with the upstream library. Restart the panel instead.</p>
                 </div>
             </div>
 
@@ -185,66 +186,76 @@
     document.addEventListener('alpine:init', () => {
         Alpine.data('panel', () => ({
             status: 'stopped',
+            stopSupported: false,
+            revision: '',
 
             async init() {
+                await this.loadConfig();
                 await this.checkStatus();
                 setInterval(() => this.checkStatus(), 5000); // Polling
             },
 
             async checkStatus() {
                 try {
-                    const response = await fetch('/admin/headscale?status=check', { method: 'POST' });
-                    if (response.ok) {
-                        const result = await response.json();
-                        this.status = result.status || 'stopped';
-                    }
+                    const result = await panelAPI('/headscale/status');
+                    this.status = result.state;
+                    this.stopSupported = result.stop_supported;
                 } catch (error) {
                     console.error('Status check failed:', error);
                 }
             },
 
-            async saveConfig(e) {
+            async loadConfig() {
                 try {
-                    const formData = new FormData(e.target);
-                    const response = await fetch('/admin/headscale', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        alert('Configuration saved successfully');
-                    } else {
-                        alert('Save failed: ' + (result.message || 'Unknown error'));
+                    const document = await panelAPI('/headscale/config');
+                    const settings = JSON.parse(document.content);
+                    this.revision = document.revision;
+                    const form = document.getElementById('headscaleForm');
+                    for (const [name, value] of Object.entries(settings)) {
+                        const input = form.elements.namedItem(name);
+                        if (!input) continue;
+                        if (input.type === 'checkbox') input.checked = value;
+                        else input.value = value;
+                        if (input.type === 'hidden') {
+                            const checkbox = input.parentElement.querySelector('input[type="checkbox"]');
+                            if (checkbox) {
+                                checkbox.checked = value;
+                                checkbox.dispatchEvent(new Event('change', {bubbles: true}));
+                            }
+                        }
                     }
                 } catch (error) {
-                    alert('Error: ' + error.message);
+                    alert('Failed to load configuration: ' + error.message);
+                }
+            },
+
+            async persistConfig(form) {
+                const settings = Object.fromEntries(new FormData(form));
+                settings.stun_enabled = settings.stun_enabled === 'true';
+                settings.derp_enabled = settings.derp_enabled === 'true';
+                settings.derp_verify_clients = form.elements.derp_verify_clients.checked;
+                settings.derp_region_id = Number(settings.derp_region_id);
+                const result = await panelAPI('/headscale/config', {method: 'PUT', body: {content: JSON.stringify(settings), revision: this.revision}});
+                this.revision = result.revision;
+            },
+
+            async saveConfig(event) {
+                try {
+                    await this.persistConfig(event.target);
+                    alert('Configuration saved. Start the service to apply it.');
+                } catch (error) {
+                    alert('Save failed: ' + error.message);
                 }
             },
 
             async startHeadscale() {
                 try {
-                    const form = document.getElementById('headscaleForm');
-                    const formData = new FormData(form);
-
-                    // Optimistic UI update
-                    const prevStatus = this.status;
-                    this.status = 'running';
-
-                    const response = await fetch('/admin/headscale?status=start', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const result = await response.json();
-
-                    if (result.success) {
-                        alert('Headscale service started');
-                    } else {
-                        this.status = prevStatus; // Revert on fail
-                        alert('Start failed: ' + result.message);
-                    }
+                    await this.persistConfig(document.getElementById('headscaleForm'));
+                    const result = await panelAPI('/headscale/start', {method: 'POST'});
+                    this.status = result.state;
+                    alert('Headscale start accepted. Check status for startup errors.');
                 } catch (error) {
-                    this.status = 'stopped';
-                    alert('Error: ' + error.message);
+                    alert('Start failed: ' + error.message);
                 }
             },
 
@@ -252,15 +263,8 @@
                 if (!confirm('Are you sure you want to stop the Headscale service?')) return;
 
                 try {
-                    const response = await fetch('/admin/headscale?status=stop', {
-                        method: 'POST'
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        this.status = 'stopped';
-                    } else {
-                        alert('Stop failed: ' + result.message);
-                    }
+                    const result = await panelAPI('/headscale/stop', {method: 'POST'});
+                    this.status = result.state;
                 } catch (error) {
                     alert('Error: ' + error.message);
                 }

@@ -19,28 +19,28 @@
                         <span class="eyebrow block mb-1.5">Login Username</span>
                         <label class="input input-bordered flex items-center gap-2">
                             <i class="ri-user-3-line opacity-50"></i>
-                            <input type="text" name="username" value="{{call .getPanelConfig "panel.username"}}" required class="grow">
+                            <input type="text" name="username" value="{{.panelConfig.Username}}" required class="grow">
                         </label>
                     </div>
                     <div>
                         <span class="eyebrow block mb-1.5">Login Password</span>
                         <label class="input input-bordered flex items-center gap-2">
                             <i class="ri-lock-password-line opacity-50"></i>
-                            <input type="password" name="password" value="{{call .getPanelConfig "panel.password"}}" required class="grow">
+                            <input type="password" name="password" value="{{.panelConfig.Password}}" required class="grow">
                         </label>
                     </div>
                     <div>
                         <span class="eyebrow block mb-1.5">Access Port</span>
                         <label class="input input-bordered flex items-center gap-2">
                             <i class="ri-door-lock-line opacity-50"></i>
-                            <input type="text" name="port" value="{{call .getPanelConfig "panel.port"}}" required class="grow">
+                            <input type="text" name="port" value="{{.panelConfig.Port}}" required class="grow">
                         </label>
                     </div>
                     <div>
                         <span class="eyebrow block mb-1.5">Entry Path</span>
                         <label class="input input-bordered flex items-center gap-2">
                             <i class="ri-link-m opacity-50"></i>
-                            <input type="text" name="path" value="{{call .getPanelConfig "panel.path"}}" required class="grow">
+                            <input type="text" name="path" value="{{.panelConfig.Path}}" required class="grow">
                         </label>
                     </div>
                 </div>
@@ -89,16 +89,17 @@
     document.addEventListener('alpine:init', () => {
         Alpine.data('panel', () => ({
             showLoading: false,
+            settingsRevision: '{{.settingsRevision}}',
 
-            async updateSecurity(e) {
+            async updateSecurity(event) {
                 this.showLoading = true;
                 try {
-                    const response = await fetch(e.target.action, {
-                        method: "POST",
-                        body: new FormData(e.target)
+                    const result = await panelAPI('/panel/settings', {
+                        method: 'PATCH',
+                        body: {...Object.fromEntries(new FormData(event.target)), revision: this.settingsRevision},
                     });
-                    const result = await response.json();
-                    alert(result.message || 'Configuration updated successfully');
+                    this.settingsRevision = result.revision;
+                    alert(result.restart_required ? 'Configuration saved. Restart the panel to apply the new port/path.' : 'Configuration updated successfully');
                     location.reload();
                 } catch (error) {
                     alert('Failed to update configuration: ' + error.message);
@@ -111,11 +112,8 @@
 
                 this.showLoading = true;
                 try {
-                    const response = await fetch(`/admin/security?action=update`, {
-                        method: "PUT"
-                    });
-                    const result = await response.json();
-                    alert(result.message || 'Update completed successfully');
+                    await panelAPI('/panel/update', {method: 'POST'});
+                    alert('Update completed. Restart the panel to use the new binary.');
                     location.reload();
                 } catch (error) {
                     alert('Update failed: ' + error.message);
@@ -128,18 +126,14 @@
 
                 this.showLoading = true;
                 try {
-                    const response = await fetch(`/admin/security?action=restart`, {
-                        method: "PUT"
-                    });
+                    await panelAPI('/panel/restart', {method: 'POST'});
                     // Wait for restart
                     setTimeout(() => {
                         location.reload();
                     }, 3000);
                 } catch (error) {
-                    // Even if fetch fails (connection reset), try to reload
-                    setTimeout(() => {
-                        location.reload();
-                    }, 5000);
+                    alert('Restart failed: ' + error.message);
+                    this.showLoading = false;
                 }
             }
         }))

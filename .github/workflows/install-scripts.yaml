@@ -1,0 +1,41 @@
+name: Installation Scripts
+
+on:
+  push:
+    paths:
+      - 'shell/install_gopanel.sh'
+      - 'shell/uninstall_gopanel.sh'
+      - 'shell/tests/**'
+      - '.github/workflows/install-scripts.yaml'
+      - '.github/workflows/release.yaml'
+  pull_request:
+    paths:
+      - 'shell/install_gopanel.sh'
+      - 'shell/uninstall_gopanel.sh'
+      - 'shell/tests/**'
+      - '.github/workflows/install-scripts.yaml'
+      - '.github/workflows/release.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shell: ['/bin/sh', '/bin/bash --posix', 'busybox sh']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shell test tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y busybox shellcheck
+      - name: Lint installation scripts
+        run: shellcheck shell/install_gopanel.sh shell/uninstall_gopanel.sh
+      - name: Test installation scripts
+        env:
+          GOPANEL_TEST_SHELL: ${{ matrix.shell }}
+        run: python3 -m unittest discover -s shell/tests -v

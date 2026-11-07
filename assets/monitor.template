@@ -1,204 +1,96 @@
-{{template "header.template"}}
+{{template "observatory.head" .}}
 
-<div class="text-base-content max-w-7xl mx-auto" x-data="panel">
+<main class="mx-auto max-w-7xl px-4 pb-4 pt-7 sm:px-8 sm:pt-9 [&_.card]:rounded-2xl">
+    <header class="flex flex-wrap items-center justify-between gap-4">
+        <a href="/status/monitor" class="flex items-center gap-3">
+            <span class="avatar placeholder"><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-success/10 text-xl text-success">◈</span></span>
+            <span class="font-semibold tracking-tight" x-text="title">GoPanel Observatory</span>
+        </a>
+        <div class="flex items-center gap-2">
+            <span class="badge badge-sm gap-2 border-base-300" :class="connected || preview ? 'badge-success badge-outline' : 'badge-warning badge-outline'"><span class="h-1.5 w-1.5 rounded-full bg-current" :class="connected && 'animate-pulse'"></span><span x-text="preview ? '演示数据' : connected ? '实时连接' : '连接中'"></span></span>
+            <a x-show="!publicView" href="/admin/security" class="btn btn-circle btn-ghost btn-sm" title="返回管理面板">⌂</a>
+            <button class="btn btn-circle btn-ghost btn-sm text-lg" @click="toggleTheme" aria-label="切换主题" x-text="dark ? '☾' : '☀'"></button>
+        </div>
+    </header>
 
-    <div class="row mb-6">
+    <section class="mb-7 mt-12 flex flex-wrap items-end justify-between gap-4 sm:mt-16">
         <div>
-            <h1 class="text-2xl font-bold tracking-tight">System Monitor</h1>
-            <p class="text-sm opacity-60 mt-1">Real-time server metrics · 2s refresh</p>
+            <p class="mb-2 text-xs font-medium uppercase tracking-[0.22em] text-success">Your infrastructure, at a glance</p>
+            <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">全球节点概览<span class="ml-2 inline-block h-2 w-2 rounded-full bg-success align-middle" :class="connected && 'animate-pulse'"></span></h1>
+            <p class="mt-2 text-xs text-base-content/45">最近采样 <span class="ml-1 font-mono text-base-content/70" x-text="lastUpdated">—</span><span class="mx-2">·</span><span x-text="clusterLabel"></span></p>
         </div>
-        <div class="badge badge-lg badge-outline gap-2" role="status"
-             :class="isConnected ? 'badge-success' : 'badge-error'"
-             :aria-label="isConnected ? 'System is live' : 'System is offline'">
-            <span class="h-2 w-2 rounded-full bg-current" :class="isConnected && 'animate-pulse'"></span>
-            <span x-text="isConnected ? 'Live' : 'Offline'"></span>
+        <button class="btn btn-ghost btn-sm gap-2 border border-base-300 text-xs" @click="togglePreview"><span x-text="preview ? '↺ 返回实时数据' : '◉ 预览多节点效果'"></span></button>
+    </section>
+
+    <div x-show="preview" class="alert alert-warning mb-6 py-3 text-xs" role="status"><span>当前是明确标记的演示数据，仅用于预览地图和布局；不会上报、保存或替代真实监控。</span></div>
+    <div x-show="error && !preview" class="alert alert-warning mb-6 py-3 text-xs" role="status"><span x-text="error"></span></div>
+
+    <section class="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-5" aria-label="监控概况">
+        <div class="card border border-base-300 bg-base-200/60 shadow-sm"><div class="card-body gap-3 p-5"><div class="flex items-center gap-2 text-sm text-base-content/70"><span>▤</span><span>服务器总数</span></div><div class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-info"></span><span class="font-mono text-2xl font-semibold" x-text="loading ? '—' : overview.total"></span></div></div></div>
+        <div class="card border border-base-300 bg-base-200/60 shadow-sm"><div class="card-body gap-3 p-5"><div class="flex items-center gap-2 text-sm text-base-content/70"><span>⊙</span><span>在线服务器</span></div><div class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-success shadow-sm shadow-success/30"></span><span class="font-mono text-2xl font-semibold" x-text="loading ? '—' : overview.online"></span></div></div></div>
+        <div class="card border border-base-300 bg-base-200/60 shadow-sm"><div class="card-body gap-3 p-5"><div class="flex items-center gap-2 text-sm text-base-content/70"><span>⊗</span><span>离线服务器</span></div><div class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-error"></span><span class="font-mono text-2xl font-semibold" x-text="loading ? '—' : overview.offline"></span></div></div></div>
+        <div class="card border border-base-300 bg-base-200/60 shadow-sm"><div class="card-body gap-2 p-5"><div class="flex items-center gap-2 text-sm text-base-content/70"><span>◎</span><span>网络流量</span></div><div class="flex flex-wrap gap-3 font-mono text-sm font-semibold"><span class="text-info" x-text="'↑ ' + bytes(overview.upload_bytes)"></span><span class="text-secondary" x-text="'↓ ' + bytes(overview.download_bytes)"></span></div><div class="flex flex-wrap gap-3 font-mono text-xs text-base-content/60"><span x-text="'↑ ' + rate(overview.upload_rate)"></span><span x-text="'↓ ' + rate(overview.download_rate)"></span></div><span class="text-[10px] text-base-content/35">接口累计计数 · 非账单统计</span></div></div>
+    </section>
+
+    <section class="mt-7 flex flex-wrap items-center justify-between gap-4" aria-label="节点筛选">
+        <div class="flex min-w-0 items-center gap-3">
+            <div class="join shrink-0"><button class="btn join-item btn-sm px-3" :class="showMap ? 'btn-success' : 'btn-ghost'" @click="toggleMap" aria-label="显示或隐藏地图">◎</button><button class="btn join-item btn-sm px-3" :class="!showMap ? 'btn-success' : 'btn-ghost'" @click="hideMap" aria-label="仅显示列表">▥</button></div>
+            <div role="tablist" class="tabs tabs-boxed max-w-[70vw] flex-nowrap overflow-x-auto rounded-full p-1 text-xs"><template x-for="tag in tags" :key="tag"><button role="tab" class="tab h-8 whitespace-nowrap rounded-full px-4 text-xs" :class="selectedTag === tag && 'tab-active'" @click="selectTag(tag)" x-text="tag === 'All' ? '全部节点' : tag"></button></template></div>
         </div>
-    </div>
+        <div class="flex items-center gap-2">
+            <input x-ref="search" x-model="search" @input="scheduleMap" type="search" placeholder="搜索节点 / 区域" aria-label="搜索节点" class="input input-sm input-bordered w-40 text-xs sm:w-48">
+            <select x-model="sort" class="select select-sm select-bordered text-xs" aria-label="节点排序"><option value="name">名称排序</option><option value="cpu">CPU 使用</option><option value="memory">内存使用</option><option value="traffic">实时流量</option><option value="online">在线优先</option></select>
+        </div>
+    </section>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
+    <section x-show="showMap" class="relative mt-7 overflow-hidden rounded-2xl border border-base-300 bg-base-200/20" aria-label="全球节点地图">
+        <div class="absolute left-5 top-4 z-10 flex flex-wrap items-center gap-3 text-xs"><span class="text-base-content/50">服务器分布在 <strong class="font-mono font-normal text-base-content/80" x-text="visibleCountries"></strong> 个国家 / 区域</span><button x-show="selectedCountry" class="badge badge-outline badge-sm cursor-pointer gap-2" @click="clearCountry"><span x-text="countryName(selectedCountry)"></span><span>×</span></button></div>
+        <div id="world-map" x-ref="map" class="h-[320px] w-full sm:h-[430px] lg:h-[500px]"></div>
+        <div x-show="!mapReady" class="absolute inset-0 flex items-center justify-center p-8 text-center"><div><span x-show="!mapError" class="loading loading-spinner loading-sm text-success"></span><p class="mt-3 text-xs text-base-content/50" x-text="mapError || '正在加载世界地图'"></p></div></div>
+        <div class="absolute bottom-4 left-5 flex gap-4 text-[10px] text-base-content/40"><span class="flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-success"></span>在线区域</span><span class="flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-error"></span>离线区域</span><span>位置由节点配置提供，不自动查询外部 GeoIP</span></div>
+    </section>
 
-        <template x-for="g in gauges" :key="g.label">
-            <div class="card surface">
-                <div class="card-body !p-5 items-center">
-                    <div class="row eyebrow w-full">
-                        <span x-text="g.label"></span>
-                        <i :class="g.icon" class="text-base"></i>
-                    </div>
-                    <div class="radial-progress my-3 font-mono text-2xl font-bold" :class="levelText(g.value)"
-                         :style="`--value:${g.value};--size:7.5rem;--thickness:.5rem`"
-                         role="progressbar" :aria-valuenow="g.value" aria-valuemin="0" aria-valuemax="100"
-                         x-text="g.value + '%'"></div>
-                    <p class="text-xs opacity-60 truncate w-full text-center" :title="g.desc" x-text="g.desc"></p>
-                </div>
-            </div>
-        </template>
-
-        <div class="card surface">
-            <div class="card-body !p-5 gap-3">
-                <div class="row eyebrow"><span>Disk</span><i class="ri-hard-drive-2-line text-base"></i></div>
-
-                <template x-for="d in visibleDisks" :key="d.path">
-                    <div>
-                        <div class="row text-xs mb-1">
-                            <span class="truncate" :title="`${d.device} (${d.fstype})`" x-text="d.path"></span>
-                            <span class="font-mono opacity-60 shrink-0" x-text="`${fmtBytes(d.used)} / ${fmtBytes(d.total)}`"></span>
-                        </div>
-                        <progress class="progress" :class="levelBar(d.usedPercent)" :value="Math.round(d.usedPercent)" max="100"></progress>
-                    </div>
-                </template>
-
-                <p x-show="!disks.length" class="text-xs italic opacity-60">No disk data</p>
-
-                <button class="btn btn-ghost btn-xs" x-show="disks.length > 3" @click="showAllDisks = !showAllDisks">
-                    <span x-text="showAllDisks ? 'Show less' : `Show all (${disks.length})`"></span>
-                    <i class="ri-arrow-down-s-line transition-transform" :class="showAllDisks && 'rotate-180'"></i>
+    <section class="mt-7" aria-label="服务器列表">
+        <div class="mb-3 flex items-center justify-between text-xs text-base-content/40"><span><span class="font-mono" x-text="filteredNodes.length"></span> 台节点<span x-show="selectedCountry"> · <span x-text="countryName(selectedCountry)"></span></span></span><span>点击节点查看详情</span></div>
+        <div x-show="loading" class="space-y-3"><div class="skeleton h-24 w-full rounded-2xl"></div><div class="skeleton h-24 w-full rounded-2xl"></div></div>
+        <div x-show="!loading && !filteredNodes.length" class="card border border-dashed border-base-300 bg-base-200/30"><div class="card-body items-center py-12 text-center"><span class="text-3xl text-success/70">◎</span><h2 class="card-title text-base" x-text="overview.total ? '没有符合筛选条件的节点' : '等待第一台节点连接'"></h2><p class="max-w-lg text-xs leading-relaxed text-base-content/45">本机采样和探针上报会自动出现在这里。节点名称、分组和地理位置在 gopanel_monitor.json 中配置；也可以先预览多节点效果。</p></div></div>
+        <div class="space-y-2.5">
+            <template x-for="node in filteredNodes" :key="node.id">
+                <button class="card block w-full overflow-hidden border border-base-300 bg-base-200/50 text-left shadow-sm transition-colors hover:border-success/40 hover:bg-base-200" @click="openNode(node)" :aria-label="'查看 ' + node.name">
+                    <div class="overflow-x-auto"><div class="grid min-w-[980px] grid-cols-[210px_85px_85px_80px_80px_80px_85px_85px_100px_100px] items-center gap-4 px-5 py-5 lg:min-w-0 lg:grid-cols-[minmax(150px,1.7fr)_repeat(9,minmax(55px,1fr))] lg:gap-3">
+                        <div class="flex min-w-0 items-center gap-3 border-r border-base-300 pr-4"><span class="h-2 w-2 shrink-0 rounded-full" :class="node.online ? 'bg-success' : 'bg-error'"></span><span class="shrink-0 text-base" x-text="flag(node.country)"></span><div class="min-w-0"><p class="truncate text-xs font-semibold" x-text="node.name"></p><p x-show="node.price" class="mt-0.5 truncate text-[10px] text-base-content/40" x-text="'价格: ' + node.price"></p><p x-show="node.expires_at" class="mt-0.5 text-[10px] text-base-content/40" x-text="expiry(node.expires_at)"></p><div class="mt-1 flex gap-1"><template x-for="tag in node.tags.slice(0, 2)" :key="tag"><span class="badge badge-xs border-0 bg-base-300 text-[9px]" x-text="tag"></span></template></div></div></div>
+                        <div><p class="text-[10px] text-base-content/40">系统</p><p class="mt-1 truncate text-xs font-semibold capitalize" x-text="node.metrics.platform || '—'"></p></div>
+                        <div><p class="text-[10px] text-base-content/40">运行时间</p><p class="mt-1 font-mono text-xs font-semibold" x-text="uptime(node.metrics.uptime_seconds)"></p></div>
+                        <div><p class="text-[10px] text-base-content/40">CPU</p><p class="mt-1 font-mono text-xs font-semibold" x-text="percent(node, 'cpu')"></p><progress class="progress mt-1 h-1 w-14" :class="level(node.metrics.cpu_percent)" :value="node.metrics.cpu_percent" max="100"></progress></div>
+                        <div><p class="text-[10px] text-base-content/40">内存</p><p class="mt-1 font-mono text-xs font-semibold" x-text="percent(node, 'memory')"></p><progress class="progress mt-1 h-1 w-14" :class="level(node.metrics.memory_percent)" :value="node.metrics.memory_percent" max="100"></progress></div>
+                        <div><p class="text-[10px] text-base-content/40">存储</p><p class="mt-1 font-mono text-xs font-semibold" x-text="percent(node, 'disk')"></p><progress class="progress mt-1 h-1 w-14" :class="level(node.metrics.disk_percent)" :value="node.metrics.disk_percent" max="100"></progress></div>
+                        <div><p class="text-[10px] text-base-content/40">上传</p><p class="mt-1 whitespace-nowrap font-mono text-xs font-semibold" x-text="node.online && node.metrics.rate_available ? rate(node.metrics.upload_rate) : '—'"></p></div>
+                        <div><p class="text-[10px] text-base-content/40">下载</p><p class="mt-1 whitespace-nowrap font-mono text-xs font-semibold" x-text="node.online && node.metrics.rate_available ? rate(node.metrics.download_rate) : '—'"></p></div>
+                        <div><p class="text-[10px] text-base-content/40">总上传</p><p class="mt-1 whitespace-nowrap font-mono text-xs font-semibold" x-text="bytes(node.metrics.upload_bytes)"></p></div>
+                        <div><p class="text-[10px] text-base-content/40">总下载</p><p class="mt-1 whitespace-nowrap font-mono text-xs font-semibold" x-text="bytes(node.metrics.download_bytes)"></p></div>
+                    </div></div>
                 </button>
-            </div>
+            </template>
         </div>
+    </section>
 
-        <div class="card surface">
-            <div class="card-body !p-5 gap-3">
-                <div class="row eyebrow"><span>Network</span><i class="ri-global-line text-base"></i></div>
+    <p x-show="overview.cluster?.coordination === 'best_effort'" class="mt-6 text-center text-[10px] leading-relaxed text-base-content/30">候选节点按配置顺序选择首个可达的汇总节点；网络分区可能产生多个只读视图，不承担任何管理选主或远程执行功能。</p>
 
-                <template x-for="n in visibleNets" :key="n.name">
-                    <div class="row text-xs" :title="`Total ↓ ${fmtBytes(n.bytesRecv)} · ↑ ${fmtBytes(n.bytesSent)}`">
-                        <span class="truncate" x-text="n.name"></span>
-                        <span class="flex gap-3 font-mono shrink-0">
-                            <span class="text-success" x-text="'↓ ' + fmtRate(rates[n.name]?.down)"></span>
-                            <span class="text-info" x-text="'↑ ' + fmtRate(rates[n.name]?.up)"></span>
-                        </span>
-                    </div>
-                </template>
-
-                <p x-show="!nets.length" class="text-xs italic opacity-60">No data</p>
-
-                <button class="btn btn-ghost btn-xs" x-show="nets.length > 3" @click="showAllNets = !showAllNets">
-                    <span x-text="showAllNets ? 'Show less' : `Show all (${nets.length})`"></span>
-                    <i class="ri-arrow-down-s-line transition-transform" :class="showAllNets && 'rotate-180'"></i>
-                </button>
-            </div>
+    <dialog x-ref="details" class="modal">
+        <div class="modal-box max-w-2xl border border-base-300 bg-base-100">
+            <form method="dialog"><button class="btn btn-circle btn-ghost btn-sm absolute right-3 top-3" aria-label="关闭详情">✕</button></form>
+            <template x-if="selectedNode"><div>
+                <div class="mb-7 flex items-center gap-3"><span class="text-3xl" x-text="flag(selectedNode.country)"></span><div><h2 class="text-lg font-semibold" x-text="selectedNode.name"></h2><p class="mt-1 text-xs text-base-content/45" x-text="[countryName(selectedNode.country), selectedNode.region].filter(Boolean).join(' · ')"></p></div></div>
+                <div class="stats stats-vertical mb-5 w-full border border-base-300 bg-base-200 sm:stats-horizontal"><div class="stat"><div class="stat-title text-xs">CPU</div><div class="stat-value text-2xl font-mono" x-text="percent(selectedNode, 'cpu')"></div><div class="stat-desc" x-text="selectedNode.metrics.cpu_cores + ' 核 · ' + selectedNode.metrics.architecture"></div></div><div class="stat"><div class="stat-title text-xs">内存</div><div class="stat-value text-2xl font-mono" x-text="percent(selectedNode, 'memory')"></div><div class="stat-desc" x-text="bytes(selectedNode.metrics.memory_used) + ' / ' + bytes(selectedNode.metrics.memory_total)"></div></div><div class="stat"><div class="stat-title text-xs">存储</div><div class="stat-value text-2xl font-mono" x-text="percent(selectedNode, 'disk')"></div><div class="stat-desc" x-text="bytes(selectedNode.metrics.disk_used) + ' / ' + bytes(selectedNode.metrics.disk_total)"></div></div></div>
+                <div class="grid grid-cols-2 gap-5 text-xs"><div><p class="text-base-content/40">节点状态</p><p class="mt-2" :class="selectedNode.online ? 'text-success' : 'text-error'" x-text="selectedNode.online ? '在线' : '失联 / 离线'"></p></div><div><p class="text-base-content/40">运行时间</p><p class="mt-2 font-mono" x-text="uptime(selectedNode.metrics.uptime_seconds)"></p></div><div><p class="text-base-content/40">最近上报</p><p class="mt-2 font-mono" x-text="timestamp(selectedNode.last_seen)"></p></div><div><p class="text-base-content/40">节点标识</p><p class="mt-2 break-all font-mono text-base-content/60" x-text="selectedNode.id"></p></div></div>
+                <div class="divider text-[10px] text-base-content/35">最近采样 · 内存中的有限历史</div>
+                <div x-show="historyLoading" class="flex justify-center py-4"><span class="loading loading-dots loading-sm text-success"></span></div>
+                <div x-show="!historyLoading" class="overflow-x-auto rounded-xl border border-base-300 bg-base-200"><table class="table table-xs"><thead><tr><th>时间</th><th>CPU</th><th>内存</th><th>上传</th><th>下载</th></tr></thead><tbody><template x-for="(sample, index) in history.slice(-8).reverse()" :key="index"><tr class="font-mono text-xs"><td x-text="timestamp(sample.time)"></td><td x-text="sample.cpu_percent.toFixed(1) + '%'"></td><td x-text="sample.memory_percent.toFixed(1) + '%'"></td><td x-text="rate(sample.upload_rate)"></td><td x-text="rate(sample.download_rate)"></td></tr></template></tbody></table></div>
+                <p class="mt-4 text-[10px] text-base-content/35">公开页面不提供命令执行、系统配置、真实 IP、主机名、进程列表或磁盘路径。</p>
+            </div></template>
         </div>
-    </div>
+        <form method="dialog" class="modal-backdrop"><button>关闭</button></form>
+    </dialog>
+</main>
 
-    <div class="stats surface w-full overflow-x-auto">
-        <div class="stat">
-            <div class="stat-figure text-indigo-500"><i class="ri-terminal-window-line text-3xl"></i></div>
-            <div class="stat-title">OS Platform</div>
-            <div class="stat-value !text-lg capitalize" x-text="host.platform || 'N/A'"></div>
-            <div class="stat-desc font-mono" x-text="host.kernelArch || ''"></div>
-        </div>
-        <div class="stat">
-            <div class="stat-figure text-emerald-500"><i class="ri-time-line text-3xl"></i></div>
-            <div class="stat-title">Uptime</div>
-            <div class="stat-value !text-lg font-mono" x-text="fmtUptime(host.uptime)"></div>
-            <div class="stat-desc" x-text="host.hostname || ''"></div>
-        </div>
-        <div class="stat">
-            <div class="stat-figure text-amber-500"><i class="ri-database-2-line text-3xl"></i></div>
-            <div class="stat-title">Memory</div>
-            <div class="stat-value !text-lg font-mono" x-text="data?.Memory ? fmtBytes(data.Memory.total) : 'N/A'"></div>
-            <div class="stat-desc" x-text="data?.Memory ? `${fmtBytes(data.Memory.available)} available` : ''"></div>
-        </div>
-        <div class="stat">
-            <div class="stat-figure text-rose-500"><i class="ri-microchip-line text-3xl"></i></div>
-            <div class="stat-title">Processor</div>
-            <div class="stat-value !text-lg truncate" :title="cpuModel" x-text="cpuModel"></div>
-            <div class="stat-desc" x-text="`${data?.CPU?.[0]?.cores || 0} cores`"></div>
-        </div>
-    </div>
-</div>
-
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('panel', () => ({
-            data: {},
-            isConnected: false,
-            rates: {},
-            prevNet: null,
-            showAllDisks: false,
-            showAllNets: false,
-
-            init() {
-                const es = new EventSource('/admin/monitor?type=info');
-                es.onopen = () => this.isConnected = true;
-                es.onerror = () => this.isConnected = false;
-                es.onmessage = (e) => {
-                    try {
-                        this.ingest(JSON.parse(e.data));
-                        this.isConnected = true;
-                    } catch (err) {
-                        console.error('monitor: bad SSE payload', err);
-                    }
-                };
-            },
-
-            // 接收一帧数据；网络字段是开机以来的累计字节数，与上一帧做差得出实时速率
-            ingest(d) {
-                const now = Date.now();
-                if (this.prevNet) {
-                    const dt = (now - this.prevNet.t) / 1000;
-                    if (dt > 0.5) {
-                        const rates = {};
-                        for (const n of d.Network || []) {
-                            const p = this.prevNet.map[n.name];
-                            if (p) rates[n.name] = {
-                                down: Math.max(0, n.bytesRecv - p.recv) / dt,
-                                up: Math.max(0, n.bytesSent - p.sent) / dt,
-                            };
-                        }
-                        this.rates = rates;
-                    }
-                }
-                this.prevNet = {
-                    t: now,
-                    map: Object.fromEntries((d.Network || []).map(n => [n.name, { recv: n.bytesRecv, sent: n.bytesSent }])),
-                };
-                this.data = d;
-            },
-
-            get cpu() { return Math.round(this.data?.CPUUsage?.[0] ?? 0); },
-            get mem() { return Math.round(this.data?.Memory?.usedPercent ?? 0); },
-            get cpuModel() { return (this.data?.CPU?.[0]?.modelName || 'Loading...').replace(/\s+/g, ' '); },
-            get host() { return this.data?.HostInfo || {}; },
-            get disks() { return this.data?.DiskUsage || []; },
-            get nets() { return (this.data?.Network || []).filter(n => n.bytesRecv > 0 || n.bytesSent > 0); },
-            get visibleDisks() { return this.showAllDisks ? this.disks : this.disks.slice(0, 3); },
-            get visibleNets() { return this.showAllNets ? this.nets : this.nets.slice(0, 3); },
-
-            get gauges() {
-                const m = this.data?.Memory;
-                return [
-                    { label: 'CPU Load', icon: 'ri-cpu-line', value: this.cpu, desc: this.cpuModel },
-                    { label: 'RAM Usage', icon: 'ri-database-2-line', value: this.mem,
-                      desc: m ? `${this.fmtBytes(m.used)} / ${this.fmtBytes(m.total)}` : '—' },
-                ];
-            },
-
-            levelText(v) {
-                if (v >= 90) return 'text-error';
-                if (v >= 70) return 'text-warning';
-                return 'text-success';
-            },
-            levelBar(v) {
-                if (v >= 90) return 'progress-error';
-                if (v >= 70) return 'progress-warning';
-                return 'progress-success';
-            },
-
-            fmtUptime(s) {
-                if (!s) return 'N/A';
-                const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
-                return d > 0 ? `${d}d ${h}h ${m}m` : `${h}h ${m}m`;
-            },
-            fmtBytes(bytes, decimals = 1) {
-                if (!bytes) return '0 B';
-                const k = 1024, sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
-                const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), sizes.length - 1);
-                return parseFloat((bytes / k ** i).toFixed(decimals)) + ' ' + sizes[i];
-            },
-            fmtRate(v) { return v == null ? '—' : this.fmtBytes(v) + '/s'; },
-        }));
-    });
-</script>
-
-{{template "footer.template"}}
+{{template "observatory.footer" .}}

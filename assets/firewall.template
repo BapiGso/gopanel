@@ -121,13 +121,12 @@
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('panel', () => ({
-            async createRule(e) {
+            async createRule(event) {
                 try {
-                    const response = await fetch(location.pathname, {
-                        method: "POST",
-                        body: new FormData(e.target)
-                    });
-                    alert(await response.text());
+                    const body = Object.fromEntries(new FormData(event.target));
+                    body.port = Number(body.port);
+                    await panelAPI('/firewall/rules', {method: 'POST', body});
+                    alert('Rule created successfully');
                     location.reload();
                 } catch (error) {
                     alert('Failed to create rule: ' + error.message);
@@ -136,15 +135,8 @@
             async deleteRule(id) {
                 if (confirm("Are you sure you want to delete this rule?")) {
                     try {
-                        const response = await fetch(`/admin/firewall?id=${encodeURIComponent(id)}`, {
-                            method: "DELETE"
-                        });
-                        const result = await response.json();
-                        if (result.error) {
-                            alert('Error: ' + result.error);
-                        } else {
-                            alert('Rule deleted successfully');
-                        }
+                        await panelAPI(`/firewall/rules/${encodeURIComponent(id)}`, {method: 'DELETE'});
+                        alert('Rule deleted successfully');
                         location.reload();
                     } catch (error) {
                         alert('Failed to delete rule: ' + error.message);

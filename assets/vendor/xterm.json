@@ -1,0 +1,68 @@
+{
+  "format": "UMD",
+  "sourceMaps": "References removed; source maps are not vendored.",
+  "licenses": "assets/vendor/xterm.LICENSE",
+  "packages": [
+    {
+      "name": "@xterm/xterm",
+      "version": "6.0.0",
+      "license": "MIT",
+      "tarball": "https://registry.npmjs.org/@xterm/xterm/-/xterm-6.0.0.tgz",
+      "integrity": "sha512-TQwDdQGtwwDt+2cgKDLn0IRaSxYu1tSUjgKarSDkUM0ZNiSRXFpjxEsvc/Zgc5kq5omJ+V0a8/kIM2WD3sMOYg==",
+      "files": [
+        {
+          "source": "lib/xterm.js",
+          "path": "assets/js/xterm.js",
+          "sha256": "98d0973151aff2991d335b1adbbdac2e14da26341abe329d677d4c0034402bdf"
+        },
+        {
+          "source": "css/xterm.css",
+          "path": "assets/css/xterm.css",
+          "sha256": "854a7c0fb70e8b1a083c16797ab827299fb18744f5ad34f227b48337e33293c6"
+        }
+      ]
+    },
+    {
+      "name": "@xterm/addon-attach",
+      "version": "0.12.0",
+      "license": "MIT",
+      "tarball": "https://registry.npmjs.org/@xterm/addon-attach/-/addon-attach-0.12.0.tgz",
+      "integrity": "sha512-1lxvXM4JYSm60lbFmE8WMOy2oF2ip3Ye8jWorSAmwy7x8FiC53netEJ5RguL8+FSRj79MUQsNCb2hprY2QA2ig==",
+      "files": [
+        {
+          "source": "lib/addon-attach.js",
+          "path": "assets/js/xterm-addon-attach.js",
+          "sha256": "edff82d16dafa9112360ea8e36fab68f3a764b0570a8aafb2c661c1fef94ef0d"
+        }
+      ]
+    },
+    {
+      "name": "@xterm/addon-fit",
+      "version": "0.11.0",
+      "license": "MIT",
+      "tarball": "https://registry.npmjs.org/@xterm/addon-fit/-/addon-fit-0.11.0.tgz",
+      "integrity": "sha512-jYcgT6xtVYhnhgxh3QgYDnnNMYTcf8ElbxxFzX0IZo+vabQqSPAjC3c1wJrKB5E19VwQei89QCiZZP86DCPF7g==",
+      "files": [
+        {
+          "source": "lib/addon-fit.js",
+          "path": "assets/js/xterm-addon-fit.js",
+          "sha256": "4df3789fa7bff5d545ba38462a8cd2f7460ba971021bce3f81c2870f937a201e"
+        }
+      ]
+    },
+    {
+      "name": "@xterm/addon-web-links",
+      "version": "0.12.0",
+      "license": "MIT",
+      "tarball": "https://registry.npmjs.org/@xterm/addon-web-links/-/addon-web-links-0.12.0.tgz",
+      "integrity": "sha512-4Smom3RPyVp7ZMYOYDoC/9eGJJJqYhnPLGGqJ6wOBfB8VxPViJNSKdgRYb8NpaM6YSelEKbA2SStD7lGyqaobw==",
+      "files": [
+        {
+          "source": "lib/addon-web-links.js",
+          "path": "assets/js/xterm-addon-web-links.js",
+          "sha256": "e34337f790d1cc817312a1ac1c00c473a7c504f471a70086db57ca9cd0335ca9"
+        }
+      ]
+    }
+  ]
+}

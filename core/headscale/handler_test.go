@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v5"
+	"gopanel/core/httpapi"
 )
 
 // ==================== loadServerConfig 测试 ====================
@@ -321,6 +322,9 @@ func parseJSON(t *testing.T, rec *httptest.ResponseRecorder) map[string]any {
 	if err := json.Unmarshal(rec.Body.Bytes(), &result); err != nil {
 		t.Fatalf("failed to parse JSON response: %v, body: %s", err, rec.Body.String())
 	}
+	if data, ok := result["data"].(map[string]any); ok {
+		return data
+	}
 	return result
 }
 
@@ -330,15 +334,15 @@ func TestCheckStatus_WhenStopped(t *testing.T) {
 	hsError = ""
 	hsMutex.Unlock()
 
-	c, rec := newTestContext("POST", "/admin/headscale?status=check", nil)
-	err := Index(c)
+	c, rec := newTestContext("GET", "/api/v1/headscale/status", nil)
+	err := getStatus(c)
 	if err != nil {
 		t.Fatalf("Index returned error: %v", err)
 	}
 
 	result := parseJSON(t, rec)
-	if result["status"] != "stopped" {
-		t.Errorf("status = %v, want 'stopped'", result["status"])
+	if result["state"] != "stopped" {
+		t.Errorf("state = %v, want 'stopped'", result["state"])
 	}
 }
 
@@ -348,15 +352,15 @@ func TestCheckStatus_WhenRunning(t *testing.T) {
 	hsError = ""
 	hsMutex.Unlock()
 
-	c, rec := newTestContext("POST", "/admin/headscale?status=check", nil)
-	err := Index(c)
+	c, rec := newTestContext("GET", "/api/v1/headscale/status", nil)
+	err := getStatus(c)
 	if err != nil {
 		t.Fatalf("Index returned error: %v", err)
 	}
 
 	result := parseJSON(t, rec)
-	if result["status"] != "running" {
-		t.Errorf("status = %v, want 'running'", result["status"])
+	if result["state"] != "running" {
+		t.Errorf("state = %v, want 'running'", result["state"])
 	}
 
 	// 恢复状态
@@ -370,18 +374,15 @@ func TestStartAlreadyRunning(t *testing.T) {
 	hsRunning = true
 	hsMutex.Unlock()
 
-	c, rec := newTestContext("POST", "/admin/headscale?status=start", nil)
-	err := Index(c)
+	c, rec := newTestContext("POST", "/api/v1/headscale/start", nil)
+	err := start(c)
 	if err != nil {
 		t.Fatalf("Index returned error: %v", err)
 	}
 
 	result := parseJSON(t, rec)
-	if result["success"] != true {
-		t.Errorf("success = %v, want true", result["success"])
-	}
-	if result["message"] != "Already running" {
-		t.Errorf("message = %v, want 'Already running'", result["message"])
+	if result["state"] != "running" || rec.Code != http.StatusAccepted {
+		t.Errorf("response = %v, status = %d, want running / 202", result, rec.Code)
 	}
 
 	hsMutex.Lock()
@@ -394,15 +395,15 @@ func TestStopWhenNotRunning(t *testing.T) {
 	hsRunning = false
 	hsMutex.Unlock()
 
-	c, rec := newTestContext("POST", "/admin/headscale?status=stop", nil)
-	err := Index(c)
+	c, rec := newTestContext("POST", "/api/v1/headscale/stop", nil)
+	err := stop(c)
 	if err != nil {
 		t.Fatalf("Index returned error: %v", err)
 	}
 
 	result := parseJSON(t, rec)
-	if result["success"] != false {
-		t.Errorf("success = %v, want false", result["success"])
+	if result["state"] != "stopped" {
+		t.Errorf("state = %v, want stopped", result["state"])
 	}
 }
 
@@ -412,15 +413,15 @@ func TestCheckStatus_WithError(t *testing.T) {
 	hsError = "bind: address already in use"
 	hsMutex.Unlock()
 
-	c, rec := newTestContext("POST", "/admin/headscale?status=check", nil)
-	err := Index(c)
+	c, rec := newTestContext("GET", "/api/v1/headscale/status", nil)
+	err := getStatus(c)
 	if err != nil {
 		t.Fatalf("Index returned error: %v", err)
 	}
 
 	result := parseJSON(t, rec)
-	if result["error"] != "bind: address already in use" {
-		t.Errorf("error = %v, want error message", result["error"])
+	if result["last_error"] != "bind: address already in use" {
+		t.Errorf("last_error = %v, want error message", result["last_error"])
 	}
 
 	hsMutex.Lock()
@@ -447,34 +448,32 @@ func TestHeadscaleStartAndConnect(t *testing.T) {
 	}()
 
 	// 准备表单数据（启用内嵌 DERP）
-	form := url.Values{
-		"server_url":          {"http://127.0.0.1:18080"},
-		"listen_addr":         {"127.0.0.1:18080"},
-		"metrics_listen_addr": {"127.0.0.1:19090"},
-		"private_key_path":    {testDir + "/noise_private.key"},
-		"ipv4_prefix":         {"100.64.0.0/10"},
-		"ipv6_prefix":         {"fd7a:115c:a1e0::/48"},
-		"base_domain":         {"test.example.com"},
-		"stun_enabled":        {"true"},
-		"stun_listen_addr":    {"0.0.0.0:3478"},
-		"derp_enabled":        {"true"},
-		"derp_region_id":      {"999"},
-		"derp_region_code":    {"gopanel"},
-		"derp_region_name":    {"GoPanel Embedded DERP"},
+	settings := serverConfig{
+		ServerURL: "http://127.0.0.1:18080", ListenAddr: "127.0.0.1:18080", MetricsListenAddr: "127.0.0.1:19090",
+		PrivateKeyPath: testDir + "/noise_private.key", IPv4Prefix: "100.64.0.0/10", IPv6Prefix: "fd7a:115c:a1e0::/48",
+		BaseDomain: "test.example.com", STUNEnabled: true, STUNListenAddr: "0.0.0.0:3478", DERPEnabled: true,
+		DERPRegionID: 999, DERPRegionCode: "gopanel", DERPRegionName: "GoPanel Embedded DERP",
+	}
+	content, err := json.Marshal(settings)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(configurationFile.Path, content, 0600); err != nil {
+		t.Fatal(err)
 	}
 
 	// 1. 启动 Headscale
 	t.Log("Starting Headscale with embedded DERP...")
-	c, rec := newTestContext("POST", "/admin/headscale?status=start", form)
-	err := Index(c)
+	c, rec := newTestContext("POST", "/api/v1/headscale/start", nil)
+	err = start(c)
 	if err != nil {
 		t.Fatalf("start request failed: %v", err)
 	}
 
 	result := parseJSON(t, rec)
 	t.Logf("Start response: %v", result)
-	if result["success"] != true {
-		t.Fatalf("start failed: %v", result["message"])
+	if result["state"] != "running" {
+		t.Fatalf("start failed: %v", result)
 	}
 
 	// 2. 等待服务启动，然后检查状态
@@ -482,20 +481,20 @@ func TestHeadscaleStartAndConnect(t *testing.T) {
 	for i := range 10 {
 		time.Sleep(500 * time.Millisecond)
 
-		c2, rec2 := newTestContext("POST", "/admin/headscale?status=check", nil)
-		_ = Index(c2)
+		c2, rec2 := newTestContext("GET", "/api/v1/headscale/status", nil)
+		_ = getStatus(c2)
 		status := parseJSON(t, rec2)
 
-		if status["status"] == "running" {
+		if status["state"] == "running" {
 			t.Log("Service is running!")
 			break
 		}
 
-		if errMsg, ok := status["error"].(string); ok && errMsg != "" {
+		if errMsg, ok := status["last_error"].(string); ok && errMsg != "" {
 			t.Fatalf("service failed to start: %s", errMsg)
 		}
 
-		t.Logf("Attempt %d: status=%v, waiting...", i+1, status["status"])
+		t.Logf("Attempt %d: state=%v, waiting...", i+1, status["state"])
 	}
 
 	// 3. 等待端口绑定完成，然后尝试 HTTP 连接
@@ -521,11 +520,10 @@ func TestHeadscaleStartAndConnect(t *testing.T) {
 
 	// 4. 停止服务
 	t.Log("Stopping Headscale...")
-	c3, rec3 := newTestContext("POST", "/admin/headscale?status=stop", nil)
-	err = Index(c3)
-	if err != nil {
-		t.Fatalf("stop request failed: %v", err)
+	c3, _ := newTestContext("POST", "/api/v1/headscale/stop", nil)
+	err = stop(c3)
+	failure, ok := err.(*httpapi.Error)
+	if !ok || failure.Status != http.StatusNotImplemented {
+		t.Fatalf("stop error = %v, want not_supported", err)
 	}
-	stopResult := parseJSON(t, rec3)
-	t.Logf("Stop response: %v", stopResult)
 }

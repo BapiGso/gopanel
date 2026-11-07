@@ -2,6 +2,8 @@ gopanel_config.json
 gopanel_Caddyfile
 gopanel_frps.conf
 gopanel_frpc.conf
+gopanel_headscale.json
+gopanel_monitor.json
 access.log
 /.idea
 /.claude

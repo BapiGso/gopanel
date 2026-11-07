@@ -114,7 +114,7 @@
                                     <button @click="changeDirectory($el.innerText)" class="font-medium hover:text-primary hover:underline underline-offset-2 transition-colors truncate max-w-[200px] sm:max-w-xs">{{.Name}}</button>
                                 {{else}}
                                     <span class="shrink-0 h-8 w-8 bg-base-200 rounded-lg flex items-center justify-center opacity-70"><i class="ri-file-text-line text-lg"></i></span>
-                                    <a :href="`/admin/file/process?path=${getDirectoryValue()}/{{.Name}}`" class="font-medium hover:text-primary hover:underline underline-offset-2 transition-colors truncate max-w-[200px] sm:max-w-xs">{{.Name}}</a>
+                                    <a :href="`/api/v1${panelFilePath('downloads', filePath(`{{.Name}}`))}`" class="font-medium hover:text-primary hover:underline underline-offset-2 transition-colors truncate max-w-[200px] sm:max-w-xs">{{.Name}}</a>
                                 {{end}}
                             </div>
                         </td>
@@ -179,35 +179,15 @@
                 return `${current === '/' ? '' : current}/${name}`;
             },
 
-            processURL(name = '', mode = '') {
-                const url = new URL('/admin/file/process', location.origin);
-                url.searchParams.set('path', this.filePath(name));
-                if (mode) url.searchParams.set('mode', mode);
-                return url;
-            },
-
-            async message(res) {
-                const text = await res.text();
-                if (!text) return '';
-                try {
-                    const data = JSON.parse(text);
-                    return data.message || data;
-                } catch {
-                    return text;
-                }
-            },
-
             async request(options = {}) {
-                const {name = '', mode = '', ...init} = options;
-                const res = await fetch(this.processURL(name, mode), init);
-                if (!res.ok) throw new Error(await this.message(res));
-                return res;
+                const {name = '', resource = 'files', endpoint, ...init} = options;
+                return panelAPI(endpoint || panelFilePath(resource, this.filePath(name)), init);
             },
 
             async run(options, fallback = 'Operation failed') {
                 try {
-                    const res = await this.request(options);
-                    alert(await this.message(res) || 'success');
+                    await this.request(options);
+                    alert('success');
                     location.reload();
                 } catch (error) {
                     alert(`${fallback}: ${error.message}`);
@@ -243,12 +223,11 @@
 
             async newEditor(name) {
                 try {
-                    const res = await this.request({name, mode: 'edit'});
-                    const data = await res.json();
+                    const data = await this.request({name});
                     window.editor = ace.edit("editor");
-                    editor.setValue(data.data, -1);
+                    editor.setValue(data.content, -1);
                     editor.filename = name;
-                    editor.session.setMode(`ace/mode/${data.type}`);
+                    editor.session.setMode(`ace/mode/${name.split('.').pop()}`);
                     this.editorShow = true;
                 } catch (error) {
                     alert('Failed to open editor: ' + error.message);
@@ -258,17 +237,16 @@
             async uploadFiles(el) {
                 const formData = new FormData();
                 Array.from(el.files).forEach(file => formData.append('files', file));
-                await this.run({method: 'POST', body: formData}, 'Upload failed');
+                await this.run({resource: 'uploads', method: 'POST', body: formData}, 'Upload failed');
             },
 
             async updateFile(type, name, data) {
-                if (!data) return;
-                const body = type === 'rename' ? this.filePath(data) : data;
+                if (data === null) return;
+                const body = type === 'rename' ? {destination: this.filePath(data)}
+                    : type === 'chmod' ? {permissions: data} : {content: data};
                 await this.run({
                     name,
-                    mode: type,
-                    method: 'PUT',
-                    headers: {'Content-Type': 'text/plain'},
+                    method: type === 'update' ? 'PUT' : 'PATCH',
                     body,
                 }, 'Update failed');
             },
@@ -281,7 +259,7 @@
 
             async createFile(type, name) {
                 if (!name) return;
-                await this.run({name, mode: type, method: 'PUT'}, 'Create failed');
+                await this.run({endpoint: '/files', method: 'POST', body: {path: this.filePath(name), type: type === 'createFolder' ? 'directory' : 'file'}}, 'Create failed');
             }
         }))
     })

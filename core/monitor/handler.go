@@ -2,41 +2,33 @@ package monitor
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/labstack/echo/v5"
+	"html"
 	"net/http"
-	"time"
+
+	"github.com/labstack/echo/v5"
 )
 
-// Index 是监视器页面和 SSE 流的 HTTP 处理器
-func Index(c *echo.Context) error {
-	if c.QueryParam("type") == "info" { // SSE 流请求
-		c.Response().Header().Set(echo.HeaderContentType, "text/event-stream")
-		c.Response().Header().Set(echo.HeaderCacheControl, "no-cache")
-		c.Response().Header().Set(echo.HeaderConnection, "keep-alive")
-		c.Response().WriteHeader(http.StatusOK)
+func (service *Service) Index(ctx *echo.Context) error {
+	return service.page(ctx, false)
+}
 
-		for {
-			select {
-			case <-c.Request().Context().Done(): // 客户端断开连接
-				return nil
-			default:
-				// 直接序列化全局的 SysMonitor 实例。
-				// 注意：这里没有锁保护，SysMonitor 可能在序列化过程中被 fetchAllStats 修改，
-				// 从而产生竞态条件。
-				SysMonitor.fetchAllStats()
-				jsonStu, err := json.Marshal(SysMonitor)
-				if err != nil {
-					return err
-				}
-
-				if _, err := fmt.Fprint(c.Response(), "data: "+string(jsonStu)+"\n\n"); err != nil {
-					return err
-				}
-				http.NewResponseController(c.Response()).Flush()
-				time.Sleep(2 * time.Second)
-			}
-		}
+func (service *Service) publicPage(ctx *echo.Context) error {
+	if !service.settings.Public {
+		return echo.NewHTTPError(http.StatusNotFound, "Public monitoring is disabled")
 	}
-	return c.Render(http.StatusOK, "monitor.template", nil)
+	return service.page(ctx, true)
+}
+
+func (service *Service) page(ctx *echo.Context, public bool) error {
+	base := "/api/v1/monitor"
+	if public {
+		base = "/api/v1/public/monitor"
+	}
+	bootstrap, err := json.Marshal(map[string]any{"title": service.settings.Title, "api_base": base, "public": public})
+	if err != nil {
+		return err
+	}
+	return ctx.Render(http.StatusOK, "monitor.template", map[string]any{
+		"title": html.EscapeString(service.settings.Title), "bootstrap": string(bootstrap),
+	})
 }

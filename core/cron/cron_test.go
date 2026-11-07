@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"gopanel/core/httpapi"
 )
 
 func TestCron(t *testing.T) {
@@ -69,7 +71,7 @@ func TestPersistCronScriptWritesUnderDataCron(t *testing.T) {
 	}
 }
 
-func TestIndexRejectsInvalidSchedulerIndex(t *testing.T) {
+func TestAPIRejectsUnknownJobName(t *testing.T) {
 	oldSchedulerList := schedulerList
 	schedulerList = nil
 	t.Cleanup(func() {
@@ -77,14 +79,12 @@ func TestIndexRejectsInvalidSchedulerIndex(t *testing.T) {
 	})
 
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodPut, "/admin/cron?type=remove&index=0", nil)
+	e.HTTPErrorHandler = httpapi.ErrorHandler
+	RegisterAPI(httpapi.NewRouter(e.Group(httpapi.Prefix)))
+	req := httptest.NewRequest(http.MethodDelete, "/api/v1/cron/jobs/missing-job", nil)
 	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
-
-	if err := Index(c); err != nil {
-		t.Fatalf("Index() error = %v", err)
-	}
-	if rec.Code != http.StatusBadRequest {
-		t.Fatalf("status = %d, want %d", rec.Code, http.StatusBadRequest)
+	e.ServeHTTP(rec, req)
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusNotFound)
 	}
 }

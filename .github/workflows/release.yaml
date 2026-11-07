@@ -18,6 +18,9 @@ jobs:
         with:
           go-version: '1.27'
 
+      - name: Test installation scripts
+        run: python3 -m unittest discover -s shell/tests -v
+
       - name: Build all platforms
         run: |
           version="${GITHUB_REF_NAME}"
@@ -87,9 +90,10 @@ jobs:
             exit 1
           fi
 
-          # 如果有失败的构建，输出警告但不中断流程
+          # Do not publish a partial release that the installer cannot use.
           if [ ${#failed_builds[@]} -gt 0 ]; then
-            echo "⚠️ Some builds failed, but will proceed with successful ones"
+            echo "::error::Some platform builds failed; refusing to publish an incomplete release"
+            exit 1
           fi
 
       - name: List built files
@@ -102,4 +106,4 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: gopanel_*
-          fail_on_unmatched_files: false  # 不因找不到文件而失败
+          fail_on_unmatched_files: true

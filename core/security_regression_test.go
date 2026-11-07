@@ -193,28 +193,12 @@ func useTempCoreConfig(t *testing.T, initial config.Config) {
 	t.Helper()
 
 	tempDir := t.TempDir()
-	oldWD, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("getwd: %v", err)
-	}
-	if err := os.Chdir(tempDir); err != nil {
-		t.Fatalf("chdir temp dir: %v", err)
-	}
-	t.Cleanup(func() {
-		if err := os.Chdir(oldWD); err != nil {
-			t.Fatalf("restore cwd: %v", err)
-		}
-		if err := config.Init(); err != nil {
-			t.Fatalf("reload original config: %v", err)
-		}
-	})
-
 	path := filepath.Join(tempDir, "gopanel_config.json")
 	if err := os.WriteFile(path, mustMarshalConfig(t, initial), 0644); err != nil {
 		t.Fatalf("write initial config: %v", err)
 	}
-	if err := config.Init(); err != nil {
-		t.Fatalf("config.Init() error = %v", err)
+	if err := Initialize(tempDir); err != nil {
+		t.Fatalf("Initialize() error = %v", err)
 	}
 }
 

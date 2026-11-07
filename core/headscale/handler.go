@@ -30,7 +30,6 @@ var (
 	hsApp     *hscontrol.Headscale  // Headscale 实例
 	hsRunning bool                  // 运行状态标记
 	hsMutex   sync.Mutex            // 线程锁，防止同时点击启动炸掉
-	hsCancel  context.CancelFunc    // 用于停止服务的开关
 	hsError   string                // 记录启动时的报错信息
 	stunSrv   *standaloneSTUNServer // 独立 STUN 服务
 )
@@ -63,133 +62,10 @@ type headscaleConfig struct {
 
 // Index 是唯一的入口函数
 func Index(c *echo.Context) error {
-	// 获取请求动作类型
-	action := c.QueryParam("status")
-	switch c.Request().Method {
-
-	// 1. 处理 POST 请求 (控制指令：启动、停止、检查状态)
-	case "POST":
-		hsMutex.Lock()
-		defer hsMutex.Unlock()
-
-		switch action {
-		case "start":
-			// 如果已经在运行，直接返回成功
-			if hsRunning {
-				return c.JSON(200, map[string]any{"success": true, "message": "Already running"})
-			}
-
-			// 绑定参数
-			req := &headscaleConfig{}
-			if err := c.Bind(req); err != nil {
-				return c.JSON(400, map[string]any{"success": false, "message": "Invalid config"})
-			}
-
-			// 转换配置
-			cfg, err := loadServerConfig(req)
-			if err != nil {
-				return c.JSON(400, map[string]any{"success": false, "message": err.Error()})
-			}
-
-			// 初始化 Headscale
-			app, err := hscontrol.NewHeadscale(cfg)
-			if err != nil {
-				return c.JSON(500, map[string]any{"success": false, "message": "Init failed: " + err.Error()})
-			}
-
-			var standaloneSTUN *standaloneSTUNServer
-			if req.shouldStartStandaloneSTUN() {
-				standaloneSTUN, err = startStandaloneSTUN(req.stunListenAddr())
-				if err != nil {
-					return c.JSON(500, map[string]any{"success": false, "message": "STUN start failed: " + err.Error()})
-				}
-			}
-
-			// 创建用于停止的 Context
-			ctx, cancel := context.WithCancel(context.Background())
-
-			// 更新全局状态
-			hsApp = app
-			hsCancel = cancel
-			hsRunning = true
-			hsError = ""
-			stunSrv = standaloneSTUN
-
-			// 【关键点】放入 goroutine 异步运行，防止阻塞 HTTP 请求
-			go func() {
-				// 注意：这里需要 Headscale 支持 Context 传入或者只是单纯运行
-				// 目前 Headscale 的 Serve 通常是阻塞的
-				// 如果需要支持优雅关闭，可能需要修改 Headscale 源码或使用其提供的 Shutdown 方法
-				// 这里简单处理：启动服务
-				if err := app.Serve(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-					hsMutex.Lock()
-					hsRunning = false
-					hsError = err.Error()
-					stopStandaloneSTUNLocked()
-					hsMutex.Unlock()
-					fmt.Println("Headscale stopped unexpectedly:", err)
-				} else {
-					// 正常退出
-					hsMutex.Lock()
-					hsRunning = false
-					stopStandaloneSTUNLocked()
-					hsMutex.Unlock()
-				}
-			}()
-
-			// 这里稍微利用 Context 做一个假装的生命周期管理（Headscale原生Serve如果不接受Context，强制停止比较麻烦）
-			// 为了演示，我们保存了 cancel，实际停止时可能需要关闭 listener
-			go func() {
-				<-ctx.Done()
-				// 当 cancel 被调用时，尝试关闭 app (如果 app 暴露了 Shutdown)
-				// hsApp.Shutdown()
-			}()
-
-			return c.JSON(200, map[string]any{"success": true, "message": "Headscale started in background"})
-
-		case "stop":
-			if !hsRunning {
-				return c.JSON(200, map[string]any{"success": false, "message": "Not running"})
-			}
-
-			// 触发停止
-			if hsCancel != nil {
-				hsCancel() // 触发 Context 取消
-			}
-
-			// 注意：由于 Go 的 http.Server 需要显式 Shutdown，
-			// 如果 headscale 库没暴露 Shutdown 方法，这里可能关不掉端口。
-			// 假设 hscontrol 内部处理了关闭逻辑，或者你可能需要重启整个主进程。
-
-			hsRunning = false
-			hsApp = nil
-			stopStandaloneSTUNLocked()
-			return c.JSON(200, map[string]any{"success": true, "message": "Stop signal sent"})
-
-		case "check": // 前端轮询用
-			statusStr := "stopped"
-			if hsRunning {
-				statusStr = "running"
-			}
-			return c.JSON(200, map[string]any{
-				"status": statusStr,
-				"error":  hsError,
-			})
-
-		default:
-			// 可以在这里处理保存配置逻辑
-			// saveConfigToDisk(c)
-			return c.JSON(200, map[string]any{"success": true, "message": "Config saved (mock)"})
-		}
-
-	case "GET":
-		// 可以在这里读取配置文件回显
-		return c.Render(http.StatusOK, "headscale.template", map[string]any{
-			"headscaleEnable": hsRunning,
-		})
-	}
-
-	return echo.ErrMethodNotAllowed
+	hsMutex.Lock()
+	running := hsRunning
+	hsMutex.Unlock()
+	return c.Render(http.StatusOK, "headscale.template", map[string]any{"headscaleEnable": running})
 }
 
 // 辅助函数：配置转换
@@ -218,7 +94,7 @@ func loadServerConfig(c *headscaleConfig) (*types.Config, error) {
 	derpConfig := types.DERPConfig{
 		ServerEnabled:                      c.DERPEnabled,
 		AutomaticallyAddEmbeddedDerpRegion: c.DERPEnabled,
-		ServerRegionID:                     derpRegionID,
+		ServerRegionID:                     tailcfg.DERPRegionID(derpRegionID),
 		ServerRegionCode:                   derpRegionCode,
 		ServerRegionName:                   derpRegionName,
 		STUNAddr:                           stunAddr,
@@ -238,23 +114,23 @@ func loadServerConfig(c *headscaleConfig) (*types.Config, error) {
 	}
 
 	return &types.Config{
-		ServerURL:                      c.ServerURL,
-		Addr:                           c.ListenAddr,
-		MetricsAddr:                    c.MetricsListenAddr,
-		GRPCAddr:                       "127.0.0.1:50443",
-		GRPCAllowInsecure:              true,
+		ServerURL:         c.ServerURL,
+		Addr:              c.ListenAddr,
+		MetricsAddr:       c.MetricsListenAddr,
+		GRPCAddr:          "127.0.0.1:50443",
+		GRPCAllowInsecure: true,
 		Node: types.NodeConfig{
 			Ephemeral: types.EphemeralConfig{
 				InactivityTimeout: 30 * time.Minute,
 			},
 		},
-		PrefixV4:                       &prefix4,
-		PrefixV6:                       &prefix6,
-		IPAllocation:                   types.IPAllocationStrategySequential,
-		NoisePrivateKeyPath:            c.PrivateKeyPath,
-		BaseDomain:                     c.BaseDomain,
-		Log:                            types.LogConfig{Level: 1},
-		DisableUpdateCheck:             true,
+		PrefixV4:            &prefix4,
+		PrefixV6:            &prefix6,
+		IPAllocation:        types.IPAllocationStrategySequential,
+		NoisePrivateKeyPath: c.PrivateKeyPath,
+		BaseDomain:          c.BaseDomain,
+		Log:                 types.LogConfig{Level: 1},
+		DisableUpdateCheck:  true,
 		Database: types.DatabaseConfig{
 			Type:  "sqlite3",
 			Debug: false,
@@ -338,16 +214,18 @@ func (c *headscaleConfig) stunOnlyDERPMap(stunAddr string, regionID int, regionC
 		return nil, fmt.Errorf("STUN port out of range: %d", stunPort)
 	}
 
+	derpRegionID := tailcfg.DERPRegionID(regionID)
+
 	return &tailcfg.DERPMap{
-		Regions: map[int]*tailcfg.DERPRegion{
-			regionID: {
-				RegionID:   regionID,
+		Regions: map[tailcfg.DERPRegionID]*tailcfg.DERPRegion{
+			derpRegionID: {
+				RegionID:   derpRegionID,
 				RegionCode: regionCode,
 				RegionName: regionName,
 				Nodes: []*tailcfg.DERPNode{
 					{
 						Name:     fmt.Sprintf("%dstun", regionID),
-						RegionID: regionID,
+						RegionID: derpRegionID,
 						HostName: host,
 						STUNPort: stunPort,
 						STUNOnly: true,

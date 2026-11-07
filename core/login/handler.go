@@ -21,7 +21,8 @@ func Login(c *echo.Context) error {
 		if err := c.Validate(req); err != nil {
 			return err
 		}
-		if req.Username == config.String("panel.username") && req.Password == config.String("panel.password") {
+		settings := config.Snapshot().Panel
+		if req.Username == settings.Username && req.Password == settings.Password {
 			if err := mymiddleware.SessionManager.RenewToken(c.Request().Context()); err != nil {
 				return err
 			}

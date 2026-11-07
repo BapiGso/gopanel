@@ -59,6 +59,8 @@
         Alpine.data('panel', () => ({
             // Initialize with Go Template value
             caddyEnabled: {{.caddyEnable}},
+            revision: '{{.caddyRevision}}',
+            settingsRevision: '{{.settingsRevision}}',
 
             init() {
                 window.editor = ace.edit("editor");
@@ -71,7 +73,7 @@
                     wrap: true,
                     fontFamily: "'JetBrains Mono', 'Fira Code', monospace"
                 });
-                editor.setValue(`{{.caddyFile}}`, -1);
+                editor.setValue({{.caddyFile}}, -1);
 
                 editor.commands.addCommand({
                     name: 'save',
@@ -84,13 +86,12 @@
 
             async updateConfig() {
                 try {
-                    // Show simple loading state if needed
-                    const response = await fetch(`/admin/website`, {
+                    const result = await panelAPI('/caddy/config', {
                         method: 'PUT',
-                        body: editor.getSession().getValue(),
+                        body: {content: editor.getSession().getValue(), revision: this.revision},
                     });
-                    const result = await response.text();
-                    alert(result);
+                    this.revision = result.revision;
+                    alert('Configuration saved. Reload Caddy to apply it.');
                     location.reload();
                 } catch (error) {
                     alert('Failed to update config: ' + error.message);
@@ -98,24 +99,15 @@
             },
 
             async manageCaddy(status) {
-                // Optimistic UI update for the toggle (feels faster)
-                if (status === 'enable') {
-                    this.caddyEnabled = !this.caddyEnabled;
-                }
-
                 try {
-                    const response = await fetch(`/admin/website?status=${status}`, {
-                        method: "POST"
-                    });
-                    const result = await response.text();
-
-                    // If using alert/reload, keep it.
-                    // If you want a smoother experience, remove reload and use a toast notification.
-                    alert(result);
+                    const result = status === 'enable'
+                        ? await panelAPI('/caddy/settings', {method: 'PATCH', body: {autostart: !this.caddyEnabled, revision: this.settingsRevision}})
+                        : await panelAPI(`/caddy/${status === 'restart' ? 'reload' : status}`, {method: 'POST'});
+                    this.caddyEnabled = result.autostart;
+                    this.settingsRevision = result.settings_revision;
+                    alert('Operation completed');
                     location.reload();
                 } catch (error) {
-                    // Revert state if failed
-                    if (status === 'enable') this.caddyEnabled = !this.caddyEnabled;
                     alert('Operation failed: ' + error.message);
                 }
             }

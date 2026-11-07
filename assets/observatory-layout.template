@@ -1,0 +1,32 @@
+{{define "observatory.head"}}
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="business">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark light">
+    <title>{{.title}}</title>
+    <link rel="icon" href="/assets/img/avatar.webp">
+    <link rel="stylesheet" href="/assets/css/daisyui.min.css">
+    <link rel="stylesheet" href="/assets/vendor/jsvectormap/jsvectormap.min.css">
+    <script src="/assets/js/tailwind.js"></script>
+    <script src="/assets/js/ui-theme.js"></script>
+    <script src="/assets/vendor/jsvectormap/jsvectormap.min.js" defer></script>
+    <script src="/assets/vendor/jsvectormap/world.js" defer></script>
+    <script src="/assets/js/observatory.js" defer></script>
+    <script src="/assets/js/alpine.min.js" defer></script>
+</head>
+<body class="min-h-screen bg-base-100 text-base-content antialiased" x-data="observatory">
+<input type="radio" name="observatory-theme" class="theme-controller hidden" value="business" :checked="dark" aria-hidden="true" tabindex="-1">
+<input type="radio" name="observatory-theme" class="theme-controller hidden" value="winter" :checked="!dark" aria-hidden="true" tabindex="-1">
+<script type="application/json" id="observatory-bootstrap">{{.bootstrap}}</script>
+{{end}}
+
+{{define "observatory.footer"}}
+<footer class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-10 text-xs text-base-content/40 sm:px-8">
+    <div class="flex items-center gap-2"><span class="text-success">◈</span><span>GoPanel Observatory · 只读监控</span></div>
+    <div class="flex flex-wrap gap-4"><span>Tailwind + daisyUI</span><span>OpenTelemetry Host</span><span>jsVectorMap</span><kbd class="kbd kbd-xs">Ctrl K</kbd></div>
+</footer>
+</body>
+</html>
+{{end}}

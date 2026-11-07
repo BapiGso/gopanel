@@ -16,16 +16,16 @@ func TestHandlerRejectsTraversalInRead(t *testing.T) {
 	handler := NewHandler(fs, "/app")
 	e := echo.New()
 
-	req := httptest.NewRequest(http.MethodGet, "/admin/file/process?path=/../../etc/passwd&mode=edit", nil)
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/files/../../etc/passwd", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
-	err := handler.Process(c)
+	err := handler.getEntry(c)
 	if err == nil {
-		t.Fatal("Process() should reject traversal path")
+		t.Fatal("getEntry() should reject traversal path")
 	}
 	if !IsPathNotAllowed(err) {
-		t.Fatalf("Process() error = %v, want path not allowed", err)
+		t.Fatalf("getEntry() error = %v, want path not allowed", err)
 	}
 }
 
@@ -73,15 +73,16 @@ func TestHandlerSupportsChmodMode(t *testing.T) {
 	handler := NewHandler(fs, "/app")
 	e := echo.New()
 
-	req := httptest.NewRequest(http.MethodPut, "/admin/file/process?path=/note.txt&mode=chmod", strings.NewReader("0600"))
+	req := httptest.NewRequest(http.MethodPatch, "/api/v1/files/note.txt", strings.NewReader(`{"permissions":"0600"}`))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
-	if err := handler.Process(c); err != nil {
-		t.Fatalf("Process() error = %v", err)
+	if err := handler.patchEntry(c); err != nil {
+		t.Fatalf("patchEntry() error = %v", err)
 	}
-	if !strings.Contains(rec.Body.String(), `"message":"success"`) {
-		t.Fatalf("Process() body = %q, want success message", rec.Body.String())
+	if !strings.Contains(rec.Body.String(), `"permissions":"0600"`) {
+		t.Fatalf("patchEntry() body = %q, want permissions in data", rec.Body.String())
 	}
 	info, err := fs.Stat("/app/note.txt")
 	if err != nil {

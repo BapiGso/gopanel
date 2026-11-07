@@ -10,20 +10,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
     <link rel="icon" type="image/jpg" href="/assets/img/avatar.webp" />
+    <script src="/assets/js/api.js" defer></script>
     <script type="text/javascript" src="/assets/js/alpine.min.js" defer></script>
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        primary: "#943DA5",
-                        secondary: "#10B981",
-                    },
-                },
-            },
-        };
-    </script>
+    <script src="/assets/js/ui-theme.js"></script>
 
 
     <script>

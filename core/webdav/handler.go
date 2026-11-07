@@ -14,33 +14,14 @@ var srv = &webdav.Handler{
 }
 
 func Index(c *echo.Context) error {
-	switch c.Request().Method {
-	case "GET":
-		return c.Render(http.StatusOK, "webdav.template", map[string]any{
-			"getPanelConfig": func(s string) any {
-				return config.Get(s)
-			},
-		})
-	case "POST":
-		req := &struct {
-			Enable   string `form:"enable"`
-			Username string `form:"username"`
-			Password string `form:"password"`
-		}{
-		}
-		if err := c.Bind(req); err != nil {
-			return err
-		}
-		if err := config.Update(func(cfg *config.Config) {
-			cfg.WebDAV.Enable = req.Enable == "on"
-			cfg.WebDAV.Username = req.Username
-			cfg.WebDAV.Password = req.Password
-		}); err != nil {
-			return err
-		}
-		return c.JSON(204, "success")
+	state, err := config.Read()
+	if err != nil {
+		return err
 	}
-	return echo.ErrMethodNotAllowed
+	return c.Render(http.StatusOK, "webdav.template", map[string]any{
+		"webdavConfig":     state.Config.WebDAV,
+		"settingsRevision": state.Revision,
+	})
 }
 
 func FileSystem() echo.HandlerFunc {
@@ -51,11 +32,12 @@ func FileSystem() echo.HandlerFunc {
 			http.Error(w, "Not authorized", 401)
 			return
 		}
-		if username != config.String("webdav.username") || password != config.String("webdav.password") {
+		settings := config.Snapshot().WebDAV
+		if username != settings.Username || password != settings.Password {
 			http.Error(w, "Not authorized", 401)
 			return
 		}
-		if !config.Bool("webdav.enable") {
+		if !settings.Enable {
 			http.Error(w, "Not enable", http.StatusForbidden)
 			return
 		}

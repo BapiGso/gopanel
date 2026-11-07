@@ -2,12 +2,12 @@ package firewall
 
 // Rule represents a cross-platform firewall rule.
 type Rule struct {
-	ID        string // unique identifier (linux: family:chain:handle, windows: rule name, darwin: line number)
-	Protocol  string // "tcp" / "udp"
-	Port      uint16 // 0 = any
-	Direction string // "in" / "out"
-	Action    string // "accept" / "drop"
-	Network   string // "ipv4" / "ipv6"
+	ID        string `json:"id"`
+	Protocol  string `json:"protocol"`
+	Port      uint16 `json:"port"`
+	Direction string `json:"direction"`
+	Action    string `json:"action"`
+	Network   string `json:"network"`
 }
 
 // Manager is the interface for managing firewall rules across platforms.

@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"sync"
 	"time"
 
 	"golang.org/x/crypto/ssh"
@@ -15,15 +16,17 @@ import (
 )
 
 type Term struct {
-	Id      string         `json:"id"`
-	Rows    int            `json:"rows"`
-	Cols    int            `json:"cols"`
-	Stdin   io.WriteCloser `json:"-"`
-	Stdout  io.Reader      `json:"-"`
-	Stderr  io.Reader      `json:"-"`
-	session *ssh.Session
-	client  *ssh.Client
-	Since   time.Time `json:"since"`
+	Id        string         `json:"id"`
+	Rows      int            `json:"rows"`
+	Cols      int            `json:"cols"`
+	Stdin     io.WriteCloser `json:"-"`
+	Stdout    io.Reader      `json:"-"`
+	Stderr    io.Reader      `json:"-"`
+	session   *ssh.Session
+	client    *ssh.Client
+	Since     time.Time `json:"since"`
+	mu        sync.RWMutex
+	closeOnce sync.Once
 }
 
 type TermOption struct {
@@ -75,6 +78,7 @@ func NewTerm(opt TermOption) (*Term, error) {
 		User:            opt.Username,
 		Auth:            auth,
 		HostKeyCallback: hostKeyCallback,
+		Timeout:         15 * time.Second,
 	}
 	// 处理 IPv6 地址
 	var addr string
@@ -150,9 +154,11 @@ func NewTerm(opt TermOption) (*Term, error) {
 }
 
 func (t *Term) Close() {
-	t.Stdin.Close()
-	t.session.Close()
-	t.client.Close()
+	t.closeOnce.Do(func() {
+		t.Stdin.Close()
+		t.session.Close()
+		t.client.Close()
+	})
 }
 
 func (t *Term) SetWindowSize(rows, cols int) error {
@@ -160,8 +166,10 @@ func (t *Term) SetWindowSize(rows, cols int) error {
 	if err != nil {
 		return err
 	}
+	t.mu.Lock()
 	t.Rows = rows
 	t.Cols = cols
+	t.mu.Unlock()
 	return nil
 }
 

@@ -1,0 +1,12 @@
+{
+  "name": "jsvectormap",
+  "version": "1.7.0",
+  "license": "MIT",
+  "source": "https://registry.npmjs.org/jsvectormap/-/jsvectormap-1.7.0.tgz",
+  "integrity": "sha512-8VmL3Uuen08Es9xb2N6Wdc32TrQDGPXYCIdTB126jAhTJsYd/4r4Mc63VQA3qHxG0p4zeCI8sFO5XRsdjljMJg==",
+  "files": {
+    "jsvectormap.min.js": "ca3a014fc66d8249c4da0700f32bd6131cf0f0bb0801f8fafebfd7030f3cf50c",
+    "jsvectormap.min.css": "66c86acfa5fe46cd917f9b0fb6249b6beaf02c12f5653c8b069a5b60eb2d47d3",
+    "world.js": "de3c2c21cf63bdd95a4cfc477a566a4b189579daeb26157e8ecb101000224edd"
+  }
+}
