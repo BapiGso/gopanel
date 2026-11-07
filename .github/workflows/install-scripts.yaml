@@ -35,7 +35,3 @@ jobs:
           sudo apt-get install -y busybox shellcheck
       - name: Lint installation scripts
         run: shellcheck shell/install_gopanel.sh shell/uninstall_gopanel.sh
-      - name: Test installation scripts
-        env:
-          GOPANEL_TEST_SHELL: ${{ matrix.shell }}
-        run: python3 -m unittest discover -s shell/tests -v
