@@ -9,98 +9,75 @@ on:
   workflow_dispatch:
 
 jobs:
-  release:
+  build:
+    name: ${{ matrix.goos }}-${{ matrix.goarch }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: linux
+            goarch: arm
+          - goos: linux
+            goarch: s390x
+          - goos: linux
+            goarch: riscv64
+          - goos: windows
+            goarch: amd64
+          - goos: windows
+            goarch: arm64
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+          - goos: freebsd
+            goarch: amd64
+    env:
+      GOOS: ${{ matrix.goos }}
+      GOARCH: ${{ matrix.goarch }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-go@v5
         with:
           go-version: '1.27'
+          cache: true
 
-      - name: Build all platforms
+      - name: Build
         run: |
           version="${GITHUB_REF_NAME}"
           if [[ "$version" != v* ]]; then
             version="v0.0.0"
           fi
-          echo "Embedding version: ${version}"
+          output="gopanel_${GOOS}_${GOARCH}"
+          [ "$GOOS" = "windows" ] && output="${output}.exe"
+          [ "$GOOS" = "darwin" ] && output="gopanel_mac_${GOARCH}"
+          CGO_ENABLED=0 go build -ldflags="-s -w -X=gopanel/core/security.buildVersion=${version}" -o "$output" .
 
-          # 定义构建目标
-          targets=(
-            "linux/amd64"
-            "linux/arm64"
-            "linux/arm"
-            "linux/s390x"
-            "linux/riscv64"
-            "windows/amd64"
-            "windows/arm64"
-            "darwin/amd64"
-            "darwin/arm64"
-            "freebsd/amd64"
-          )
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gopanel-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: gopanel_*
+          if-no-files-found: error
 
-          # 记录失败的构建
-          failed_builds=()
-          successful_builds=()
-
-          # 批量构建（带错误处理）
-          for target in "${targets[@]}"; do
-            GOOS=${target%/*}
-            GOARCH=${target#*/}
-            output="gopanel_${GOOS}_${GOARCH}"
-            [ "$GOOS" = "windows" ] && output="${output}.exe"
-            [ "$GOOS" = "darwin" ] && output="gopanel_mac_${GOARCH}"
-
-            echo "Building $output..."
-            if CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH go build -ldflags="-s -w -X=gopanel/core/security.buildVersion=${version}" -o "$output" . 2>&1; then
-              echo "✅ Successfully built $output"
-              successful_builds+=("$output")
-            else
-              echo "❌ Failed to build $output"
-              failed_builds+=("$target")
-            fi
-          done
-
-          # 输出构建摘要
-          echo ""
-          echo "========== Build Summary =========="
-          if [ ${#successful_builds[@]} -gt 0 ]; then
-            echo "✅ Successful builds (${#successful_builds[@]}):"
-            for build in "${successful_builds[@]}"; do
-              echo "   - $build"
-            done
-          fi
-
-          if [ ${#failed_builds[@]} -gt 0 ]; then
-            echo ""
-            echo "❌ Failed builds (${#failed_builds[@]}):"
-            for build in "${failed_builds[@]}"; do
-              echo "   - $build"
-            done
-          fi
-          echo "==================================="
-
-          # 如果没有任何成功的构建，则失败
-          if [ ${#successful_builds[@]} -eq 0 ]; then
-            echo "❌ All builds failed!"
-            exit 1
-          fi
-
-          # Do not publish a partial release that the installer cannot use.
-          if [ ${#failed_builds[@]} -gt 0 ]; then
-            echo "::error::Some platform builds failed; refusing to publish an incomplete release"
-            exit 1
-          fi
-
-      - name: List built files
-        run: |
-          echo "Files to be released:"
-          ls -lh gopanel_* 2>/dev/null || echo "No files found"
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: gopanel-*
+          merge-multiple: true
+          path: dist
 
       - name: Release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: gopanel_*
+          files: dist/gopanel_*
           fail_on_unmatched_files: true
