@@ -1,52 +1,12 @@
-<html lang="en">
-<head>
-    <title>Access denied</title>
-    <meta charset="utf-8">
-    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-    <style>
-        body{
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: row;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            &>main{
-                width: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                &>section{
-                    width: 80%;
-                    height: 80%;
-                }
-            }
-            &>img{
-                width: 50%;
-                background-size: 100% 100%;
-                object-fit: cover;
-            }
-        }
-    </style>
-</head>
-<body>
-<main>
-    <section>
-        <h2>Sorry, your access has been blocked</h2>
-        <h2>Using security services to protect against online attacks</h2>
-        <h2>Please log in using the correct path</h2>
-        <br>
-        <h3>A newly installed machine will randomly assign an 8-digit security entrance. It can also be modified in the panel settings. If you do not have a record or cannot remember it, you can resolve the error using the following methods</h3>
-        <h3>Solution:</h3>
-        <h4>1. Check the security entrance : nano config.json</h4>
-        <h4>2. Reset the configuration file: rm config.json; systemctl restart gopanel</h4>
-        <div class="sub-footer">
-            <h4>ERROR_MSG:{{.message}}</h4>
-            <h4>CLIENT_IP:{{.ip}}</h4>
-        </div>
-    </section>
-</main>
-<img src="/assets/img/right-rec.webp" alt="pixiv3104565" title="pixiv3104565">
-</body>
-</html>
+{{template "public-header.template" .}}
+<section class="page empty-state" x-data="warningPage" data-page="{{.Page}}">
+    {{icon "warning--01" 64}}
+    <h1 class="cds--type-heading-04">Access denied</h1>
+    <p>Sign in through your configured private login path to access GoPanel.</p>
+    <cds-tile class="stack"><h2>Find your login path</h2><p>Check the Panel.Path setting in gopanel_config.json on the server. A new installation generates a random login path; do not share it publicly.</p><p class="muted" x-text="message"></p><p class="mono" x-text="ip ? 'Client IP: ' + ip : ''"></p></cds-tile>
+    <cds-link href="/status/monitor">View public monitoring, if enabled</cds-link>
+</section>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/tile.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/link.min.js"></script>
+<script defer src="/assets/js/pages/warning.js"></script>
+{{template "footer.template" .}}

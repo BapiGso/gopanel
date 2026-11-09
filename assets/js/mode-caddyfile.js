@@ -236,17 +236,15 @@ ace.define("ace/mode/caddyfile_highlight_rules", ["require", "exports", "module"
     exports.CaddyfileHighlightRules = CaddyfileHighlightRules;
 });
 
-ace.define("ace/mode/caddyfile", ["require", "exports", "module", "ace/lib/oop", "ace/mode/text", "ace/mode/caddyfile_highlight_rules", "ace/mode/folding/cstyle"], function(require, exports, module) {
+ace.define("ace/mode/caddyfile", ["require", "exports", "module", "ace/lib/oop", "ace/mode/text", "ace/mode/caddyfile_highlight_rules"], function(require, exports, module) {
     "use strict";
 
     var oop = require("../lib/oop");
     var TextMode = require("./text").Mode;
     var CaddyfileHighlightRules = require("./caddyfile_highlight_rules").CaddyfileHighlightRules;
-    var CStyleFoldMode = require("./folding/cstyle").FoldMode; // C-style folding for { }
 
     var Mode = function() {
         this.HighlightRules = CaddyfileHighlightRules;
-        this.foldingRules = new CStyleFoldMode();
         this.$behaviour = this.$defaultBehaviour;
     };
     oop.inherits(Mode, TextMode);

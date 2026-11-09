@@ -1,0 +1,26 @@
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark light">
+    <title>{{.Title}}</title>
+    <script src="/assets/js/ui-theme.js"></script>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" href="/assets/img/avatar.webp">
+    <link rel="stylesheet" href="/assets/vendor/carbon/v2.67.0/themes.css">
+    <link rel="stylesheet" href="/assets/vendor/carbon/v2.67.0/grid.css">
+    <link rel="stylesheet" href="/assets/vendor/carbon/v2.67.0/plex.css">
+    {{if .Monitor}}<link rel="stylesheet" href="/assets/vendor/jsvectormap/jsvectormap.min.css"><link rel="stylesheet" href="/assets/vendor/carbon-charts/1.27.27/styles.min.css">{{end}}
+    <link rel="stylesheet" href="/assets/css/app.css">
+    <script type="module" src="/assets/vendor/carbon/v2.67.0/ui-shell.min.js"></script>
+    <script type="module" src="/assets/vendor/carbon/v2.67.0/notification.min.js"></script>
+    <script type="module" src="/assets/vendor/carbon/v2.67.0/modal.min.js"></script>
+    <script type="module" src="/assets/vendor/carbon/v2.67.0/button.min.js"></script>
+    <script defer src="/assets/js/api.js"></script>
+    <script defer src="/assets/js/cds-alpine.js"></script>
+    {{if .Monitor}}
+    <script defer src="/assets/vendor/jsvectormap/jsvectormap.min.js"></script>
+    <script defer src="/assets/vendor/jsvectormap/world.js"></script>
+    <script defer src="/assets/vendor/carbon-charts/1.27.27/bundle.umd.js"></script>
+    <script defer src="/assets/js/observatory.js"></script>
+    {{end}}
+</head>

@@ -1,12 +1,18 @@
 document.addEventListener('alpine:init', () => {
-    Alpine.data('observatory', () => {
+    Alpine.data('monitorPage', () => {
         let stream = null;
         let map = null;
         let mapFrame = null;
         let snapshotFrame = null;
+        let chartFrame = null;
+        let detailChartFrame = null;
+        let statusChart = null;
+        let statusChartSignature = '';
         let pendingSnapshot = null;
         let keyHandler = null;
         let visibilityHandler = null;
+        let themeHandler = null;
+        let pagehideHandler = null;
         let resizeObserver = null;
         let historyRequest = null;
         let historySequence = 0;
@@ -20,6 +26,8 @@ document.addEventListener('alpine:init', () => {
         const nodeCache = new Map();
         const searchIndex = new Map();
         const countryNames = new Map();
+        const detailCharts = new Map();
+        const numberFormatter = new Intl.NumberFormat('zh-CN', {maximumSignificantDigits: 3});
         const collator = new Intl.Collator('zh-CN', {numeric: true});
         const timeFormatter = new Intl.DateTimeFormat('zh-CN', {hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false});
         let countryFormatter;
@@ -58,17 +66,20 @@ document.addEventListener('alpine:init', () => {
             mapReady: false,
             mapError: '',
             selectedNode: null,
+            detailsOpen: false,
             history: [],
             historyLoading: false,
+            chartError: '',
+            get heading() {
+                return Alpine.store('helpers').heading('全球节点概览', this.title, {status: this.connected ? '实时连接' : '等待连接', type: this.connected ? 'green' : 'gray', meta: `最近采样 ${this.lastUpdated} · ${this.clusterLabel}`, actions: [{label: this.showMap ? '隐藏地图' : '显示地图', run: () => this.toggleMap()}]});
+            },
 
             init() {
-                const bootstrap = JSON.parse(document.getElementById('observatory-bootstrap').textContent);
+                const bootstrap = JSON.parse(this.$el.dataset.page);
                 this.title = bootstrap.title;
                 this.apiBase = bootstrap.api_base;
                 this.publicView = bootstrap.public;
-                this.dark = localStorage.getItem('darkMode') !== 'false';
-                this.applyTheme();
-                this.showMap = localStorage.getItem('observatory-map') !== 'hidden';
+                this.dark = document.documentElement.dataset.carbonTheme === 'g100';
                 for (const field of ['selectedTag', 'selectedCountry', 'search', 'sort']) this.$watch(field, () => this.refreshFilters(true));
                 keyHandler = event => {
                     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
@@ -83,36 +94,60 @@ document.addEventListener('alpine:init', () => {
                         this.connected = false;
                         cancelAnimationFrame(snapshotFrame);
                         cancelAnimationFrame(mapFrame);
+                        cancelAnimationFrame(chartFrame);
+                        cancelAnimationFrame(detailChartFrame);
+                        chartFrame = detailChartFrame = null;
                         snapshotFrame = mapFrame = null;
                         pendingSnapshot = null;
                     } else {
                         this.connect();
                         if (this.showMap) this.$nextTick(() => { if (!map) this.createMap(); else this.resizeMap(); this.scheduleMap(); });
+                        this.scheduleStatusChart();
+                        this.scheduleDetailCharts();
                     }
                 };
                 document.addEventListener('keydown', keyHandler);
                 document.addEventListener('visibilitychange', visibilityHandler);
+                themeHandler = () => {
+                    this.dark = document.documentElement.dataset.carbonTheme === 'g100';
+                    this.disposeMap();
+                    this.disposeStatusChart();
+                    this.disposeDetailCharts();
+                    if (this.showMap) this.$nextTick(() => this.createMap());
+                    this.scheduleStatusChart();
+                    this.scheduleDetailCharts();
+                };
+                pagehideHandler = () => this.destroy();
+                document.addEventListener('carbon-theme-change', themeHandler);
+                globalThis.addEventListener('pagehide', pagehideHandler, {once: true});
                 this.connect();
                 this.$nextTick(() => { if (this.showMap) this.createMap(); });
+                this.$nextTick(() => this.scheduleStatusChart());
             },
 
             destroy() {
+                if (destroyed) return;
                 destroyed = true;
                 stream?.close();
-                historyRequest?.abort();
+                stream = null;
+                this.closeDetails();
                 cancelAnimationFrame(snapshotFrame);
+                cancelAnimationFrame(chartFrame);
+                cancelAnimationFrame(detailChartFrame);
+                chartFrame = detailChartFrame = null;
+                this.disposeStatusChart();
                 this.disposeMap();
                 nodeCache.clear();
                 searchIndex.clear();
+                countryNames.clear();
                 document.removeEventListener('keydown', keyHandler);
                 document.removeEventListener('visibilitychange', visibilityHandler);
+                document.removeEventListener('carbon-theme-change', themeHandler);
+                globalThis.removeEventListener('pagehide', pagehideHandler);
             },
 
             async read(path, signal) {
-                const response = await fetch(this.apiBase + path, {credentials: 'same-origin', cache: 'no-store', signal});
-                const payload = await response.json();
-                if (!response.ok || payload.error) throw new Error(payload.error?.message || `HTTP ${response.status}`);
-                return payload.data;
+                return this.$api(this.apiBase.replace('/api/v1', '') + path, {cache: 'no-store', signal});
             },
 
             connect() {
@@ -178,8 +213,9 @@ document.addEventListener('alpine:init', () => {
                 const title = view.title || this.title;
                 if (this.title !== title) this.title = title;
                 if (document.title !== title) document.title = title;
-                if (this.selectedNode && !present.has(this.selectedNode.id)) this.$refs.details.close();
+                if (this.selectedNode && !present.has(this.selectedNode.id)) this.closeDetails();
                 this.refreshFilters();
+                this.scheduleStatusChart();
             },
 
             refreshFilters(resetPage = false) {
@@ -227,19 +263,10 @@ document.addEventListener('alpine:init', () => {
             clearCountry() { this.selectedCountry = ''; },
             toggleMap() {
                 this.showMap = !this.showMap;
-                localStorage.setItem('observatory-map', this.showMap ? 'visible' : 'hidden');
                 if (this.showMap) this.$nextTick(() => { if (!map) this.createMap(); else this.resizeMap(); this.scheduleMap(); });
                 else this.disposeMap();
             },
-            hideMap() { this.showMap = false; localStorage.setItem('observatory-map', 'hidden'); this.disposeMap(); },
-            toggleTheme() {
-                this.dark = !this.dark;
-                localStorage.setItem('darkMode', String(this.dark));
-                this.applyTheme();
-                this.disposeMap();
-                if (this.showMap) this.createMap();
-            },
-            applyTheme() { document.documentElement.dataset.theme = this.dark ? 'business' : 'winter'; },
+            hideMap() { this.showMap = false; this.disposeMap(); },
 
             disposeMap() {
                 cancelAnimationFrame(mapFrame);
@@ -272,17 +299,19 @@ document.addEventListener('alpine:init', () => {
                     return;
                 }
                 if (typeof jsVectorMap === 'undefined') { this.mapError = '地图组件尚未加载；节点监控仍然可用。'; return; }
-                mapColors = this.dark ? {land: '#292929', border: '#383838', hover: '#3b3b3b', online: '#14563b', offline: '#5a3030'} : {land: '#e4e8eb', border: '#cbd3d9', hover: '#d2e3da', online: '#80c5a1', offline: '#dfa9a9'};
+                const styles = getComputedStyle(document.documentElement);
+                const token = name => styles.getPropertyValue('--cds-' + name).trim();
+                mapColors = {land: token('layer-accent-01'), border: token('border-subtle'), hover: token('layer-hover'), online: token('data-viz-teal'), offline: token('data-viz-cyan')};
                 try {
                     map = new jsVectorMap({
                         selector: '#world-map', map: 'world', markers: [], backgroundColor: 'transparent', zoomButtons: false, zoomOnScroll: false,
                         regionStyle: {initial: {fill: mapColors.land, stroke: mapColors.border, strokeWidth: 0.7}, hover: {fill: mapColors.hover}, selected: {fill: mapColors.online}},
-                        markerStyle: {initial: {r: 4, fill: '#5bba8a', stroke: '#d1fae5', strokeWidth: 1.5}, hover: {r: 6}},
+                        markerStyle: {initial: {r: 4, fill: token('data-viz-cyan'), stroke: token('layer-01'), strokeWidth: 1.5}, hover: {r: 6}},
                         series: {regions: [{attribute: 'fill', scale: {online: mapColors.online, offline: mapColors.offline}, values: {}}]},
                         onRegionTooltipShow: (event, tooltip, code) => {
                             const nodes = regionNodes[code] || [];
-                            const header = `<strong>${this.escape(this.countryName(code))}</strong><div class="mt-1 text-xs opacity-60">${nodes.length} 台服务器</div>`;
-                            const list = nodes.slice(0, 12).map(node => `<div class="mt-1 flex items-center gap-2 text-xs"><span class="${node.online ? 'text-success' : 'text-error'}">●</span>${this.escape(node.name)}</div>`).join('');
+                            const header = `<strong>${this.escape(this.countryName(code))}</strong><div class="map-tooltip-node">${nodes.length} 台服务器</div>`;
+                            const list = nodes.slice(0, 12).map(node => `<div class="map-tooltip-node"><span class="${node.online ? 'map-online' : 'map-offline'}">●</span> ${this.escape(node.name)}</div>`).join('');
                             tooltip.text(header + list, true);
                         },
                         onRegionClick: (event, code) => { if (regionNodes[code]?.length) this.selectedCountry = this.selectedCountry === code ? '' : code; },
@@ -337,24 +366,104 @@ document.addEventListener('alpine:init', () => {
             },
 
             async openNode(node) {
+                if (destroyed) return;
+                this.disposeDetailCharts();
                 historyRequest?.abort();
                 historyRequest = new AbortController();
                 const sequence = ++historySequence;
                 this.selectedNode = node;
                 this.history = [];
                 this.historyLoading = true;
-                if (!this.$refs.details.open) this.$refs.details.showModal();
+                this.detailsOpen = true;
                 try {
                     const history = await this.read('/nodes/' + encodeURIComponent(node.id) + '/history', historyRequest.signal);
                     if (historySequence === sequence) this.history = history.slice(-8).reverse();
                 } catch (failure) {
                     if (historySequence === sequence) this.history = [];
                 } finally {
-                    if (historySequence === sequence) this.historyLoading = false;
+                    if (historySequence === sequence) {
+                        this.historyLoading = false;
+                        this.$nextTick(() => this.scheduleDetailCharts());
+                    }
                 }
             },
 
-            closeDetails() { historySequence++; historyRequest?.abort(); this.selectedNode = null; this.history = []; this.historyLoading = false; },
+            closeDetails() { historySequence++; historyRequest?.abort(); this.disposeDetailCharts(); this.detailsOpen = false; this.selectedNode = null; this.history = []; this.historyLoading = false; },
+            chartOptions() {
+                return {theme: this.dark ? 'g100' : 'white', height: '100%', resizable: true, animations: false, toolbar: {enabled: false}, legend: {clickable: false}, locale: {code: 'zh-CN', number: value => numberFormatter.format(value), date: value => this.timestamp(value)}};
+            },
+            chartColors() {
+                const styles = getComputedStyle(document.documentElement);
+                return {cyan: styles.getPropertyValue('--cds-data-viz-cyan').trim(), teal: styles.getPropertyValue('--cds-data-viz-teal').trim()};
+            },
+            chartTarget(element) {
+                const target = document.createElement('div');
+                target.className = 'chart-host';
+                element.replaceChildren(target);
+                return target;
+            },
+            scheduleStatusChart() {
+                if (destroyed || document.hidden || this.loading || chartFrame !== null) return;
+                chartFrame = requestAnimationFrame(() => { chartFrame = null; this.renderStatusChart(); });
+            },
+            renderStatusChart() {
+                if (destroyed || document.hidden || this.loading) return;
+                if (!globalThis.Charts?.DonutChart) { this.chartError = '图表组件尚未加载。'; return; }
+                const element = this.$refs.statusChart;
+                if (!element || !element.offsetWidth || !element.offsetHeight) { this.scheduleStatusChart(); return; }
+                const signature = JSON.stringify([this.overview.total, this.overview.online, this.overview.offline, this.dark]);
+                if (statusChartSignature === signature) return;
+                const data = [{group: '在线', value: this.overview.online}, {group: '离线', value: this.overview.offline}];
+                const colors = this.chartColors();
+                try {
+                    if (statusChart) statusChart.model.setData(data);
+                    else statusChart = new globalThis.Charts.DonutChart(this.chartTarget(element), {data, options: {...this.chartOptions(), color: {scale: {'在线': colors.teal, '离线': colors.cyan}}, donut: {center: {label: '节点', numberFormatter: value => numberFormatter.format(value)}}}});
+                    statusChartSignature = signature;
+                    this.chartError = '';
+                } catch (failure) { this.chartError = '节点状态图暂不可用。'; this.disposeStatusChart(); console.error('monitor status chart:', failure); }
+            },
+            disposeStatusChart() {
+                cancelAnimationFrame(chartFrame);
+                chartFrame = null;
+                statusChart?.destroy();
+                statusChart = null;
+                statusChartSignature = '';
+                this.$refs.statusChart?.replaceChildren();
+            },
+            scheduleDetailCharts() {
+                if (destroyed || document.hidden || !this.detailsOpen || this.historyLoading || !this.history.length || detailChartFrame !== null) return;
+                detailChartFrame = requestAnimationFrame(() => { detailChartFrame = null; this.renderDetailCharts(); });
+            },
+            renderDetailCharts() {
+                if (destroyed || document.hidden || !this.detailsOpen || this.historyLoading || !this.history.length || !globalThis.Charts) return;
+                const colors = this.chartColors();
+                const definitions = [
+                    {name: 'cpuHistory', kind: 'AreaChart', fields: [['CPU', 'cpu_percent']], title: '使用率 (%)', domain: [0, 100], scale: {'CPU': colors.cyan}},
+                    {name: 'memoryHistory', kind: 'AreaChart', fields: [['内存', 'memory_percent']], title: '使用率 (%)', domain: [0, 100], scale: {'内存': colors.teal}},
+                    {name: 'networkHistory', kind: 'LineChart', fields: [['上传', 'upload_rate'], ['下载', 'download_rate']], title: '字节 / 秒', scale: {'上传': colors.teal, '下载': colors.cyan}},
+                ];
+                for (const definition of definitions) {
+                    const element = this.$refs[definition.name];
+                    if (!element || !element.offsetWidth || !element.offsetHeight) { this.scheduleDetailCharts(); return; }
+                    const data = this.history.slice().reverse().flatMap(sample => {
+                        const date = new Date(sample.time);
+                        if (Number.isNaN(date.getTime())) return [];
+                        return definition.fields.filter(([group, field]) => Number.isFinite(sample[field])).map(([group, field]) => ({group, date, value: sample[field]}));
+                    });
+                    try {
+                        const current = detailCharts.get(definition.name);
+                        if (current) current.model.setData(data);
+                        else detailCharts.set(definition.name, new globalThis.Charts[definition.kind](this.chartTarget(element), {data, options: {...this.chartOptions(), axes: {bottom: {mapsTo: 'date', scaleType: 'time'}, left: {mapsTo: 'value', title: definition.title, ...(definition.domain ? {domain: definition.domain} : {})}}, color: {scale: definition.scale}}}));
+                    } catch (failure) { this.disposeDetailCharts(); console.error('monitor history chart:', failure); return; }
+                }
+            },
+            disposeDetailCharts() {
+                cancelAnimationFrame(detailChartFrame);
+                detailChartFrame = null;
+                for (const chart of detailCharts.values()) chart.destroy();
+                detailCharts.clear();
+                for (const name of ['cpuHistory', 'memoryHistory', 'networkHistory']) this.$refs[name]?.replaceChildren();
+            },
             flag(code) { return /^[A-Z]{2}$/.test(code || '') ? String.fromCodePoint(...[...code].map(letter => 127397 + letter.charCodeAt(0))) : '◎'; },
             countryName(code) {
                 if (!code) return '未配置位置';
@@ -364,11 +473,13 @@ document.addEventListener('alpine:init', () => {
             timestamp(value) { try { return timeFormatter.format(new Date(value)); } catch { return '—'; } },
             bytes(value) { const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB']; let amount = Number(value) || 0; let index = 0; while (amount >= 1024 && index < units.length - 1) { amount /= 1024; index++; } return amount.toFixed(index ? 2 : 0) + ' ' + units[index]; },
             rate(value) { return this.bytes(value) + '/s'; },
+            rateParts(value) { const [amount, unit] = this.bytes(value).split(' '); return {amount: numberFormatter.format(Number(amount)), unit: unit + '/s'}; },
             uptime(seconds) { const days = Math.floor((Number(seconds) || 0) / 86400); return days ? days + ' 天' : Math.floor((seconds || 0) / 3600) + ' 小时'; },
-            percent(node, field) { return node.metrics.unavailable_fields.includes(field) ? '—' : (node.metrics[field + '_percent'] || 0).toFixed(2) + '%'; },
-            level(value) { return value >= 90 ? 'progress-error' : value >= 75 ? 'progress-warning' : 'progress-success'; },
+            percent(node, field) { return node.metrics.unavailable_fields?.includes(field) ? '—' : (node.metrics[field + '_percent'] || 0).toFixed(2) + '%'; },
+            metricValue(node, field) { return node.metrics.unavailable_fields?.includes(field) ? 0 : Math.max(0, Math.min(100, Number(node.metrics[field + '_percent']) || 0)); },
+            level(value) { return value >= 90 ? 'error' : 'active'; },
             expiry(value) { const days = Math.ceil((new Date(value + 'T23:59:59') - Date.now()) / 86400000); return days >= 0 ? '剩余 ' + days + ' 天' : '已到期'; },
             escape(value) { return String(value ?? '').replace(/[&<>"']/g, character => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[character])); },
         };
     });
-});
+}, {once: true});

@@ -1,17 +1,30 @@
-const panelThemeTokens = {
-    primary: 'p', 'primary-content': 'pc', secondary: 's', 'secondary-content': 'sc',
-    accent: 'a', 'accent-content': 'ac', neutral: 'n', 'neutral-content': 'nc',
-    'base-100': 'b1', 'base-200': 'b2', 'base-300': 'b3', 'base-content': 'bc',
-    info: 'in', 'info-content': 'inc', success: 'su', 'success-content': 'suc',
-    warning: 'wa', 'warning-content': 'wac', error: 'er', 'error-content': 'erc',
-};
-
-tailwind.config = {
-    darkMode: 'class',
-    theme: {
-        extend: {
-            colors: Object.fromEntries(Object.entries(panelThemeTokens).map(([name, token]) => [name, `oklch(var(--${token}) / <alpha-value>)`])),
-            opacity: {15: '.15', 35: '.35', 45: '.45', 65: '.65', 85: '.85'},
-        },
-    },
-};
+(() => {
+    const root = document.documentElement;
+    let choice;
+    try {
+        choice = localStorage.getItem('carbon-theme');
+        localStorage.removeItem('password');
+    } catch {}
+    let current = choice === 'white' || choice === 'g100' ? choice : 'g100';
+    const apply = theme => {
+        current = theme;
+        root.classList.remove('dds-theme-zone-white', 'dds-theme-zone-g100');
+        root.classList.add(`dds-theme-zone-${theme}`);
+        root.dataset.carbonTheme = theme;
+        root.style.colorScheme = theme === 'g100' ? 'dark' : 'light';
+        document.dispatchEvent(new CustomEvent('carbon-theme-change', {detail: theme}));
+    };
+    apply(current);
+    document.addEventListener('alpine:init', () => {
+        const store = {
+            current,
+            toggle() {
+                choice = this.current === 'g100' ? 'white' : 'g100';
+                this.current = choice;
+                try { localStorage.setItem('carbon-theme', choice); } catch {}
+                apply(choice);
+            },
+        };
+        Alpine.store('theme', store);
+    }, {once: true});
+})();

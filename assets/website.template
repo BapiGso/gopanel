@@ -1,117 +1,28 @@
-{{template "header.template"}}
-
-<div class="text-base-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="panel">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-            <h3 class="text-2xl font-bold tracking-tight flex items-center">
-                <i class="ri-global-line text-primary mr-3"></i>Website Manage
-            </h3>
-            <p class="text-sm opacity-60 mt-1 ml-9">Configure your Caddy web server</p>
-        </div>
-
-        <label class="surface rounded-xl px-5 py-2.5 flex items-center gap-4 cursor-pointer">
-            <div class="flex flex-col items-end">
-                <span class="eyebrow">Service Boot</span>
-                <span class="text-[11px] font-bold" :class="caddyEnabled ? 'text-success' : 'opacity-50'"
-                      x-text="caddyEnabled ? 'ENABLED' : 'DISABLED'"></span>
-            </div>
-            <input type="checkbox" class="toggle toggle-success" :checked="caddyEnabled" @change="manageCaddy('enable')">
-        </label>
+{{template "header.template" .}}
+<script type="module" src="/assets/vendor/carbon/v2.67.0/toggle.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/tag.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/link.min.js"></script>
+<script defer src="/assets/js/ace.js"></script>
+<script defer src="/assets/js/mode-caddyfile.js"></script>
+<script defer src="/assets/js/pages/website.js"></script>
+<section class="page" x-data="websitePage" data-page="{{.Page}}">
+    {{template "page-header.template" .}}
+    <cds-inline-notification low-contrast x-show="status.last_error" x-cloak kind="error" title="Service error" :subtitle="status.last_error" hide-close-button></cds-inline-notification>
+    <div class="toolbar">
+        <cds-button size="md" kind="ghost" :disabled="busy" @click="manage('start')">Start</cds-button>
+        <cds-button size="md" kind="ghost" :disabled="busy" @click="manage('reload')">Reload</cds-button>
+        <cds-button size="md" kind="ghost" :disabled="busy" @click="manage('stop')">Stop</cds-button>
+        <cds-toggle hidelabel label-text="Autostart" label-a="Autostart on" label-b="Autostart off" :disabled="busy" x-cds-prop:toggled="status.autostart" @cds-toggle-changed="autostart($event.target.toggled)"></cds-toggle>
+        <span x-show="status.pending_changes" class="cds--type-label-01 muted">Saved changes not applied</span>
     </div>
-
-    <div class="surface rounded-2xl p-4 mb-6 flex flex-wrap gap-3 items-center justify-between">
-        <div class="flex flex-wrap gap-2">
-            <button @click="manageCaddy('restart')" class="btn btn-sm btn-outline group">
-                <i class="ri-restart-line text-primary group-hover:rotate-180 transition-transform duration-500"></i>Restart Service
-            </button>
-            <button @click="manageCaddy('stop')" class="btn btn-sm btn-outline btn-error">
-                <i class="ri-stop-circle-line"></i>Stop Service
-            </button>
+    <div class="editor-frame">
+        <div class="toolbar">
+            <div class="editor-title"><h2 class="cds--type-code-02">Caddyfile</h2><p class="cds--type-label-01 muted">Ctrl / Cmd + S to save</p></div>
+            <cds-button size="md" kind="ghost" :disabled="busy" @click="reloadDocument()">Read saved file</cds-button>
+            <cds-button size="md" :disabled="busy" @click="save()">Save configuration<span slot="icon">{{icon "save" 16}}</span></cds-button>
         </div>
-        <button @click="updateConfig" class="btn btn-sm btn-primary ml-auto">
-            <i class="ri-save-3-line text-lg"></i>Save Configuration
-        </button>
+        <div class="editor" x-ref="editor" aria-label="Caddyfile editor"></div>
     </div>
-
-    <div class="card surface overflow-hidden flex flex-col h-[calc(100vh-300px)] min-h-[500px]">
-        <div class="row px-6 py-3 border-b border-base-300 bg-base-200/40">
-            <div class="flex items-center gap-2">
-                <i class="ri-code-s-slash-line opacity-50"></i>
-                <span class="text-sm font-semibold">Caddyfile</span>
-            </div>
-            <div class="flex items-center gap-4 text-xs">
-                <span class="opacity-60 hidden sm:flex items-center"><i class="ri-command-line mr-1"></i>Cmd/Ctrl + S to save</span>
-                <a href="https://caddyserver.com/docs/caddyfile" target="_blank"
-                   class="link link-hover text-primary font-medium flex items-center">
-                    <i class="ri-book-open-line mr-1.5"></i>Docs
-                </a>
-            </div>
-        </div>
-        <div class="relative flex-1 w-full bg-[#272822]">
-            <div id="editor" class="absolute inset-0 w-full h-full text-base"></div>
-        </div>
-    </div>
-</div>
-
-<script type="text/javascript" src="/assets/js/ace.js"></script>
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('panel', () => ({
-            // Initialize with Go Template value
-            caddyEnabled: {{.caddyEnable}},
-            revision: '{{.caddyRevision}}',
-            settingsRevision: '{{.settingsRevision}}',
-
-            init() {
-                window.editor = ace.edit("editor");
-                editor.setTheme("ace/theme/monokai");
-                editor.setOptions({
-                    fontSize: "14px",
-                    showPrintMargin: false,
-                    showGutter: true,
-                    highlightActiveLine: true,
-                    wrap: true,
-                    fontFamily: "'JetBrains Mono', 'Fira Code', monospace"
-                });
-                editor.setValue({{.caddyFile}}, -1);
-
-                editor.commands.addCommand({
-                    name: 'save',
-                    bindKey: {win: 'Ctrl-S', mac: 'Command-S'},
-                    exec: () => {
-                        this.updateConfig();
-                    }
-                });
-            },
-
-            async updateConfig() {
-                try {
-                    const result = await panelAPI('/caddy/config', {
-                        method: 'PUT',
-                        body: {content: editor.getSession().getValue(), revision: this.revision},
-                    });
-                    this.revision = result.revision;
-                    alert('Configuration saved. Reload Caddy to apply it.');
-                    location.reload();
-                } catch (error) {
-                    alert('Failed to update config: ' + error.message);
-                }
-            },
-
-            async manageCaddy(status) {
-                try {
-                    const result = status === 'enable'
-                        ? await panelAPI('/caddy/settings', {method: 'PATCH', body: {autostart: !this.caddyEnabled, revision: this.settingsRevision}})
-                        : await panelAPI(`/caddy/${status === 'restart' ? 'reload' : status}`, {method: 'POST'});
-                    this.caddyEnabled = result.autostart;
-                    this.settingsRevision = result.settings_revision;
-                    alert('Operation completed');
-                    location.reload();
-                } catch (error) {
-                    alert('Operation failed: ' + error.message);
-                }
-            }
-        }))
-    })
-</script>
-{{template "footer.template"}}
+    <p class="muted">Saving validates the file but does not apply it. Start or reload to apply the saved revision. Autostart does not change the running service.</p>
+</section>
+{{template "footer.template" .}}

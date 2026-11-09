@@ -1,0 +1,21 @@
+{
+  "version": "1.27.27",
+  "source_url": "https://cdn.jsdelivr.net/npm/@carbon/charts@1.27.27/",
+  "components": null,
+  "icons": null,
+  "transforms": null,
+  "files": {
+    "vendor/carbon-charts/1.27.27/LICENSE": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/charts@1.27.27/LICENSE.md",
+      "sha256": "097350161b96f64f212c20944fec0377d1fce0e74cfd71cd433a273459ab9dc4"
+    },
+    "vendor/carbon-charts/1.27.27/bundle.umd.js": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/charts@1.27.27/dist/umd/bundle.umd.js",
+      "sha256": "6441bd225175cdde5fafb41bf564c8622db4bad05aff112e7b4fe85e583c83cb"
+    },
+    "vendor/carbon-charts/1.27.27/styles.min.css": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/charts@1.27.27/dist/styles.min.css",
+      "sha256": "9baebf0911d418d297747379e245ee185bb7ff61d15fd8ea99d9a9321a3a135f"
+    }
+  }
+}

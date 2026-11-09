@@ -2,7 +2,7 @@
 
 GoPanel 的监控页提供全球地图、国家/区域筛选、分组、搜索、排序、实时节点列表和有限的历史采样。页面位于 `/status/monitor`，原来的 `/admin/monitor` 也使用同一套框架页面。
 
-页面采用 Tailwind + daisyUI 组件，地图使用内置的 jsVectorMap 1.7.0。组件和两套主题的 CSS 在开发时预编译，脚本、样式及世界轮廓随二进制嵌入，不访问外部 CDN，也不在浏览器中运行 Tailwind 编译器。页面只显示真实采样，没有多节点预览或演示数据。
+页面采用 IBM Carbon Web Components 2.67.0，地图使用内置的 jsVectorMap 1.7.0。组件、IBM Plex 字体、Carbon 图标、white/g100 主题及世界轮廓随二进制嵌入，不访问外部 CDN，无需前端构建或 npm 安装。管理监控页使用完整 Carbon 导航，公开监控页使用最小页头。页面只显示真实采样，没有多节点预览或演示数据。
 
 **新部署使用人工指定汇总机的拉取模式**：汇总机填其他机器的 IP 和一份共享监控密钥，探针只填相同密钥。没有自动发现、候选列表维护或自动选主。旧候选/主动上报配置仅保留兼容。
 
@@ -226,9 +226,9 @@ X-GoPanel-Cluster: <cluster_id>
 - 节点对象和排序后的列表在身份/顺序未变化时保持引用，只更新发生变化的指标。
 - 地图实例不进入 Alpine 深度响应式代理；只有位置、名称、筛选或在线区域变化时更新地图，CPU/流量变化不再重建标记或重新测量容器。
 - 切到后台标签时关闭 SSE，恢复时重新获取最新状态；关闭详情时取消历史请求并释放详情视图。
-- 列表每页最多渲染 50 台，地图和总计仍使用所有节点。保留 daisyUI 的布局、分页和主题组件，不手写一套 UI 框架。
+- 列表每页最多渲染 50 台，地图和总计仍使用所有节点。概况和节点使用 Carbon tile，筛选使用 search/tag，指标使用 progress-bar，历史使用 modal/table。
 
-CSS 构建工具位于 `frontend/`。修改监控模板/脚本的类名后运行 `npm ci --ignore-scripts` 和 `npm run build:monitor`，提交生成的 `assets/css/observatory.min.css`。`npm run test:monitor` 验证节点引用、分页、地图更新、SSE合并及演示代码移除。普通 Go 构建直接嵌入现成资源，不需要 Node.js。
+修改模板、脚本或 `assets/css/app.css` 后直接执行 Go 构建，没有 CSS 编译步骤。`node --test frontend/observatory.test.cjs` 验证节点引用、分页、地图更新、SSE 合并、有限历史、主题变化与资源清理。普通 Go 构建直接嵌入资源，不需要 Node.js。更新组件时运行 [vendoring 文档](../assets/vendor/README.md) 中的完整 `go run ./tools/vendorcarbon ...` 命令；具体架构见 [Carbon UI](carbon-ui.md)。
 
 ## 数据边界
 

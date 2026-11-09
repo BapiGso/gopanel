@@ -1,0 +1,15 @@
+<header class="page-header">
+    <div class="page-header-main">
+        <div class="page-title-row">
+            <h1 class="cds--type-heading-04" x-text="heading.title"></h1>
+            <template x-if="heading.status"><cds-tag size="sm" :type="heading.type" :class="heading.codeStatus ? 'mono' : ''" x-text="heading.status"></cds-tag></template>
+        </div>
+        <p class="cds--type-body-01 muted" x-show="heading.description" x-text="heading.description"></p>
+        <p class="cds--type-label-01 muted" x-show="heading.meta" x-text="heading.meta"></p>
+    </div>
+    <div class="page-header-actions">
+        <template x-for="action in heading.actions" :key="action.label">
+            <cds-button size="md" :kind="action.kind || 'ghost'" :href="action.href" :disabled="action.disabled || false" :target="action.href ? action.target : null" :rel="action.target ? 'noopener noreferrer' : null" @click="if (action.run) action.run()"><span x-text="action.label"></span></cds-button>
+        </template>
+    </div>
+</header>

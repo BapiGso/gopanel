@@ -1,226 +1,41 @@
-{{template "header.template"}}
-
-<div class="text-base-content min-h-[calc(100vh-100px)] p-4 sm:p-6 lg:p-8 flex flex-col gap-6" x-data="sshPanel">
-
-    <div>
-        <div class="mb-6">
-            <h3 class="text-2xl font-bold tracking-tight flex items-center gap-3">
-                <i class="ri-terminal-box-line text-primary"></i>Web Terminal
-            </h3>
-            <p class="text-sm opacity-60 mt-1">Connect via SSH protocol</p>
+{{template "header.template" .}}
+<script type="module" src="/assets/vendor/carbon/v2.67.0/tabs.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/text-input.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/password-input.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/number-input.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/checkbox.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/tag.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/tile.min.js"></script>
+<link rel="stylesheet" href="/assets/css/xterm.css">
+<script defer src="/assets/js/xterm.js"></script>
+<script defer src="/assets/js/xterm-addon-attach.js"></script>
+<script defer src="/assets/js/xterm-addon-fit.js"></script>
+<script defer src="/assets/js/xterm-addon-web-links.js"></script>
+<script defer src="/assets/js/pages/term.js"></script>
+<section class="page" x-data="termPage" data-page="{{.Page}}">
+    {{template "page-header.template" .}}
+    <cds-tile><form class="stack" @submit.prevent="connect()">
+        <div class="form-grid">
+            <cds-text-input label="Host" autocomplete="off" required x-cds-model="form.host"></cds-text-input>
+            <cds-number-input label="Port" min="1" max="65535" step="1" x-cds-model.number="form.port"></cds-number-input>
+            <cds-text-input label="Username" autocomplete="off" required x-cds-model="form.username"></cds-text-input>
+            <cds-password-input label="Password" autocomplete="new-password" helper-text="Optional when the server has a matching SSH private key. Never stored." x-cds-model="form.password"></cds-password-input>
         </div>
-
-        <details class="group card surface overflow-hidden" :open="!hasSaved">
-            <summary class="row px-6 py-4 cursor-pointer list-none select-none hover:bg-base-200/50 transition-colors">
-                <span class="font-semibold flex items-center gap-2">
-                    <i class="ri-server-line opacity-50"></i>Connection Details
-                </span>
-                <i class="ri-arrow-down-s-line opacity-50 transition-transform duration-300 group-open:rotate-180"></i>
-            </summary>
-
-            <div class="px-6 pb-6 pt-2 border-t border-base-300">
-                <form @submit.prevent="connect" class="flex flex-wrap items-end gap-4">
-                    <div class="flex-1 min-w-[150px]">
-                        <span class="eyebrow block mb-1.5">Host</span>
-                        <label class="input input-bordered input-sm flex items-center gap-2">
-                            <i class="ri-global-line opacity-50"></i>
-                            <input x-model="form.host" type="text" placeholder="127.0.0.1" required class="grow font-mono">
-                        </label>
-                    </div>
-
-                    <div class="w-28">
-                        <span class="eyebrow block mb-1.5">Port</span>
-                        <label class="input input-bordered input-sm flex items-center gap-2">
-                            <i class="ri-door-lock-line opacity-50"></i>
-                            <input x-model="form.port" type="number" placeholder="22" required class="grow font-mono">
-                        </label>
-                    </div>
-
-                    <div class="flex-1 min-w-[120px]">
-                        <span class="eyebrow block mb-1.5">User</span>
-                        <label class="input input-bordered input-sm flex items-center gap-2">
-                            <i class="ri-user-line opacity-50"></i>
-                            <input x-model="form.user" type="text" placeholder="root" required class="grow font-mono">
-                        </label>
-                    </div>
-
-                    <div class="flex-1 min-w-[120px]">
-                        <span class="eyebrow block mb-1.5">Password</span>
-                        <label class="input input-bordered input-sm flex items-center gap-2">
-                            <i class="ri-key-2-line opacity-50"></i>
-                            <input x-model="form.pwd" type="password" placeholder="Optional" class="grow font-mono">
-                        </label>
-                    </div>
-
-                    <div class="flex gap-2">
-                        <button type="submit" :disabled="isConnecting" class="btn btn-primary btn-sm">
-                            <i :class="isConnecting ? 'ri-loader-4-line animate-spin' : 'ri-plug-line'" class="text-lg"></i>
-                            <span x-text="isConnecting ? 'Connecting...' : 'Connect'"></span>
-                        </button>
-                        <button type="button" @click="clearSaved" x-show="hasSaved" class="btn btn-outline btn-sm btn-error" title="Clear Saved">
-                            <i class="ri-delete-bin-line text-lg"></i>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </details>
-    </div>
-
-    <div class="flex-1 min-h-[500px] flex flex-col bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-800">
-        <div class="bg-[#1a1b1e] px-4 py-2 border-b border-gray-800 flex items-center justify-between shrink-0">
-            <div class="flex gap-2">
-                <div class="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
-                <div class="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
-                <div class="w-3 h-3 rounded-full bg-[#27C93F]"></div>
-            </div>
-            <div class="text-xs text-gray-500 font-mono flex items-center gap-2">
-                <i class="ri-terminal-line"></i> SSH Session
-            </div>
-            <div class="w-12"></div>
+        <cds-checkbox x-cds-model="remember">Remember host, port, and username only</cds-checkbox>
+        <div class="form-actions"><cds-button kind="ghost" x-show="hasSaved" @click.prevent="forget()">Forget saved connection</cds-button><cds-button :disabled="connecting" @click.prevent="connect()" x-text="connecting ? 'Connecting…' : 'Connect'"></cds-button></div>
+    </form></cds-tile>
+    <cds-tabs x-show="sessions.length" x-cds-prop:value="active" @cds-tabs-selected="activate($event.detail.item.value)">
+        <template x-for="session in sessions" :key="session.id"><cds-tab :id="'terminal-tab-' + session.id" :value="session.id" :target="'terminal-panel-' + session.id" x-text="session.label"></cds-tab></template>
+    </cds-tabs>
+    <template x-for="session in sessions" :key="session.id"><section :id="'terminal-panel-' + session.id" role="tabpanel" :aria-labelledby="'terminal-tab-' + session.id" x-show="active === session.id" class="terminal-frame">
+        <div class="toolbar"><cds-tag :type="session.state === 'connected' ? 'green' : session.state === 'connecting' ? 'blue' : 'gray'" x-text="session.state"></cds-tag><span class="mono" x-text="session.label"></span><cds-button kind="danger--ghost" @click="closeSession(session.id)">Close session<span slot="icon">{{icon "close" 16}}</span></cds-button></div>
+        <div class="terminal" :data-session="session.id" aria-label="Interactive SSH terminal"></div>
+        <div class="terminal-keys" aria-label="Touch keyboard helpers">
+            <cds-button kind="ghost" size="sm" @click="sendKey(session.id, '\u001b')">Esc</cds-button><cds-button kind="ghost" size="sm" @click="sendKey(session.id, '\t')">Tab</cds-button>
+            <cds-button :kind="session.controlPending ? 'tertiary' : 'ghost'" size="sm" :aria-pressed="session.controlPending" @click="toggleControl(session)">Ctrl</cds-button><cds-button kind="ghost" size="sm" @click="sendKey(session.id, '\u0003')">Ctrl+C</cds-button>
+            <cds-button kind="ghost" size="sm" aria-label="Arrow left" @click="sendKey(session.id, '\u001b[D')">←</cds-button><cds-button kind="ghost" size="sm" aria-label="Arrow up" @click="sendKey(session.id, '\u001b[A')">↑</cds-button><cds-button kind="ghost" size="sm" aria-label="Arrow down" @click="sendKey(session.id, '\u001b[B')">↓</cds-button><cds-button kind="ghost" size="sm" aria-label="Arrow right" @click="sendKey(session.id, '\u001b[C')">→</cds-button>
         </div>
-
-        <div id="terminal" class="flex-1 p-1 custom-scrollbar overflow-hidden relative"></div>
-    </div>
-
-</div>
-
-<link rel="stylesheet" href="/assets/css/xterm.css?v=6.0.0" />
-<style>
-    /* xterm 6 uses custom scrollbars rather than native viewport scrollbars. */
-    .custom-scrollbar .xterm-scrollable-element > .scrollbar { background: #1a1b1e; }
-    .custom-scrollbar .xterm-scrollable-element > .scrollbar > .slider { border-radius: 4px; }
-    /* Hide default details marker */
-    summary::marker { content: ""; display: none; }
-    summary::-webkit-details-marker { display: none; }
-</style>
-
-<script src="/assets/js/xterm.js?v=6.0.0"></script>
-<script src="/assets/js/xterm-addon-attach.js?v=0.12.0"></script>
-<script src="/assets/js/xterm-addon-fit.js?v=0.11.0"></script>
-<script src="/assets/js/xterm-addon-web-links.js?v=0.12.0"></script>
-
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('sshPanel', () => ({
-            form: { host: '127.0.0.1', port: '22', user: 'root', pwd: '' },
-            hasSaved: false,
-            isConnecting: false,
-            term: null,
-            fitAddon: null,
-
-            init() {
-                // Load from storage
-                if (localStorage.getItem('ssh_host')) {
-                    this.hasSaved = true;
-                    this.form.host = localStorage.getItem('ssh_host');
-                    this.form.port = localStorage.getItem('ssh_port');
-                    this.form.user = localStorage.getItem('ssh_user');
-                    this.form.pwd = localStorage.getItem('ssh_pwd');
-                    // Auto connect logic
-                    this.$nextTick(() => this.connect());
-                }
-
-                // Window Resize Handler
-                window.addEventListener('resize', () => {
-                    if (this.fitAddon) {
-                        clearTimeout(window.resizeTimer);
-                        window.resizeTimer = setTimeout(() => this.fitAddon.fit(), 200);
-                    }
-                });
-            },
-
-            async connect() {
-                if (this.isConnecting) return;
-                this.isConnecting = true;
-
-                // 1. Create Connection ID
-                try {
-                    const data = await panelAPI('/terminals', {
-                        method: 'POST',
-                        body: {host: this.form.host, port: Number(this.form.port), username: this.form.user, password: this.form.pwd},
-                    });
-                    if (!data.id) throw new Error("Invalid server response");
-
-                    // 2. Save Success
-                    this.saveCredentials();
-
-                    // 3. Close Panel (Native way)
-                    this.$root.querySelector('details').removeAttribute('open');
-
-                    // 4. Init Terminal
-                    this.initTerminal(data.id);
-
-                } catch (err) {
-                    alert('Connection Failed: ' + err.message);
-                } finally {
-                    this.isConnecting = false;
-                }
-            },
-
-            saveCredentials() {
-                localStorage.setItem('ssh_host', this.form.host);
-                localStorage.setItem('ssh_port', this.form.port);
-                localStorage.setItem('ssh_user', this.form.user);
-                localStorage.setItem('ssh_pwd', this.form.pwd);
-                this.hasSaved = true;
-            },
-
-            clearSaved() {
-                if(!confirm('Forget saved credentials?')) return;
-                localStorage.removeItem('ssh_host');
-                localStorage.removeItem('ssh_port');
-                localStorage.removeItem('ssh_user');
-                localStorage.removeItem('ssh_pwd');
-                this.hasSaved = false;
-                this.form = { host: '127.0.0.1', port: '22', user: 'root', pwd: '' };
-            },
-
-            initTerminal(id) {
-                // Cleanup existing
-                if (this.term) this.term.dispose();
-                document.getElementById('terminal').innerHTML = '';
-
-                // Setup Websocket
-                const protocol = location.protocol === "https:" ? "wss://" : "ws://";
-                const ws = new WebSocket(`${protocol}${location.host}/api/v1/terminals/${id}/data`);
-
-                // Addons
-                const attachAddon = new AttachAddon.AttachAddon(ws);
-                this.fitAddon = new FitAddon.FitAddon();
-
-                // Init xterm
-                this.term = new Terminal({
-                    fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: 14,
-                    cursorBlink: true,
-                    theme: {
-                        background: '#000000',
-                        foreground: '#d4d4d4',
-                        scrollbarSliderBackground: '#333333',
-                        scrollbarSliderHoverBackground: '#444444',
-                        scrollbarSliderActiveBackground: '#555555'
-                    }
-                });
-
-                this.term.loadAddon(new WebLinksAddon.WebLinksAddon());
-                this.term.loadAddon(this.fitAddon);
-                this.term.loadAddon(attachAddon);
-
-                this.term.open(document.getElementById('terminal'));
-
-                // Resize sync
-                this.term.onResize(({cols, rows}) => {
-                    panelAPI(`/terminals/${id}`, {method: 'PATCH', body: {cols, rows}}).catch(error => console.error('Resize failed:', error));
-                });
-
-                // Initial fit
-                setTimeout(() => {
-                    this.fitAddon.fit();
-                    this.term.focus();
-                }, 100);
-            }
-        }))
-    });
-</script>
-
-{{template "footer.template"}}
+    </section></template>
+    <p class="table-empty" x-show="!sessions.length">Connect to a host to open a terminal. Leaving this page closes its sessions.</p>
+</section>
+{{template "footer.template" .}}

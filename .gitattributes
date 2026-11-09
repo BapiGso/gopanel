@@ -2,6 +2,7 @@
 *.sh text eol=lf linguist-language=Go
 *.js linguist-language=Go
 *.css linguist-language=Go
+*.go text eol=lf
 
 # Keep vendored xterm artifact hashes stable across platforms.
 /assets/js/xterm*.js text eol=lf
@@ -9,3 +10,7 @@
 /assets/vendor/xterm.json text eol=lf
 /assets/vendor/xterm.LICENSE text eol=lf
 /assets/vendor/jsvectormap/* text eol=lf
+/assets/vendor/carbon/** text eol=lf
+/assets/vendor/carbon/fonts/*.woff2 binary
+/assets/vendor/carbon-charts/** text eol=lf
+/assets/icons/carbon/** text eol=lf

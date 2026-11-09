@@ -1,0 +1,22 @@
+/**
+* @license
+*
+* Copyright IBM Corp. 2019, 2026
+*
+* This source code is licensed under the Apache-2.0 license found in the
+* LICENSE file in the root directory of this source tree.
+*
+* Also refer to the following links for third-party dependencies:
+* https://www.npmjs.com/package/@floating-ui/core
+* https://www.npmjs.com/package/@floating-ui/dom
+* https://www.npmjs.com/package/@floating-ui/utils
+* https://www.npmjs.com/package/@ibm/telemetry-js
+* https://www.npmjs.com/package/@lit/context
+* https://www.npmjs.com/package/@lit/reactive-element
+* https://www.npmjs.com/package/lit
+* https://www.npmjs.com/package/lit-element
+* https://www.npmjs.com/package/lit-html
+* https://www.npmjs.com/package/lodash-es
+* https://www.npmjs.com/package/tslib
+*/
+import{n as e,t}from"./decorate-BgofJUJ5.js";import"./settings-CZDgQBsm.js";import{t as n}from"./focus-BAk8V28j.js";import{t as r}from"./host-listener-BIbrRp9a.js";import{t as i}from"./host-listener-4p0RbMup.js";let a=function(e){return e.TOP=`top`,e.BOTTOM=`bottom`,e.LEFT=`left`,e.RIGHT=`right`,e}({});const o=(e,t,n,r)=>{let{offsetWidth:i}=e;switch(t){case`top`:case`bottom`:{let e=n?n.offsetWidth:0;return{left:(r?-1:1)*(i/2-e/2),top:0}}default:return{left:0,top:0}}},s=(e,t)=>(e.observe(t),{release(){return e.unobserve(t),null}}),c=(e,t)=>{let n=e.closest(t);if(n)return n;let{host:r}=e.getRootNode();return r?c(r,t):null};var l=class extends i(n(e)){constructor(...e){super(...e),this._hObserveResizeParent=null,this._hObserveResizeContainer=null,this._resizeObserver=new ResizeObserver(()=>{let{container:e,open:t,parent:n,position:r}=this;if(e&&t&&n){let{top:e}=r;this.style.top=`${e}px`}}),this._handleBlur=({relatedTarget:e})=>{if(!this.contains(e)){let{parent:t}=this;t&&t!==e&&(t.open=!1,HTMLElement.prototype.focus.call(this.parent))}},this._click=()=>{let{parent:e}=this;e&&(e.open=!1)},this._handleKeyDown=e=>{if(e.key===`Tab`&&e.shiftKey){let{parent:e}=this;e&&(e.open=!1)}},this.parent=null}getOffsetConfig(){}resolveOffset(){let e=this.getOffsetConfig();if(!e)return{left:0,top:0};if(typeof e==`function`){let t=this.parent;return e(this,this.direction,t,this.flipped)}return e}get container(){return c(this,this.constructor.selectorContainer)||this.ownerDocument.body}get position(){let{triggerPosition:e}=this.parent;if(!e)throw TypeError(`Missing information of trigger button position.`);let{container:t}=this,{left:n=0,top:r=0,right:i=0,bottom:o=0}=e,{width:s,height:c}=this.getBoundingClientRect(),l=t.getBoundingClientRect(),u=t.ownerDocument.defaultView.getComputedStyle(t),d=u.getPropertyValue(`position`),f=u.getPropertyValue(`direction`),p=globalThis.scrollX??0,m=globalThis.scrollY??0,h=d===`static`?p:0,g=d===`static`?m:0,_={top:d===`static`?0:l.top,left:d===`static`?0:l.left},v=(n+i)/2,y=(r+o)/2,{top:b=0,left:x=0}=this.resolveOffset(),{direction:S}=this;if(Object.values(a).indexOf(S)<0)throw Error(`Wrong menu position direction: ${S}`);let{left:C,top:w}={left:()=>({left:n-s+h-x-_.left,top:y-c/2+g+b-9-_.top}),top:()=>({left:v-s/2+h+x-_.left,top:r-c+g-b-_.top}),right:()=>({left:i+h+x-_.left,top:y-c/2+g+b+3-_.top}),bottom:()=>({left:v-s/2+h+x-_.left,top:o+g+b-_.top})}[S]();return{direction:f,start:C,top:w}}disconnectedCallback(){this._hObserveResizeContainer&&=this._hObserveResizeContainer.release(),this._hObserveResizeParent&&=this._hObserveResizeParent.release()}updated(e){let{container:t,open:n,parent:r}=this;if((e.has(`flipped`)||e.has(`direction`)||e.has(`open`))&&n){r||(this.parent=this.parentElement,t.appendChild(this));let{start:e,top:n}=this.position;this.style.left=`${e}px`,this.style.right=`auto`,this.style.top=`${n}px`}if(e.has(`open`)&&(this._hObserveResizeContainer&&=this._hObserveResizeContainer.release(),this._hObserveResizeParent&&=this._hObserveResizeParent.release(),n)){let{parentElement:e}=this.parent??{};this._hObserveResizeContainer=s(this._resizeObserver,t),e&&(this._hObserveResizeParent=s(this._resizeObserver,e))}}static{this.FLOATING_MENU=!0}static get selectorContainer(){return`[data-floating-menu-container],cds-layout,cds-modal`}static{this.shadowRootOptions={...e.shadowRootOptions,delegatesFocus:!0}}};t([r(`focusout`)],l.prototype,`_handleBlur`,void 0),t([r(`click`)],l.prototype,`_click`,void 0),t([r(`keydown`)],l.prototype,`_handleKeyDown`,void 0);export{o as n,a as r,l as t};

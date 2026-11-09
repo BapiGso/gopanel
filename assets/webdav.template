@@ -1,150 +1,35 @@
-{{template "header.template"}}
-
-<div class="text-base-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-8">
-        <h3 class="text-2xl font-bold tracking-tight flex items-center">
-            <i class="ri-hard-drive-2-line text-primary mr-3"></i>WebDAV Manager
-        </h3>
-        <p class="text-sm opacity-60 mt-1 ml-9">Access your files remotely via WebDAV protocol</p>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div class="lg:col-span-2 space-y-6">
-            <div class="card surface overflow-hidden">
-                <div class="row px-6 py-4 border-b border-base-300">
-                    <h4 class="text-base font-semibold flex items-center"><i class="ri-settings-4-line mr-2 opacity-50"></i>Service Configuration</h4>
-                </div>
-
-                <form action="/admin/webdav" method="post" @submit.prevent="saveConfig" class="p-6">
-                    <label class="row p-4 bg-base-200/50 rounded-xl border border-base-300 mb-6 cursor-pointer">
-                        <span>
-                            <span class="text-sm font-medium block">Enable WebDAV</span>
-                            <span class="text-xs opacity-60">Turn the service on or off</span>
-                        </span>
-                        <input type="checkbox" name="enable" {{if .webdavConfig.Enable}}checked{{end}} class="toggle toggle-success">
-                    </label>
-
-                    <div class="space-y-5">
-                        <div>
-                            <span class="text-sm font-medium block mb-1.5">Username</span>
-                            <label class="input input-bordered flex items-center gap-2">
-                                <i class="ri-user-3-line opacity-50"></i>
-                                <input type="text" name="username" value="{{.webdavConfig.Username}}" required class="grow">
-                            </label>
-                        </div>
-                        <div>
-                            <span class="text-sm font-medium block mb-1.5">Password</span>
-                            <label class="input input-bordered flex items-center gap-2">
-                                <i class="ri-lock-password-line opacity-50"></i>
-                                <input type="password" name="password" value="{{.webdavConfig.Password}}" required class="grow">
-                            </label>
-                        </div>
+{{template "header.template" .}}
+<section class="page" x-data="webdavPage" data-page="{{.Page}}">
+    {{template "page-header.template" .}}
+    <div class="cds--row">
+        <div class="cds--col-sm-4 cds--col-md-8 cds--col-lg-10">
+            <cds-tile class="stack"><h2>Service configuration</h2>
+                <form class="stack" @submit.prevent="save" @keydown.enter.prevent="save">
+                    <cds-toggle label-text="Enable WebDAV" label-a="On" label-b="Off" x-cds-model="enabled"></cds-toggle>
+                    <div class="form-grid">
+                        <cds-text-input label="Username" required x-cds-model="username"></cds-text-input>
+                        <cds-password-input label="New password" helper-text="Leave blank to keep the current password." autocomplete="new-password" x-cds-model="password"></cds-password-input>
                     </div>
-
-                    <div class="mt-8 flex justify-end">
-                        <button type="submit" class="btn btn-primary"><i class="ri-save-3-line text-lg"></i>Save Configuration</button>
-                    </div>
+                    <div class="form-actions"><cds-button type="submit" :disabled="busy" @click.prevent="save">Save configuration<span slot="icon">{{icon "save" 16}}</span></cds-button></div>
                 </form>
-            </div>
-
-            <div class="rounded-2xl p-5 bg-info/10 border border-info/20">
-                <div class="flex items-start gap-3 mb-3">
-                    <i class="ri-windows-fill text-info text-xl mt-0.5"></i>
-                    <div>
-                        <h5 class="text-sm font-bold">Windows Explorer Native Support</h5>
-                        <p class="text-sm opacity-70 mt-1 leading-relaxed">
-                            Windows only supports HTTPS WebDAV by default. To allow HTTP connections, you must modify the registry.
-                        </p>
-                    </div>
-                </div>
-                <div class="bg-[#1e1e1e] rounded-lg p-3 border border-white/10 shadow-inner">
-                    <code class="font-mono text-xs text-success block overflow-x-auto whitespace-pre-wrap select-all">reg add "HKLM\SYSTEM\CurrentControlSet\Services\WebClient\Parameters" /v BasicAuthLevel /t REG_DWORD /d 2 /f
-                        Restart-Service -Name "WebClient"</code>
-                </div>
-            </div>
+                <cds-inline-loading x-show="busy" x-cloak assistive-text="Saving configuration">Saving configuration</cds-inline-loading>
+            </cds-tile>
         </div>
-
-        <div class="lg:col-span-1 space-y-6">
-            <div class="surface rounded-2xl p-6">
-                <h5 class="eyebrow mb-3">Server Address</h5>
-                <div class="bg-base-200 rounded-xl border border-base-300 p-3 font-mono text-sm break-all" x-text="`${location.origin}/webdav`"></div>
-                <p class="text-xs opacity-60 mt-2">Use this URL to connect your WebDAV clients.</p>
-            </div>
-
-            <div class="card surface overflow-hidden">
-                <div class="px-6 py-4 border-b border-base-300">
-                    <h4 class="text-base font-semibold">Connection Guide</h4>
-                </div>
-                <div class="divide-y divide-base-300">
-                    <div class="p-4 flex items-start gap-3 hover:bg-base-200/50 transition-colors">
-                        <div class="p-2 bg-base-200 rounded-lg"><i class="ri-windows-line text-info"></i></div>
-                        <div>
-                            <p class="text-sm font-medium">Windows</p>
-                            <p class="text-xs opacity-60">This PC > Map network drive</p>
-                        </div>
-                    </div>
-                    <div class="p-4 flex items-start gap-3 hover:bg-base-200/50 transition-colors">
-                        <div class="p-2 bg-base-200 rounded-lg"><i class="ri-apple-line"></i></div>
-                        <div>
-                            <p class="text-sm font-medium">macOS</p>
-                            <p class="text-xs opacity-60">Finder > Go > Connect to Server</p>
-                        </div>
-                    </div>
-                    <div class="p-4 flex items-start gap-3 hover:bg-base-200/50 transition-colors">
-                        <div class="p-2 bg-base-200 rounded-lg"><i class="ri-ubuntu-line text-warning"></i></div>
-                        <div>
-                            <p class="text-sm font-medium">Linux</p>
-                            <p class="text-xs opacity-60">File Manager > Other Locations</p>
-                        </div>
-                    </div>
-                    <div class="p-4 flex items-start gap-3 hover:bg-base-200/50 transition-colors">
-                        <div class="p-2 bg-base-200 rounded-lg"><i class="ri-smartphone-line text-primary"></i></div>
-                        <div>
-                            <p class="text-sm font-medium">Mobile</p>
-                            <p class="text-xs opacity-60">Use Apps like Documents/FE File Explorer</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="cds--col-sm-4 cds--col-md-8 cds--col-lg-6 stack">
+            <cds-tile class="stack"><h2>Server address</h2><cds-code-snippet type="single" x-text="address"></cds-code-snippet><p class="muted">Use this URL in your WebDAV client.</p></cds-tile>
+            <cds-tile class="stack"><h2>Connection guide</h2><p>Windows: This PC → Map network drive.</p><p>macOS: Finder → Go → Connect to Server.</p><p>Linux: File Manager → Other Locations.</p><p>Mobile: use Documents or FE File Explorer.</p></cds-tile>
         </div>
     </div>
-</div>
-
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('panel', () => ({
-            settingsRevision: '{{.settingsRevision}}',
-            async saveConfig(event) {
-                const btn = event.target.querySelector('button[type="submit"]');
-                const originalContent = btn.innerHTML;
-                btn.innerHTML = '<i class="ri-loader-4-line animate-spin mr-2"></i> Saving...';
-                btn.disabled = true;
-                try {
-                    const result = await panelAPI('/webdav/settings', {
-                        method: 'PATCH',
-                        body: {
-                            revision: this.settingsRevision,
-                            enable: event.target.elements.enable.checked,
-                            username: event.target.elements.username.value,
-                            password: event.target.elements.password.value,
-                        },
-                    });
-                    this.settingsRevision = result.revision;
-
-                    btn.innerHTML = '<i class="ri-check-line mr-2"></i> Saved';
-                    btn.classList.remove('btn-primary');
-                    btn.classList.add('btn-success');
-                    setTimeout(() => {
-                        alert('Configuration saved successfully');
-                        location.reload();
-                    }, 500);
-                } catch (error) {
-                    alert('Error: ' + error.message);
-                    btn.innerHTML = originalContent;
-                    btn.disabled = false;
-                }
-            }
-        }))
-    })
-</script>
-{{template "footer.template"}}
+    <cds-inline-notification low-contrast kind="info" title="Windows Explorer" subtitle="Windows supports HTTPS WebDAV by default. Prefer HTTPS. HTTP Basic authentication exposes credentials without TLS." hide-close-button></cds-inline-notification>
+    <cds-code-snippet type="multi">reg add "HKLM\SYSTEM\CurrentControlSet\Services\WebClient\Parameters" /v BasicAuthLevel /t REG_DWORD /d 2 /f
+Restart-Service -Name "WebClient"</cds-code-snippet>
+</section>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/tile.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/tag.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/toggle.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/text-input.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/password-input.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/code-snippet.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/inline-loading.min.js"></script>
+<script defer src="/assets/js/pages/webdav.js"></script>
+{{template "footer.template" .}}

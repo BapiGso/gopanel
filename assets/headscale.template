@@ -1,275 +1,46 @@
-{{template "header.template"}}
-
-<div class="text-base-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-8">
-        <h3 class="text-2xl font-bold tracking-tight flex items-center">
-            <i class="ri-hub-line text-primary mr-3"></i>Headscale Control
-        </h3>
-        <p class="text-sm opacity-60 mt-1 ml-9">Self-hosted Tailscale control server</p>
+{{template "header.template" .}}
+<script type="module" src="/assets/vendor/carbon/v2.67.0/text-input.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/number-input.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/toggle.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/checkbox.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/tag.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/tile.min.js"></script>
+<script defer src="/assets/js/pages/headscale.js"></script>
+<section class="page" x-data="headscalePage" data-page="{{.Page}}">
+    {{template "page-header.template" .}}
+    <cds-inline-notification low-contrast kind="warning" title="Experimental feature" subtitle="This is a limited embedded Headscale configuration, not the full upstream YAML schema. Running does not guarantee startup readiness." hide-close-button></cds-inline-notification>
+    <cds-inline-notification low-contrast x-show="status.last_error" x-cloak kind="error" title="Service error" :subtitle="status.last_error" hide-close-button></cds-inline-notification>
+    <div class="toolbar">
+        <cds-button size="md" kind="ghost" :disabled="busy || !loaded || status.state === 'running'" @click="start()">Save and start</cds-button>
+        <cds-button size="md" kind="ghost" :disabled="busy || !status.stop_supported" @click="stop()">Stop</cds-button>
+        <cds-button size="md" kind="ghost" :disabled="busy" @click="readStatus()">Refresh status<span slot="icon">{{icon "renew" 16}}</span></cds-button>
     </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" x-data="panel">
-
-        <div class="lg:col-span-1 space-y-6">
-            <div class="card surface p-6">
-                <h4 class="eyebrow mb-4">Service Status</h4>
-
-                <div class="flex items-center justify-center mb-6">
-                    <div class="relative">
-                        <div class="absolute -inset-4 rounded-full opacity-20 animate-ping" :class="status === 'running' ? 'bg-success' : 'hidden'"></div>
-
-                        <div class="relative w-20 h-20 rounded-full flex items-center justify-center transition-colors duration-300"
-                             :class="status === 'running' ? 'bg-success/15 text-success' : 'bg-base-200 text-base-content/40'">
-                            <i class="text-4xl" :class="status === 'running' ? 'ri-shield-check-line' : 'ri-shut-down-line'"></i>
-                        </div>
-
-                        <div class="absolute bottom-0 right-0 px-2 py-0.5 text-xs font-bold rounded-full border-2 border-base-100"
-                             :class="status === 'running' ? 'bg-success text-white' : 'bg-base-300 text-base-content/70'">
-                            <span x-text="status === 'running' ? 'ON' : 'OFF'"></span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="space-y-3">
-                    <button x-show="status !== 'running'" @click="startHeadscale" class="btn btn-success btn-block">
-                        <i class="ri-play-circle-fill text-lg"></i>Start Service
-                    </button>
-                    <button x-show="status === 'running'" :disabled="!stopSupported" @click="stopHeadscale" class="btn btn-outline btn-error btn-block">
-                        <i class="ri-stop-circle-line text-lg"></i>Stop Service
-                    </button>
-                    <button @click="checkStatus" class="btn btn-ghost btn-sm btn-block">
-                        <i class="ri-refresh-line"></i>Refresh Status
-                    </button>
-                    <p x-show="status === 'running' && !stopSupported" class="text-xs opacity-70">Embedded Headscale cannot be stopped safely with the upstream library. Restart the panel instead.</p>
-                </div>
+    <p x-show="!status.stop_supported" class="muted">The upstream library cannot safely stop a running embedded Headscale instance. Restart the panel instead.</p>
+    <cds-tile>
+        <form class="stack" @submit.prevent="save()">
+            <h2>Configuration</h2>
+            <div class="form-grid">
+                <cds-text-input label="Server URL" required x-cds-model="settings.server_url"></cds-text-input>
+                <cds-text-input label="Base domain" required x-cds-model="settings.base_domain"></cds-text-input>
+                <cds-text-input label="Listen address" required x-cds-model="settings.listen_addr"></cds-text-input>
+                <cds-text-input label="Metrics address" x-cds-model="settings.metrics_listen_addr"></cds-text-input>
+                <cds-text-input label="IPv4 prefix" required x-cds-model="settings.ipv4_prefix"></cds-text-input>
+                <cds-text-input label="IPv6 prefix" required x-cds-model="settings.ipv6_prefix"></cds-text-input>
+                <cds-text-input label="Private key path" required x-cds-model="settings.private_key_path"></cds-text-input>
             </div>
-
-            <div class="rounded-2xl p-5 bg-info/10 border border-info/20">
-                <div class="flex items-start gap-3">
-                    <i class="ri-information-fill text-info text-xl mt-0.5"></i>
-                    <div>
-                        <h5 class="text-sm font-bold mb-1">About Headscale</h5>
-                        <p class="text-xs opacity-70 leading-relaxed">
-                            Headscale is an open-source implementation of the Tailscale control server, allowing you to create your own secure mesh network.
-                        </p>
-                    </div>
-                </div>
+            <h3>STUN and DERP</h3>
+            <div class="form-grid">
+                <cds-toggle label-text="Standalone STUN" label-a="Off" label-b="On" x-cds-model="settings.stun_enabled"></cds-toggle>
+                <cds-toggle label-text="Embedded DERP" label-a="Off" label-b="On" x-cds-model="settings.derp_enabled"></cds-toggle>
+                <cds-text-input label="STUN listen address" x-cds-model="settings.stun_listen_addr"></cds-text-input>
+                <cds-number-input label="DERP region ID" min="1" step="1" x-cds-model.number="settings.derp_region_id"></cds-number-input>
+                <cds-text-input label="DERP region code" x-cds-model="settings.derp_region_code"></cds-text-input>
+                <cds-text-input label="DERP region name" x-cds-model="settings.derp_region_name"></cds-text-input>
+                <cds-checkbox x-cds-model="settings.derp_verify_clients">Verify DERP clients</cds-checkbox>
             </div>
-        </div>
-
-        <div class="lg:col-span-2">
-            <div class="card surface overflow-hidden">
-                <div class="row px-6 py-4 border-b border-base-300">
-                    <h4 class="text-base font-semibold flex items-center"><i class="ri-settings-4-line opacity-50 mr-2"></i>Configuration</h4>
-                </div>
-
-                <div class="p-6">
-                    <form id="headscaleForm" @submit.prevent="saveConfig">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                            <div class="md:col-span-2">
-                                <h5 class="eyebrow border-b border-base-300 pb-2">Network</h5>
-                            </div>
-
-                            <div>
-                                <span class="eyebrow block mb-1.5">Server URL</span>
-                                <input name="server_url" type="url" value="https://myheadscale.example.com:443" required class="input input-bordered input-sm w-full">
-                            </div>
-
-                            <div>
-                                <span class="eyebrow block mb-1.5">Base Domain</span>
-                                <input name="base_domain" type="text" value="example.com" required class="input input-bordered input-sm w-full">
-                            </div>
-
-                            <div class="md:col-span-2 mt-2">
-                                <h5 class="eyebrow border-b border-base-300 pb-2">Interfaces</h5>
-                            </div>
-
-                            <div>
-                                <span class="eyebrow block mb-1.5">Listen Address</span>
-                                <input name="listen_addr" type="text" value="0.0.0.0:8080" required class="input input-bordered input-sm w-full font-mono">
-                            </div>
-
-                            <div>
-                                <span class="eyebrow block mb-1.5">Metrics Address</span>
-                                <input name="metrics_listen_addr" type="text" value="127.0.0.1:9090" required class="input input-bordered input-sm w-full font-mono">
-                            </div>
-
-                            <div class="md:col-span-2 mt-2">
-                                <h5 class="eyebrow border-b border-base-300 pb-2">IP Allocation</h5>
-                            </div>
-
-                            <div>
-                                <span class="eyebrow block mb-1.5">IPv4 Prefix</span>
-                                <input name="ipv4_prefix" type="text" value="100.64.0.0/10" required class="input input-bordered input-sm w-full font-mono">
-                            </div>
-
-                            <div>
-                                <span class="eyebrow block mb-1.5">IPv6 Prefix</span>
-                                <input name="ipv6_prefix" type="text" value="fd7a:115c:a1e0::/48" required class="input input-bordered input-sm w-full font-mono">
-                            </div>
-
-                            <div class="md:col-span-2 mt-2">
-                                <h5 class="eyebrow border-b border-base-300 pb-2">STUN Server</h5>
-                            </div>
-
-                            <div class="md:col-span-2" x-data="{ stunEnabled: true }">
-                                <input type="hidden" name="stun_enabled" :value="stunEnabled">
-                                <label class="flex items-center gap-2 cursor-pointer mb-4">
-                                    <input type="checkbox" x-model="stunEnabled" class="checkbox checkbox-sm checkbox-primary">
-                                    <span class="text-sm font-medium">Enable STUN Server</span>
-                                </label>
-
-                                <div x-show="stunEnabled" x-transition>
-                                    <span class="eyebrow block mb-1.5">STUN Listen Address</span>
-                                    <input name="stun_listen_addr" type="text" value="0.0.0.0:3478" class="input input-bordered input-sm w-full font-mono">
-                                    <p class="text-xs opacity-60 mt-2">
-                                        DERP uses this STUN address when embedded DERP is enabled; standalone STUN starts only when DERP is disabled.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="md:col-span-2 mt-2">
-                                <h5 class="eyebrow border-b border-base-300 pb-2">DERP Server</h5>
-                            </div>
-
-                            <div class="md:col-span-2" x-data="{ derpEnabled: false }">
-                                <input type="hidden" name="derp_enabled" :value="derpEnabled">
-                                <label class="flex items-center gap-2 cursor-pointer mb-4">
-                                    <input type="checkbox" x-model="derpEnabled" class="checkbox checkbox-sm checkbox-primary">
-                                    <span class="text-sm font-medium">Enable Embedded DERP Server</span>
-                                </label>
-
-                                <div x-show="derpEnabled" x-transition class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <span class="eyebrow block mb-1.5">Region ID</span>
-                                        <input name="derp_region_id" type="number" value="999" class="input input-bordered input-sm w-full font-mono">
-                                    </div>
-
-                                    <div>
-                                        <span class="eyebrow block mb-1.5">Region Code</span>
-                                        <input name="derp_region_code" type="text" value="gopanel" class="input input-bordered input-sm w-full font-mono">
-                                    </div>
-
-                                    <div>
-                                        <span class="eyebrow block mb-1.5">Region Name</span>
-                                        <input name="derp_region_name" type="text" value="GoPanel Embedded DERP" class="input input-bordered input-sm w-full">
-                                    </div>
-
-                                    <div class="md:col-span-2">
-                                        <label class="flex items-center gap-2 cursor-pointer">
-                                            <input name="derp_verify_clients" type="checkbox" class="checkbox checkbox-sm checkbox-primary">
-                                            <span class="text-sm font-medium">Verify Clients</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="md:col-span-2">
-                                <span class="eyebrow block mb-1.5">Private Key Path</span>
-                                <input name="private_key_path" type="text" value="/var/lib/headscale/noise_private.key" required class="input input-bordered input-sm w-full font-mono">
-                            </div>
-                        </div>
-
-                        <div class="flex justify-end pt-4 border-t border-base-300">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="ri-save-3-line text-lg"></i>Save Configuration
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('panel', () => ({
-            status: 'stopped',
-            stopSupported: false,
-            revision: '',
-
-            async init() {
-                await this.loadConfig();
-                await this.checkStatus();
-                setInterval(() => this.checkStatus(), 5000); // Polling
-            },
-
-            async checkStatus() {
-                try {
-                    const result = await panelAPI('/headscale/status');
-                    this.status = result.state;
-                    this.stopSupported = result.stop_supported;
-                } catch (error) {
-                    console.error('Status check failed:', error);
-                }
-            },
-
-            async loadConfig() {
-                try {
-                    const document = await panelAPI('/headscale/config');
-                    const settings = JSON.parse(document.content);
-                    this.revision = document.revision;
-                    const form = document.getElementById('headscaleForm');
-                    for (const [name, value] of Object.entries(settings)) {
-                        const input = form.elements.namedItem(name);
-                        if (!input) continue;
-                        if (input.type === 'checkbox') input.checked = value;
-                        else input.value = value;
-                        if (input.type === 'hidden') {
-                            const checkbox = input.parentElement.querySelector('input[type="checkbox"]');
-                            if (checkbox) {
-                                checkbox.checked = value;
-                                checkbox.dispatchEvent(new Event('change', {bubbles: true}));
-                            }
-                        }
-                    }
-                } catch (error) {
-                    alert('Failed to load configuration: ' + error.message);
-                }
-            },
-
-            async persistConfig(form) {
-                const settings = Object.fromEntries(new FormData(form));
-                settings.stun_enabled = settings.stun_enabled === 'true';
-                settings.derp_enabled = settings.derp_enabled === 'true';
-                settings.derp_verify_clients = form.elements.derp_verify_clients.checked;
-                settings.derp_region_id = Number(settings.derp_region_id);
-                const result = await panelAPI('/headscale/config', {method: 'PUT', body: {content: JSON.stringify(settings), revision: this.revision}});
-                this.revision = result.revision;
-            },
-
-            async saveConfig(event) {
-                try {
-                    await this.persistConfig(event.target);
-                    alert('Configuration saved. Start the service to apply it.');
-                } catch (error) {
-                    alert('Save failed: ' + error.message);
-                }
-            },
-
-            async startHeadscale() {
-                try {
-                    await this.persistConfig(document.getElementById('headscaleForm'));
-                    const result = await panelAPI('/headscale/start', {method: 'POST'});
-                    this.status = result.state;
-                    alert('Headscale start accepted. Check status for startup errors.');
-                } catch (error) {
-                    alert('Start failed: ' + error.message);
-                }
-            },
-
-            async stopHeadscale() {
-                if (!confirm('Are you sure you want to stop the Headscale service?')) return;
-
-                try {
-                    const result = await panelAPI('/headscale/stop', {method: 'POST'});
-                    this.status = result.state;
-                } catch (error) {
-                    alert('Error: ' + error.message);
-                }
-            }
-        }))
-    })
-</script>
-{{template "footer.template"}}
+            <p class="muted">DERP uses the STUN listen address when enabled. Standalone STUN starts only when DERP is disabled. Saving does not restart an already running service.</p>
+            <div class="form-actions"><cds-button :disabled="busy || !loaded" @click.prevent="save()">Save configuration<span slot="icon">{{icon "save" 16}}</span></cds-button></div>
+        </form>
+    </cds-tile>
+</section>
+{{template "footer.template" .}}

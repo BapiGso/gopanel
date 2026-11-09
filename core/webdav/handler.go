@@ -19,7 +19,10 @@ func Index(c *echo.Context) error {
 		return err
 	}
 	return c.Render(http.StatusOK, "webdav.template", map[string]any{
-		"webdavConfig":     state.Config.WebDAV,
+		"webdavConfig": map[string]any{
+			"Username": state.Config.WebDAV.Username,
+			"Enable":   state.Config.WebDAV.Enable,
+		},
 		"settingsRevision": state.Revision,
 	})
 }

@@ -64,8 +64,12 @@ func (h *Handler) Index(c *echo.Context) error {
 	})
 
 	c.SetCookie(&http.Cookie{Name: "dirHistory", Value: url.QueryEscape(directory), Expires: time.Now(), MaxAge: 86400})
+	listing := make([]fileEntry, 0, len(files))
+	for _, entry := range files {
+		listing = append(listing, metadata(path.Join(directory, entry.Name()), entry))
+	}
 	return c.Render(http.StatusOK, "file.template", map[string]any{
-		"Files": files,
+		"Files": listing,
 		"Dir":   directory,
 	})
 }

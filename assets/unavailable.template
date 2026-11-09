@@ -1,19 +1,9 @@
-{{template "header.template"}}
-<div class="text-base-content min-h-[60vh] flex items-center justify-center">
-    <div class="text-center">
-        <i class="ri-error-warning-line text-7xl opacity-20 mb-6 block"></i>
-        <h3 class="text-2xl font-semibold mb-4">Feature Unavailable</h3>
-        <p class="opacity-60 mb-8">Your operating system does not support this feature</p>
-        <button onclick="history.back()" class="btn btn-primary">
-            <i class="ri-arrow-left-line"></i>Go Back
-        </button>
-    </div>
-</div>
-
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('panel', () => ({
-        }))
-    })
-</script>
-{{template "footer.template"}}
+{{template "header.template" .}}
+<section class="page empty-state" x-data="unavailablePage" data-page="{{.Page}}">
+    {{icon "warning--01" 64}}
+    {{template "page-header.template" .}}
+    <cds-link href="/admin/monitor">Return to monitoring</cds-link>
+</section>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/link.min.js"></script>
+<script defer src="/assets/js/pages/unavailable.js"></script>
+{{template "footer.template" .}}

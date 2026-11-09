@@ -1,4 +1,19 @@
-        </section>
-    </div>
+        </div></div>
+    </main>
+    <aside class="notification-stack" aria-label="Notifications" aria-live="polite">
+        <template x-for="notice in $store.toast.items" :key="notice.id">
+            <cds-toast-notification :kind="notice.kind" :title="notice.title" :subtitle="notice.message"
+                                    timeout="0" @cds-notification-closed="$store.toast.remove(notice.id)"></cds-toast-notification>
+        </template>
+    </aside>
+    <cds-modal x-cds-prop:open="$store.confirm.open" x-cds-prop:danger="$store.confirm.danger" @cds-modal-closed="$store.confirm.finish(false)">
+        <cds-modal-header><cds-modal-close-button></cds-modal-close-button><cds-modal-heading x-text="$store.confirm.title"></cds-modal-heading></cds-modal-header>
+        <cds-modal-body><p x-text="$store.confirm.message"></p></cds-modal-body>
+        <cds-modal-footer>
+            <cds-modal-footer-button kind="secondary" @click="$store.confirm.finish(false)">Cancel</cds-modal-footer-button>
+            <cds-modal-footer-button :kind="$store.confirm.danger ? 'danger' : 'primary'" @click="$store.confirm.finish(true)">Confirm</cds-modal-footer-button>
+        </cds-modal-footer>
+    </cds-modal>
+    <script defer src="/assets/js/alpine.min.js"></script>
 </body>
 </html>

@@ -1,142 +1,33 @@
-{{template "header.template"}}
-
-<div class="text-base-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-8">
-        <h3 class="text-2xl font-bold tracking-tight flex items-center">
-            <i class="ri-lock-shield-line text-primary mr-3"></i>Security & System
-        </h3>
-        <p class="text-sm opacity-60 mt-1 ml-9">Configure panel access and system maintenance</p>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div class="card surface lg:col-span-2">
-            <div class="row px-6 py-4 border-b border-base-300">
-                <h4 class="text-base font-semibold flex items-center"><i class="ri-settings-4-line opacity-50 mr-2"></i>Panel Configuration</h4>
-            </div>
-            <form action="/admin/security" method="post" @submit.prevent="updateSecurity" class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <span class="eyebrow block mb-1.5">Login Username</span>
-                        <label class="input input-bordered flex items-center gap-2">
-                            <i class="ri-user-3-line opacity-50"></i>
-                            <input type="text" name="username" value="{{.panelConfig.Username}}" required class="grow">
-                        </label>
+{{template "header.template" .}}
+<section class="page" x-data="securityPage" data-page="{{.Page}}">
+    {{template "page-header.template" .}}
+    <cds-inline-notification low-contrast x-show="restartRequired" x-cloak kind="warning" title="Restart required" subtitle="Stored port or login path differs from the running panel. Restart separately to apply it." hide-close-button></cds-inline-notification>
+    <div class="cds--row">
+        <div class="cds--col-sm-4 cds--col-md-8 cds--col-lg-10">
+            <cds-tile class="stack">
+                <h2>Panel configuration</h2>
+                <form class="stack" @submit.prevent="save" @keydown.enter.prevent="save">
+                    <div class="form-grid">
+                        <cds-text-input label="Login username" required x-cds-model="username"></cds-text-input>
+                        <cds-password-input label="New password" helper-text="Leave blank to keep the current password. Minimum 8 characters." autocomplete="new-password" x-cds-model="password"></cds-password-input>
+                        <cds-text-input class="code-input" label="Access port" helper-text="For example :8888" required x-cds-model="port"></cds-text-input>
+                        <cds-text-input class="code-input" label="Login path" helper-text="Use your configured private entry path." required x-cds-model="path"></cds-text-input>
                     </div>
-                    <div>
-                        <span class="eyebrow block mb-1.5">Login Password</span>
-                        <label class="input input-bordered flex items-center gap-2">
-                            <i class="ri-lock-password-line opacity-50"></i>
-                            <input type="password" name="password" value="{{.panelConfig.Password}}" required class="grow">
-                        </label>
-                    </div>
-                    <div>
-                        <span class="eyebrow block mb-1.5">Access Port</span>
-                        <label class="input input-bordered flex items-center gap-2">
-                            <i class="ri-door-lock-line opacity-50"></i>
-                            <input type="text" name="port" value="{{.panelConfig.Port}}" required class="grow">
-                        </label>
-                    </div>
-                    <div>
-                        <span class="eyebrow block mb-1.5">Entry Path</span>
-                        <label class="input input-bordered flex items-center gap-2">
-                            <i class="ri-link-m opacity-50"></i>
-                            <input type="text" name="path" value="{{.panelConfig.Path}}" required class="grow">
-                        </label>
-                    </div>
-                </div>
-                <div class="mt-8 flex justify-end">
-                    <button type="submit" class="btn btn-primary"><i class="ri-save-3-line text-lg"></i>Save Changes</button>
-                </div>
-            </form>
+                    <div class="form-actions"><cds-button :disabled="busy" type="submit" @click.prevent="save">Save changes<span slot="icon">{{icon "save" 16}}</span></cds-button></div>
+                </form>
+            </cds-tile>
         </div>
-
-        <div class="lg:col-span-1 space-y-6">
-            <div class="card surface p-6">
-                <div class="flex items-center mb-4">
-                    <div class="p-2 bg-primary/10 text-primary rounded-lg mr-3"><i class="ri-download-cloud-2-line text-xl"></i></div>
-                    <div>
-                        <h5 class="text-sm font-bold">System Update</h5>
-                        <p class="text-xs opacity-60">Get the latest features</p>
-                    </div>
-                </div>
-                <button @click="updateBinary" class="btn btn-block btn-outline">Update GoPanel</button>
-            </div>
-
-            <div class="card surface p-6">
-                <div class="flex items-center mb-4">
-                    <div class="p-2 bg-error/10 text-error rounded-lg mr-3"><i class="ri-restart-line text-xl"></i></div>
-                    <div>
-                        <h5 class="text-sm font-bold">Restart Service</h5>
-                        <p class="text-xs opacity-60">Reboot the panel daemon</p>
-                    </div>
-                </div>
-                <button @click="restartGopanel" class="btn btn-block btn-outline btn-error">Restart Panel</button>
-            </div>
+        <div class="cds--col-sm-4 cds--col-md-8 cds--col-lg-6 stack">
+            <cds-tile class="stack"><h2>System update</h2><p class="muted">Replace the binary with the latest release. Restart separately after updating.</p><cds-button kind="tertiary" :disabled="busy" @click="update">Update GoPanel<span slot="icon">{{icon "download" 16}}</span></cds-button></cds-tile>
+            <cds-tile class="stack"><h2>Restart panel</h2><p class="muted">The panel is temporarily unavailable while restarting. On unsupported platforms, restart it manually.</p><cds-button kind="danger--tertiary" :disabled="busy" @click="restart">Restart panel<span slot="icon">{{icon "renew" 16}}</span></cds-button></cds-tile>
         </div>
     </div>
-
-    <div x-show="showLoading" x-transition.opacity x-cloak
-         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div class="surface rounded-2xl p-8 flex flex-col items-center max-w-sm text-center">
-            <span class="loading loading-spinner loading-lg text-primary mb-4"></span>
-            <h3 class="text-lg font-semibold mb-1">Processing</h3>
-            <p class="text-sm opacity-60">Please wait while we apply changes...</p>
-        </div>
-    </div>
-</div>
-
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('panel', () => ({
-            showLoading: false,
-            settingsRevision: '{{.settingsRevision}}',
-
-            async updateSecurity(event) {
-                this.showLoading = true;
-                try {
-                    const result = await panelAPI('/panel/settings', {
-                        method: 'PATCH',
-                        body: {...Object.fromEntries(new FormData(event.target)), revision: this.settingsRevision},
-                    });
-                    this.settingsRevision = result.revision;
-                    alert(result.restart_required ? 'Configuration saved. Restart the panel to apply the new port/path.' : 'Configuration updated successfully');
-                    location.reload();
-                } catch (error) {
-                    alert('Failed to update configuration: ' + error.message);
-                    this.showLoading = false;
-                }
-            },
-
-            async updateBinary() {
-                if (!confirm('Are you sure you want to update GoPanel to the latest version?')) return;
-
-                this.showLoading = true;
-                try {
-                    await panelAPI('/panel/update', {method: 'POST'});
-                    alert('Update completed. Restart the panel to use the new binary.');
-                    location.reload();
-                } catch (error) {
-                    alert('Update failed: ' + error.message);
-                    this.showLoading = false;
-                }
-            },
-
-            async restartGopanel() {
-                if (!confirm('Are you sure you want to restart GoPanel? The panel will be temporarily unavailable.')) return;
-
-                this.showLoading = true;
-                try {
-                    await panelAPI('/panel/restart', {method: 'POST'});
-                    // Wait for restart
-                    setTimeout(() => {
-                        location.reload();
-                    }, 3000);
-                } catch (error) {
-                    alert('Restart failed: ' + error.message);
-                    this.showLoading = false;
-                }
-            }
-        }))
-    })
-</script>
-{{template "footer.template"}}
+    <cds-inline-loading x-show="busy" x-cloak assistive-text="Applying changes">Applying changes</cds-inline-loading>
+</section>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/tile.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/tag.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/text-input.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/password-input.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/inline-loading.min.js"></script>
+<script defer src="/assets/js/pages/security.js"></script>
+{{template "footer.template" .}}

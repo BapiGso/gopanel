@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="{{.Language}}">
+{{template "document-head.template" .}}
+<body x-data="shellPage">
+    <cds-header aria-label="GoPanel" class="dds-theme-zone-g100">
+        <cds-header-name href="{{if .Monitor}}/status/monitor{{else}}/admin/monitor{{end}}" prefix="">GoPanel</cds-header-name>
+        <div class="header-actions">
+            <cds-header-global-action button-label-active="Change color theme" button-label-inactive="Change color theme" @click="$store.theme.toggle()">
+                <span slot="icon" x-show="$store.theme.current === 'g100'">{{icon "sun" 20}}</span>
+                <span slot="icon" x-show="$store.theme.current !== 'g100'">{{icon "moon" 20}}</span>
+            </cds-header-global-action>
+        </div>
+    </cds-header>
+    <main id="main-content" class="public-content cds--grid">
+        <div class="cds--row"><div class="cds--col-sm-4 cds--col-md-8 cds--col-lg-16">

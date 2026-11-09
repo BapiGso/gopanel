@@ -1,7 +1,6 @@
 package frp
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -31,16 +30,8 @@ func Index(ctx *echo.Context) error {
 	if err != nil {
 		return err
 	}
-	serverContent, err := json.Marshal(serverConfig.Content)
-	if err != nil {
-		return err
-	}
-	clientContent, err := json.Marshal(clientConfig.Content)
-	if err != nil {
-		return err
-	}
 	return ctx.Render(http.StatusOK, "frp.template", map[string]any{
-		"frpsConfig": string(serverContent), "frpcConfig": string(clientContent),
+		"frpsConfig": serverConfig.Content, "frpcConfig": clientConfig.Content,
 		"frpsRevision": serverConfig.Revision, "frpcRevision": clientConfig.Revision,
 		"frpsEnable": settings.Config.Enable.Frps, "frpcEnable": settings.Config.Enable.Frpc,
 		"settingsRevision": settings.Revision,

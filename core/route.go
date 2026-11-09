@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 )
 
@@ -62,6 +63,15 @@ func (c *Core) setupRoutes() {
 	c.e.Use(middleware.RequestLogger())
 	c.e.Use(middleware.Recover())
 	c.e.Use(middleware.Gzip())
+	c.e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(ctx *echo.Context) error {
+			path := ctx.Request().URL.Path
+			if strings.HasPrefix(path, "/assets/vendor/carbon/v2.67.0/") || strings.HasPrefix(path, "/assets/vendor/carbon-charts/1.27.27/") {
+				ctx.Response().Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+			}
+			return next(ctx)
+		}
+	})
 
 	c.e.HTTPErrorHandler = func(c *echo.Context, err error) {
 		response, _ := echo.UnwrapResponse(c.Response())

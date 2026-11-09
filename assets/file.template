@@ -1,267 +1,71 @@
-{{template "header.template"}}
-
-<!-- Editor Modal -->
-<div class="modal modal-open" x-show="editorShow" x-cloak>
-    <div class="modal-box max-w-6xl p-0 overflow-hidden">
-        <div class="row px-6 py-4 border-b border-base-300 bg-base-200/50">
-            <div class="flex items-center gap-3">
-                <span class="p-2 bg-primary/10 text-primary rounded-lg"><i class="ri-code-s-slash-line"></i></span>
-                <div>
-                    <h3 class="text-lg font-semibold">File Editor</h3>
-                    <p class="text-xs opacity-60 font-mono" x-text="editor?.filename || 'Untitled'"></p>
-                </div>
-            </div>
-            <div class="flex items-center gap-2">
-                <button @click.prevent="updateFile('update', editor.filename, editor.getSession().getValue())" class="btn btn-primary btn-sm">
-                    <i class="ri-save-3-line"></i>Save Changes
-                </button>
-                <button @click="editorShow=false" class="btn btn-ghost btn-sm btn-circle"><i class="ri-close-line text-xl"></i></button>
-            </div>
-        </div>
-        <div class="relative bg-[#272822]">
-            <div id="editor" style="height: 600px; width: 100%;"></div>
-        </div>
+{{template "header.template" .}}
+<script type="module" src="/assets/vendor/carbon/v2.67.0/breadcrumb.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/data-table.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/overflow-menu.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/text-input.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/select.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/search.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/file-uploader.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/link.min.js"></script>
+<script defer src="/assets/js/ace.js"></script>
+<script defer src="/assets/js/mode-toml.js"></script>
+<script defer src="/assets/js/mode-caddyfile.js"></script>
+<script defer src="/assets/js/pages/file.js"></script>
+<section class="page" x-data="filePage" data-page="{{.Page}}">
+    {{template "page-header.template" .}}
+    <div class="breadcrumbs">
+        <cds-breadcrumb no-trailing-slash>
+            <cds-breadcrumb-item><cds-breadcrumb-link href="#" @click.prevent="navigate('/')">Root</cds-breadcrumb-link></cds-breadcrumb-item>
+            <cds-breadcrumb-item class="breadcrumb-overflow" x-show="crumbs.length > 1"><cds-overflow-menu label="Parent folders" breadcrumb><span slot="icon">{{icon "overflow-menu--vertical" 16}}</span><cds-overflow-menu-body><template x-for="crumb in crumbs.slice(0, -1)" :key="crumb.path"><cds-overflow-menu-item @click="navigate(crumb.path)" x-text="crumb.name"></cds-overflow-menu-item></template></cds-overflow-menu-body></cds-overflow-menu></cds-breadcrumb-item>
+            <template x-for="(crumb, index) in crumbs" :key="crumb.path"><cds-breadcrumb-item :class="index < crumbs.length - 1 ? 'breadcrumb-middle' : ''"><cds-breadcrumb-link href="#" @click.prevent="navigate(crumb.path)" x-text="crumb.name" :title="crumb.name"></cds-breadcrumb-link></cds-breadcrumb-item></template>
+        </cds-breadcrumb>
     </div>
-    <div class="modal-backdrop" @click="editorShow=false"></div>
-</div>
-
-<div class="text-base-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="flex items-center justify-between mb-8">
-        <div>
-            <h3 class="text-2xl font-bold tracking-tight flex items-center">
-                <i class="ri-folder-3-line text-primary mr-3"></i>File Manager
-            </h3>
-            <p class="text-sm opacity-60 mt-1 ml-9">Browse, upload, and manage your server files</p>
-        </div>
-        <button @click="location.href='/admin/webdav'" class="hidden sm:flex btn btn-sm btn-outline btn-primary">
-            <i class="ri-hard-drive-2-line"></i>WebDAV Access
-        </button>
-    </div>
-
-    <div class="card surface p-4 mb-6">
-        <div class="flex flex-col md:flex-row gap-4">
-            <div class="flex-1 flex items-center bg-base-200 rounded-xl border border-base-300 p-1 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
-                <div class="flex items-center px-2 gap-1 border-r border-base-300 mr-2">
-                    <button @click="homeHistory" title="Home" class="btn btn-ghost btn-sm btn-square"><i class="ri-home-4-line"></i></button>
-                    <button @click="backHistory" title="Up Level" class="btn btn-ghost btn-sm btn-square"><i class="ri-arrow-up-line"></i></button>
-                </div>
-                <div class="flex-1 relative">
-                    <i class="ri-folder-line absolute left-2 top-1/2 -translate-y-1/2 opacity-40"></i>
-                    <input type="text" x-bind="inputHistory"
-                           class="w-full pl-8 pr-4 py-2 bg-transparent border-none focus:ring-0 text-sm font-mono placeholder:opacity-40"
-                           placeholder="/path/to/directory">
-                </div>
-                <button title="Refresh" @click="location.reload()" class="btn btn-ghost btn-sm btn-square mr-1"><i class="ri-refresh-line"></i></button>
-            </div>
-
-            <div class="flex items-center gap-3 shrink-0">
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" @click.away="open = false" class="btn btn-primary">
-                        <i class="ri-add-line"></i>New<i class="ri-arrow-down-s-line opacity-70"></i>
-                    </button>
-                    <div x-show="open" x-transition:enter="transition ease-out duration-100"
-                         x-transition:enter-start="transform opacity-0 scale-95"
-                         x-transition:enter-end="transform opacity-100 scale-100"
-                         class="absolute right-0 mt-2 w-48 surface rounded-xl shadow-xl z-20 overflow-hidden">
-                        <button @click.prevent="createFile('createFolder', prompt('Enter folder name', '')); open = false"
-                                class="w-full px-4 py-3 text-left hover:bg-base-200 flex items-center gap-3 transition-colors text-sm">
-                            <span class="p-1.5 bg-warning/15 text-warning rounded-md"><i class="ri-folder-add-line"></i></span>New Folder
-                        </button>
-                        <div class="h-px bg-base-300 mx-4"></div>
-                        <button @click.prevent="createFile('createFile', prompt('Enter file name', '')); open = false"
-                                class="w-full px-4 py-3 text-left hover:bg-base-200 flex items-center gap-3 transition-colors text-sm">
-                            <span class="p-1.5 bg-info/15 text-info rounded-md"><i class="ri-file-add-line"></i></span>New File
-                        </button>
-                    </div>
-                </div>
-
-                <label class="btn btn-outline group cursor-pointer">
-                    <i class="ri-upload-cloud-2-line text-primary group-hover:scale-110 transition-transform"></i>Upload
-                    <input type="file" @change="uploadFiles($el)" multiple name="files" class="hidden">
-                </label>
-            </div>
-        </div>
-    </div>
-
-    <div class="card surface overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="table">
-                <thead>
-                <tr>
-                    <th class="w-10"><input type="checkbox" x-model="checkAll" class="checkbox checkbox-sm"></th>
-                    <th>Name</th><th>Permissions</th><th>Size</th><th>Last Modified</th><th class="text-right">Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr class="hover group">
-                    <td></td>
-                    <td colspan="5">
-                        <button @click="backHistory" class="flex items-center gap-3 text-sm font-medium opacity-70 hover:text-primary transition-colors">
-                            <i class="ri-corner-left-up-line text-lg opacity-60 group-hover:text-primary"></i>..
-                        </button>
-                    </td>
-                </tr>
-
-                {{range .Files}}
-                    <tr class="hover group">
-                        <td>
-                            <input type="checkbox" x-init="$watch('checkAll', val => $el.checked=val)" class="checkbox checkbox-sm opacity-40 group-hover:opacity-100 transition-opacity">
-                        </td>
-                        <td>
-                            <div class="flex items-center gap-3">
-                                {{if .IsDir}}
-                                    <span class="shrink-0 h-8 w-8 bg-warning/15 text-warning rounded-lg flex items-center justify-center"><i class="ri-folder-fill text-lg"></i></span>
-                                    <button @click="changeDirectory($el.innerText)" class="font-medium hover:text-primary hover:underline underline-offset-2 transition-colors truncate max-w-[200px] sm:max-w-xs">{{.Name}}</button>
-                                {{else}}
-                                    <span class="shrink-0 h-8 w-8 bg-base-200 rounded-lg flex items-center justify-center opacity-70"><i class="ri-file-text-line text-lg"></i></span>
-                                    <a :href="`/api/v1${panelFilePath('downloads', filePath(`{{.Name}}`))}`" class="font-medium hover:text-primary hover:underline underline-offset-2 transition-colors truncate max-w-[200px] sm:max-w-xs">{{.Name}}</a>
-                                {{end}}
-                            </div>
-                        </td>
-                        <td><span class="badge badge-ghost badge-sm font-mono">{{.Mode.Perm}}</span></td>
-                        <td class="opacity-60 tabular-nums" x-text="formatBytes(`{{.Size}}`)"></td>
-                        <td class="opacity-60 tabular-nums">{{.ModTime.Format "2006-01-02 15:04"}}</td>
-                        <td class="text-right">
-                            <div class="flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                {{if not .IsDir}}
-                                    <button @click.prevent="newEditor(`{{.Name}}`)" class="btn btn-ghost btn-xs text-info" title="Edit"><i class="ri-edit-box-line text-lg"></i></button>
-                                {{end}}
-                                <button @click.prevent="updateFile('rename', `{{.Name}}`,prompt('Enter new name', `{{.Name}}`))" class="btn btn-ghost btn-xs text-warning" title="Rename"><i class="ri-input-method-line text-lg"></i></button>
-                                <button @click.prevent="updateFile('chmod', `{{.Name}}`, prompt('Set permissions (e.g., 0644)', ''))" class="btn btn-ghost btn-xs text-primary" title="Permissions"><i class="ri-shield-keyhole-line text-lg"></i></button>
-                                <div class="h-4 w-px bg-base-300 mx-1"></div>
-                                <button @click.prevent="deleteFile(`{{.Name}}`)" class="btn btn-ghost btn-xs text-error" title="Delete"><i class="ri-delete-bin-5-line text-lg"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                {{end}}
-                </tbody>
-            </table>
-        </div>
-
-        <template x-if="!{{len .Files}} && '{{len .Files}}' != '0'">
-            <div class="px-6 py-4 border-t border-base-300 bg-base-200/50">
-                <p class="text-xs opacity-60 text-center">End of file list</p>
-            </div>
-        </template>
-    </div>
-</div>
-
-<script type="text/javascript" src="/assets/js/ace.js"></script>
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('panel', () => ({
-            checkAll: false,
-            directory: {{printf "%q" .Dir}},
-            editorShow: false,
-
-            formatBytes(bytes, decimals = 2) {
-                if (bytes === '0' || bytes === 0) return '0 B';
-                const k = 1024;
-                const dm = decimals < 0 ? 0 : decimals;
-                const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-            },
-
-            getDirectoryValue() {
-                return this.directory || '/';
-            },
-
-            setDirectory(directory) {
-                this.directory = directory || '/';
-                document.cookie = `dirHistory=${encodeURIComponent(this.directory)}`;
-                location.reload();
-            },
-
-            filePath(name = '') {
-                const current = this.getDirectoryValue().replace(/\/+$/, '') || '/';
-                if (!name) return current;
-                return `${current === '/' ? '' : current}/${name}`;
-            },
-
-            async request(options = {}) {
-                const {name = '', resource = 'files', endpoint, ...init} = options;
-                return panelAPI(endpoint || panelFilePath(resource, this.filePath(name)), init);
-            },
-
-            async run(options, fallback = 'Operation failed') {
-                try {
-                    await this.request(options);
-                    alert('success');
-                    location.reload();
-                } catch (error) {
-                    alert(`${fallback}: ${error.message}`);
-                }
-            },
-
-            inputHistory: {
-                'x-ref': 'inputHistory',
-                'x-init'() {
-                    this.$refs.inputHistory.value = this.getDirectoryValue();
-                },
-                '@blur'() {
-                    this.setDirectory(this.$refs.inputHistory.value);
-                },
-                '@keydown.enter'() {
-                    this.setDirectory(this.$refs.inputHistory.value);
-                }
-            },
-
-            changeDirectory(name) {
-                this.setDirectory(this.filePath(name));
-            },
-
-            homeHistory() {
-                this.setDirectory('/');
-            },
-
-            backHistory() {
-                const current = this.getDirectoryValue();
-                const index = current.lastIndexOf('/');
-                this.setDirectory(index <= 0 ? '/' : current.substring(0, index));
-            },
-
-            async newEditor(name) {
-                try {
-                    const data = await this.request({name});
-                    window.editor = ace.edit("editor");
-                    editor.setValue(data.content, -1);
-                    editor.filename = name;
-                    editor.session.setMode(`ace/mode/${name.split('.').pop()}`);
-                    this.editorShow = true;
-                } catch (error) {
-                    alert('Failed to open editor: ' + error.message);
-                }
-            },
-
-            async uploadFiles(el) {
-                const formData = new FormData();
-                Array.from(el.files).forEach(file => formData.append('files', file));
-                await this.run({resource: 'uploads', method: 'POST', body: formData}, 'Upload failed');
-            },
-
-            async updateFile(type, name, data) {
-                if (data === null) return;
-                const body = type === 'rename' ? {destination: this.filePath(data)}
-                    : type === 'chmod' ? {permissions: data} : {content: data};
-                await this.run({
-                    name,
-                    method: type === 'update' ? 'PUT' : 'PATCH',
-                    body,
-                }, 'Update failed');
-            },
-
-            async deleteFile(name) {
-                if (confirm("Are you sure you want to delete this file?")) {
-                    await this.run({name, method: 'DELETE'}, 'Delete failed');
-                }
-            },
-
-            async createFile(type, name) {
-                if (!name) return;
-                await this.run({endpoint: '/files', method: 'POST', body: {path: this.filePath(name), type: type === 'createFolder' ? 'directory' : 'file'}}, 'Create failed');
-            }
-        }))
-    })
-</script>
-{{template "footer.template"}}
+    <section aria-label="Files">
+    <cds-table-toolbar size="lg"><cds-table-toolbar-content>
+        <cds-text-input class="table-toolbar-path code-input" hide-label label="Directory path" aria-label="Directory path" x-cds-model="pathInput" @keydown.enter.prevent="navigate(pathInput)"></cds-text-input>
+        <cds-button kind="ghost" :disabled="busy" @click="navigate(pathInput)">Go</cds-button>
+        <cds-button kind="ghost" :disabled="busy || directory === '/'" @click="up()">Up<span slot="icon">{{icon "arrow--left" 16}}</span></cds-button>
+        <cds-button kind="ghost" :disabled="busy" @click="navigate(directory)">Refresh<span slot="icon">{{icon "renew" 16}}</span></cds-button>
+        <cds-table-toolbar-search persistent label-text="Filter this directory" placeholder="Filter files" x-cds-model="search"></cds-table-toolbar-search>
+        <cds-button :disabled="busy" @click="openCreate()">New<span slot="icon">{{icon "add" 16}}</span></cds-button>
+    </cds-table-toolbar-content></cds-table-toolbar>
+    <p class="table-meta cds--type-label-01 muted" x-text="files.length + ' entries'"></p>
+    <div class="table-scroll" role="region" aria-label="Directory listing" tabindex="0"><cds-table>
+        <cds-table-head><cds-table-header-row><cds-table-header-cell>Name</cds-table-header-cell><cds-table-header-cell>Size</cds-table-header-cell><cds-table-header-cell>Mode</cds-table-header-cell><cds-table-header-cell>Modified</cds-table-header-cell><cds-table-header-cell>Actions</cds-table-header-cell></cds-table-header-row></cds-table-head>
+        <cds-table-body><template x-for="entry in filteredFiles" :key="entry.path"><cds-table-row>
+            <cds-table-cell><div class="file-name"><span x-show="entry.type === 'directory'">{{icon "folder" 16}}</span><span x-show="entry.type !== 'directory'">{{icon "document" 16}}</span><cds-link :href="entry.type === 'directory' ? '#' : downloadPath(entry.path)" @click="entry.type === 'directory' &amp;&amp; ($event.preventDefault(), navigate(entry.path))" x-text="entry.name"></cds-link></div></cds-table-cell>
+            <cds-table-cell x-text="entry.type === 'directory' ? '—' : $store.helpers.bytes(entry.size)"></cds-table-cell><cds-table-cell class="mono" x-text="entry.permissions"></cds-table-cell><cds-table-cell x-text="$store.helpers.date(entry.modified_at)"></cds-table-cell>
+            <cds-table-cell><cds-overflow-menu :label="'Actions for ' + entry.name"><span slot="icon">{{icon "overflow-menu--vertical" 16}}</span><cds-overflow-menu-body flipped>
+                <cds-overflow-menu-item x-show="entry.type === 'directory'" :disabled="busy" @click="navigate(entry.path)">Open folder</cds-overflow-menu-item>
+                <cds-overflow-menu-item x-show="entry.type !== 'directory'" :disabled="busy" @click="openEditor(entry)">Edit</cds-overflow-menu-item>
+                <cds-overflow-menu-item x-show="entry.type !== 'directory'" :href="downloadPath(entry.path)">Download</cds-overflow-menu-item>
+                <cds-overflow-menu-item :disabled="busy" @click="openChange('rename', entry)">Rename</cds-overflow-menu-item>
+                <cds-overflow-menu-item :disabled="busy" @click="openChange('permissions', entry)">Permissions</cds-overflow-menu-item>
+                <cds-overflow-menu-item danger :disabled="busy" @click="remove(entry)">Delete</cds-overflow-menu-item>
+            </cds-overflow-menu-body></cds-overflow-menu></cds-table-cell>
+        </cds-table-row></template></cds-table-body>
+    </cds-table></div>
+    <p class="table-empty" x-show="!filteredFiles.length">No matching files or folders.</p>
+    </section>
+    <section class="upload-section stack" aria-label="Upload files">
+        <h2 class="cds--type-heading-compact-02">Upload files</h2>
+        <cds-file-uploader label-description="Up to 32 MiB per upload. Same-name files are replaced.">
+            <cds-file-uploader-drop-container multiple :disabled="busy" @cds-file-uploader-drop-container-changed="upload($event.detail.addedFiles)">Drag files here or click to upload</cds-file-uploader-drop-container>
+        </cds-file-uploader>
+    </section>
+    <cds-modal x-cds-prop:open="changeOpen" @cds-modal-closed="changeOpen = false">
+        <cds-modal-header><cds-modal-close-button></cds-modal-close-button><cds-modal-heading x-text="changeTitle"></cds-modal-heading></cds-modal-header>
+        <cds-modal-body><div class="stack">
+            <p class="mono" x-show="selected" x-text="selected?.path"></p>
+            <cds-select x-show="operation === 'create'" label-text="Type" x-cds-model="newType"><cds-select-item value="file">File</cds-select-item><cds-select-item value="directory">Folder</cds-select-item></cds-select>
+            <cds-text-input :label="operation === 'permissions' ? 'Octal permissions' : 'Name'" :helper-text="operation === 'permissions' ? 'For example 0644 or 0755' : 'A single file or folder name, not a path'" x-cds-model="newValue" @keydown.enter.prevent="applyChange()"></cds-text-input>
+        </div></cds-modal-body>
+        <cds-modal-footer><cds-modal-footer-button kind="secondary" @click="changeOpen = false">Cancel</cds-modal-footer-button><cds-modal-footer-button :disabled="busy" @click="applyChange()">Save</cds-modal-footer-button></cds-modal-footer>
+    </cds-modal>
+    <cds-modal size="lg" x-cds-prop:open="editorOpen" @cds-modal-closed="editorOpen = false">
+        <cds-modal-header><cds-modal-close-button></cds-modal-close-button><cds-modal-heading>File editor</cds-modal-heading><p class="mono" x-text="editingPath"></p></cds-modal-header>
+        <cds-modal-body><div class="editor-frame"><div class="editor" x-ref="editor" aria-label="File content editor"></div></div><p class="muted">UTF-8 text, up to 2 MiB. Ctrl / Cmd + S saves.</p></cds-modal-body>
+        <cds-modal-footer><cds-modal-footer-button kind="secondary" @click="editorOpen = false">Close</cds-modal-footer-button><cds-modal-footer-button :disabled="busy" @click="saveEditor()">Save changes</cds-modal-footer-button></cds-modal-footer>
+    </cds-modal>
+</section>
+{{template "footer.template" .}}

@@ -1,0 +1,566 @@
+{
+  "version": "2.67.0",
+  "source_url": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/",
+  "components": [
+    "breadcrumb",
+    "button",
+    "checkbox",
+    "code-snippet",
+    "data-table",
+    "file-uploader",
+    "inline-loading",
+    "link",
+    "modal",
+    "notification",
+    "number-input",
+    "overflow-menu",
+    "password-input",
+    "progress-bar",
+    "search",
+    "select",
+    "tabs",
+    "tag",
+    "text-input",
+    "textarea",
+    "tile",
+    "toggle",
+    "ui-shell"
+  ],
+  "icons": [
+    "add",
+    "arrow--down",
+    "arrow--left",
+    "arrow--right",
+    "arrow--up",
+    "close",
+    "document",
+    "download",
+    "folder",
+    "moon",
+    "overflow-menu--vertical",
+    "renew",
+    "save",
+    "sun",
+    "warning--01"
+  ],
+  "pictograms": [
+    "warning--01"
+  ],
+  "charts_version": "1.27.27",
+  "transforms": {
+    "*.js,*.css": "Removed sourceMappingURL references because source maps are not shipped.",
+    "grid.css": "Renamed the legacy bx-- grid class prefix to cds-- for Carbon v11 template classes.",
+    "icons": "Use size-specific 16px and 20px artwork when available; fall back to the 32px artwork only on HTTP 404. Empty-state pictograms use their original 64px artboards.",
+    "plex.css": "Replaced all upstream font-face rules with local Latin1 IBM Plex Sans 300/400/600 and IBM Plex Mono 400 (Plex 6.4.1), font-display: swap; retained upstream reset and typography."
+  },
+  "files": {
+    "icons/carbon/16/add.svg": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/icons@11.92.0/svg/32/add.svg",
+      "sha256": "a01e6d04990c6c1c0b6f3a53e6ca07753547ff314219b640acaff8c6baa1c52d"
+    },
+    "icons/carbon/16/arrow--down.svg": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/icons@11.92.0/svg/16/arrow--down.svg",
+      "sha256": "3f7cfd3b8c141cbcb7ffc1a63088bf71f40f3054c784170cfabb97513c63217d"
+    },
+    "icons/carbon/16/arrow--left.svg": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/icons@11.92.0/svg/16/arrow--left.svg",
+      "sha256": "88c6a0767b9111e075f1ab8c4ab42ab567e8ea90554c6d4a09986a09745f6e6f"
+    },
+    "icons/carbon/16/arrow--right.svg": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/icons@11.92.0/svg/16/arrow--right.svg",
+      "sha256": "76a702b195105ffc3848be6ed61618a3bdeb3b65262689c95a9be7e9866c2a14"
+    },
+    "icons/carbon/16/arrow--up.svg": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/icons@11.92.0/svg/16/arrow--up.svg",
+      "sha256": "ad137a7391029fb3585f7c7b4dcc745ab33a28d62b38e8b2014c10ebb710c089"
+    },
+    "icons/carbon/16/close.svg": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/icons@11.92.0/svg/32/close.svg",
+      "sha256": "3c9cd714a9a416071c2a46a94c2246fd2d776289d20b182cb41715e48565ad9e"
+    },
+    "icons/carbon/16/document.svg": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/icons@11.92.0/svg/32/document.svg",
+      "sha256": "15339a06f6593c495042659b80b1d9ed2f49b9712ecdf3a35cdcd668a9a81e8d"
+    },
+    "icons/carbon/16/download.svg": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/icons@11.92.0/svg/16/download.svg",
+      "sha256": "dd287087af8a0fd6f5fc454342fd880eb20a8e796ccb5156f391c4ad4516f09d"
+    },
+    "icons/carbon/16/folder.svg": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/icons@11.92.0/svg/32/folder.svg",
+      "sha256": "38bea8abacf058f74a7b60bb491c81ecc7b7b2dd23b9337fee188cb09e8fd96a"
+    },
+    "icons/carbon/16/overflow-menu--vertical.svg": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/icons@11.92.0/svg/32/overflow-menu--vertical.svg",
+      "sha256": "3d8c4f8cc8741df9ce2e57ff4608a7a34dafba97509a74feae657bf7b6eaed78"
+    },
+    "icons/carbon/16/renew.svg": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/icons@11.92.0/svg/32/renew.svg",
+      "sha256": "4dcfed030321811489b2ecc70b6ebb55158543fd209096c998ed7d6f0524cff7"
+    },
+    "icons/carbon/16/save.svg": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/icons@11.92.0/svg/16/save.svg",
+      "sha256": "194c624c26f9b63cd55510ea3324daac2503de245f93c0610641d78408111dca"
+    },
+    "icons/carbon/20/moon.svg": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/icons@11.92.0/svg/32/moon.svg",
+      "sha256": "6d511dc5ada74b1db3552cbd2e65b467dc619a02197ad4ca29917ffd2e970b2f"
+    },
+    "icons/carbon/20/sun.svg": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/icons@11.92.0/svg/32/sun.svg",
+      "sha256": "e00607331321d86b08cd2d985182ef3ad78294b38bf2a86d46e95b292f399d50"
+    },
+    "icons/carbon/LICENSE": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/icons@11.92.0/LICENSE",
+      "sha256": "037b3e9eaff51477b270e9082f54b99175e4dd893548654f00995045b68294b8"
+    },
+    "icons/carbon/pictograms/LICENSE": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/pictograms@12.88.0/LICENSE",
+      "sha256": "037b3e9eaff51477b270e9082f54b99175e4dd893548654f00995045b68294b8"
+    },
+    "icons/carbon/pictograms/warning--01.svg": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/pictograms@12.88.0/svg/warning--01.svg",
+      "sha256": "1146ba7cd2281781860521067987236240e0737941ccebcdff9a4c32efbf5eb9"
+    },
+    "vendor/carbon-charts/1.27.27/LICENSE": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/charts@1.27.27/LICENSE.md",
+      "sha256": "097350161b96f64f212c20944fec0377d1fce0e74cfd71cd433a273459ab9dc4"
+    },
+    "vendor/carbon-charts/1.27.27/bundle.umd.js": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/charts@1.27.27/dist/umd/bundle.umd.js",
+      "sha256": "6441bd225175cdde5fafb41bf564c8622db4bad05aff112e7b4fe85e583c83cb"
+    },
+    "vendor/carbon-charts/1.27.27/manifest.json": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/charts@1.27.27/",
+      "sha256": "8e399fed5fb191c90242978260aad69c6d520feee7918b09c54924576881751e"
+    },
+    "vendor/carbon-charts/1.27.27/styles.min.css": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/charts@1.27.27/dist/styles.min.css",
+      "sha256": "9baebf0911d418d297747379e245ee185bb7ff61d15fd8ea99d9a9321a3a135f"
+    },
+    "vendor/carbon/fonts/IBMPlexMono-Regular-Latin1.woff2": {
+      "source": "https://unpkg.com/@ibm/plex@6.4.1/IBM-Plex-Mono/fonts/split/woff2/IBMPlexMono-Regular-Latin1.woff2",
+      "sha256": "10d3c7fa7eaf48e78db24f317b64f008a75e00f63a68bb3c2afc6ef51e58674f"
+    },
+    "vendor/carbon/fonts/IBMPlexSans-Light-Latin1.woff2": {
+      "source": "https://unpkg.com/@ibm/plex@6.4.1/IBM-Plex-Sans/fonts/split/woff2/IBMPlexSans-Light-Latin1.woff2",
+      "sha256": "a21e7db1965d4c7af07213226fb11ccd2f61a87a0045ce1fed7cd22918431144"
+    },
+    "vendor/carbon/fonts/IBMPlexSans-Regular-Latin1.woff2": {
+      "source": "https://unpkg.com/@ibm/plex@6.4.1/IBM-Plex-Sans/fonts/split/woff2/IBMPlexSans-Regular-Latin1.woff2",
+      "sha256": "b5ad7bd39f996144915f0ad9849a90183b27d8c28ad97ed98af5b1bebc51f6b1"
+    },
+    "vendor/carbon/fonts/IBMPlexSans-SemiBold-Latin1.woff2": {
+      "source": "https://unpkg.com/@ibm/plex@6.4.1/IBM-Plex-Sans/fonts/split/woff2/IBMPlexSans-SemiBold-Latin1.woff2",
+      "sha256": "fff0ab3a88b0b4aa0b693e4f0201359a15183b08e3fa5696d1918d8f0ade8ad5"
+    },
+    "vendor/carbon/fonts/OFL.txt": {
+      "source": "https://unpkg.com/@ibm/plex@6.4.1/LICENSE.txt",
+      "sha256": "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da"
+    },
+    "vendor/carbon/v2.67.0/16--Q5ofzWy.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/16--Q5ofzWy.js",
+      "sha256": "10ccec6bbb854689d92f90018dd25ed0dce3d8a58cb490c689bd5b9fef572a32"
+    },
+    "vendor/carbon/v2.67.0/16--lVnnc02.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/16--lVnnc02.js",
+      "sha256": "e627efa96963e50ee00732c85ee472940a3dbf29ae8eb71de8e60ea7a45f5541"
+    },
+    "vendor/carbon/v2.67.0/16-B6px7D32.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/16-B6px7D32.js",
+      "sha256": "b11b95db64c39e15c56570045011e5cb48cf3def13473160fe6305aa023cbf9e"
+    },
+    "vendor/carbon/v2.67.0/16-B8V9DdRb.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/16-B8V9DdRb.js",
+      "sha256": "a13b9564353a227f62f6066938f68cc0765c231277d7de0404135b4df1bcb898"
+    },
+    "vendor/carbon/v2.67.0/16-BKjr8umN.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/16-BKjr8umN.js",
+      "sha256": "3f12a6936f796c0ff25b8c4eca62aaebef8207c61d4f93e4f8feec377ef42224"
+    },
+    "vendor/carbon/v2.67.0/16-BShR3dSw.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/16-BShR3dSw.js",
+      "sha256": "b3e206c75e21f6c6c3c2a9805c5d5811b816e702c48a6b0777232a5b31d74132"
+    },
+    "vendor/carbon/v2.67.0/16-CB4UG3Dn.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/16-CB4UG3Dn.js",
+      "sha256": "63952ab689b18cb41475ea65116475230d0971873f6b7fa22a0ef3786b900bc5"
+    },
+    "vendor/carbon/v2.67.0/16-CTYSiwDg.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/16-CTYSiwDg.js",
+      "sha256": "aafa66e1cd4714e9fe9a59b34329a0c467362cd4c54fe004fd710a486423c7b3"
+    },
+    "vendor/carbon/v2.67.0/16-CsMuVZLE.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/16-CsMuVZLE.js",
+      "sha256": "679d6e2277812f04e9e52f39c0a2f991e56f8ca58182a8aee5f7451b601d0958"
+    },
+    "vendor/carbon/v2.67.0/16-Dc7K9DrJ.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/16-Dc7K9DrJ.js",
+      "sha256": "c9f7098654578ab2eb21d1f6145f6732dbd6e08a1b7ca47626d0501dbde56ce6"
+    },
+    "vendor/carbon/v2.67.0/16-DrlkM-nS.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/16-DrlkM-nS.js",
+      "sha256": "c0b4d98d9c09a9073f1aec2a492e7560aa0fe4f54025ed195e04b2a8dec41e7a"
+    },
+    "vendor/carbon/v2.67.0/16-Dt78Jpsz.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/16-Dt78Jpsz.js",
+      "sha256": "33d5a6130e5b8155e99caacac8fec3e67208248b96353f6609cc6493fd05ce4d"
+    },
+    "vendor/carbon/v2.67.0/20-09qeVszL.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/20-09qeVszL.js",
+      "sha256": "3b72214d7427c26c4c033fc895a78eb4a78d8dbd19c66ca528b78bb909081f5e"
+    },
+    "vendor/carbon/v2.67.0/20-6pKanUow.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/20-6pKanUow.js",
+      "sha256": "8bcc69630fde6f46d54954e5bd5ca02151a2e2a804e8a29e029f80da4c6a596a"
+    },
+    "vendor/carbon/v2.67.0/LICENSE": {
+      "source": "https://cdn.jsdelivr.net/npm/@carbon/web-components@2.67.0/LICENSE",
+      "sha256": "037b3e9eaff51477b270e9082f54b99175e4dd893548654f00995045b68294b8"
+    },
+    "vendor/carbon/v2.67.0/badge-indicator.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/badge-indicator.min.js",
+      "sha256": "a145f3418fc678aab4579ec99106d1c8f3f85b7d93e1423989eb545ab1b5af23"
+    },
+    "vendor/carbon/v2.67.0/breadcrumb.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/breadcrumb.min.js",
+      "sha256": "108d18c25ca87e4c7cc7f64f16a6bbcc85524e138c4dcc94b3de16e54200bfca"
+    },
+    "vendor/carbon/v2.67.0/button-DyPDZ5DV.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/button-DyPDZ5DV.js",
+      "sha256": "7fc2fc15c6ab85f899d57536c215e2d2c6674b60d8f2cc09953410a85e8e3279"
+    },
+    "vendor/carbon/v2.67.0/button-skeleton-DhKpZDuk.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/button-skeleton-DhKpZDuk.js",
+      "sha256": "fbbdbf9b8dc0822b05ee5d11a0dbdba3c5f71365c6e64ac04c71a24d92cf7ab2"
+    },
+    "vendor/carbon/v2.67.0/button.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/button.min.js",
+      "sha256": "44370dd4710101486e114a8f3d057170879ac84f6d5fc93ede0ede99a68066ad"
+    },
+    "vendor/carbon/v2.67.0/carbon-element-DgPTymXo.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/carbon-element-DgPTymXo.js",
+      "sha256": "4326e1851a5643a2f9602a22b3c3e62deaa608c9021bcd443835afb35e6e6835"
+    },
+    "vendor/carbon/v2.67.0/checkbox-B65696_I.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/checkbox-B65696_I.js",
+      "sha256": "03be9854da1694ca55542fe92e5e81ced6da2f44345215124811a7954c693e7a"
+    },
+    "vendor/carbon/v2.67.0/checkbox.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/checkbox.min.js",
+      "sha256": "123656c14c5dd2d45818fcd8033029575bf96e92ba5aa4be76ea26ecc1a6fcc6"
+    },
+    "vendor/carbon/v2.67.0/class-map-Du3XwLEL.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/class-map-Du3XwLEL.js",
+      "sha256": "bfbe13be7b90c635e667a8b184a7734e4c31f82508f09fd46cbfad847321fe70"
+    },
+    "vendor/carbon/v2.67.0/code-snippet.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/code-snippet.min.js",
+      "sha256": "45182d520a7038a90ae200762f13e4e2e60c0e6e499c2bc003a51d5206a05295"
+    },
+    "vendor/carbon/v2.67.0/collection-helpers-BuiEeCLZ.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/collection-helpers-BuiEeCLZ.js",
+      "sha256": "bbd38563a54736599e88febe9ae53a92affb954a8253eb30a9ef826abe93babd"
+    },
+    "vendor/carbon/v2.67.0/consume-Daj18DSj.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/consume-Daj18DSj.js",
+      "sha256": "acb89ccbc5625c3dd5a22760ed74d2f4d390c55666d32c3ba0ac1f750f5f953d"
+    },
+    "vendor/carbon/v2.67.0/content-switcher-DZwe32ef.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/content-switcher-DZwe32ef.js",
+      "sha256": "c92793c8410e48ef2beadff8f75bb4cd83146fa5a93dc2c57a0ad6dcc4b92d7d"
+    },
+    "vendor/carbon/v2.67.0/copy-DTrFhkJX.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/copy-DTrFhkJX.js",
+      "sha256": "6bf30ef3c05b62d9c90d75b0d5cacfd637d5e714bec5e17f4785921fb399ddea"
+    },
+    "vendor/carbon/v2.67.0/copy-button.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/copy-button.min.js",
+      "sha256": "f5d7f2b43a61077b057f8dc37c6767ac81f49c78f0451241f9a7cf8e4e39333d"
+    },
+    "vendor/carbon/v2.67.0/data-table.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/data-table.min.js",
+      "sha256": "2c19997cccc03131fbb4405d2adb0d801c68282ce85768def7021f89a1098590"
+    },
+    "vendor/carbon/v2.67.0/decorate-BgofJUJ5.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/decorate-BgofJUJ5.js",
+      "sha256": "5721032bce4aa78b07806ed4d5d96fc010db0cb92e651685b3b9c5ea5ad6f323"
+    },
+    "vendor/carbon/v2.67.0/decorators-lcU6xUBg.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/decorators-lcU6xUBg.js",
+      "sha256": "70ec0d7f101ed31229e823eb72d3d8bd1e3291efed1d9c16d3695637a49bdec1"
+    },
+    "vendor/carbon/v2.67.0/deep-shadow-contains-Mbh9LOw4.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/deep-shadow-contains-Mbh9LOw4.js",
+      "sha256": "8de51c068ec870b006e2b191543b4eb782e9d9d881d6cb6fd2be05ea30f8f101"
+    },
+    "vendor/carbon/v2.67.0/definition-tooltip-DizmPh4c.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/definition-tooltip-DizmPh4c.js",
+      "sha256": "6bb169e13794d3477e7810dc8f157e3cb819220442e00256f45abeb3e119f223"
+    },
+    "vendor/carbon/v2.67.0/defs-tiELxKm5.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/defs-tiELxKm5.js",
+      "sha256": "65334ba4b5aab8d4030abf0af229292365d31eac2409b1ef17e77f0e0b9bce2f"
+    },
+    "vendor/carbon/v2.67.0/directive-uL8lMFH7.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/directive-uL8lMFH7.js",
+      "sha256": "27c44366886b77c5ed8693eb70e8eadbafe74c59ab6a5b02f799673fdb4835ee"
+    },
+    "vendor/carbon/v2.67.0/es-1PjpdWHB.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/es-1PjpdWHB.js",
+      "sha256": "e21b4f0b7e33aebc8fb8d34a088f38d5fe8b30891dcd6ba39f0929623edafe8c"
+    },
+    "vendor/carbon/v2.67.0/feature-flags-OkmnOItq.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/feature-flags-OkmnOItq.js",
+      "sha256": "ccd8185d35284359b05e2a232a8161affdcbd1ece512e41ffa318715a7d693b6"
+    },
+    "vendor/carbon/v2.67.0/file-uploader.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/file-uploader.min.js",
+      "sha256": "9d25f7ae6a16ed0dbcee3de799598976229f66461efe4fd1bb1c909b9bc3655c"
+    },
+    "vendor/carbon/v2.67.0/floating-menu-dqm4Fj-J.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/floating-menu-dqm4Fj-J.js",
+      "sha256": "65325f3e0ae612ee2d750c419baada472a882a36b9cffc0faaa38c184795ed18"
+    },
+    "vendor/carbon/v2.67.0/focus-BAk8V28j.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/focus-BAk8V28j.js",
+      "sha256": "674ea58da6c70a817e5e1bc48c57baa5af12f1472fcb77e0d5c7904b31da6e62"
+    },
+    "vendor/carbon/v2.67.0/form-BLDB0U10.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/form-BLDB0U10.js",
+      "sha256": "d9f1655ecdaded81128b103562535e187cbd60dfef48319269a22f7660837b92"
+    },
+    "vendor/carbon/v2.67.0/grid.css": {
+      "source": "https://1.www.s81c.com/common/carbon-for-ibm-dotcom/tag/v1/latest/grid.css",
+      "sha256": "95ab49bfc1c018a0bdd4e4f2c9930818cdc67bd1295e785e08feeec019f49726"
+    },
+    "vendor/carbon/v2.67.0/host-listener-4p0RbMup.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/host-listener-4p0RbMup.js",
+      "sha256": "0a6887d71a365acaa3b2adb99757075504be8a732c620b6d716f22a2034c8368"
+    },
+    "vendor/carbon/v2.67.0/host-listener-BIbrRp9a.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/host-listener-BIbrRp9a.js",
+      "sha256": "0872de8cc670d1567b3a800fa98200e42778e1b1ed66b320f6bb2b70b86c5293"
+    },
+    "vendor/carbon/v2.67.0/icon-button-vwbpsTCA.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/icon-button-vwbpsTCA.js",
+      "sha256": "99b63449b336fbf2641b036150c01e62c72fa5597b0ac463c4e59e3e5b34a4db"
+    },
+    "vendor/carbon/v2.67.0/icon-button.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/icon-button.min.js",
+      "sha256": "096da7d895c411fc660fdca317987dd318b1193ff535b27abe8262d585f9b8db"
+    },
+    "vendor/carbon/v2.67.0/icon-loader-l8drar9A.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/icon-loader-l8drar9A.js",
+      "sha256": "8d0a5d1701f8e9fd04d3d61342cda83bd53b522f5260fdd2585a39891cedd444"
+    },
+    "vendor/carbon/v2.67.0/icon-loader-utils-CiKm8lCl.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/icon-loader-utils-CiKm8lCl.js",
+      "sha256": "feff184dee38143cb73fd24a2cd0fb9ab812fcf95fb9be1b7103ca661459fdd1"
+    },
+    "vendor/carbon/v2.67.0/if-defined-Dnjx5V1i.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/if-defined-Dnjx5V1i.js",
+      "sha256": "5238fcc67b0a3b72744b80505e5976b9d4ed97622b00c815c4e3a72a0831a744"
+    },
+    "vendor/carbon/v2.67.0/if-non-empty-CvcvZtxz.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/if-non-empty-CvcvZtxz.js",
+      "sha256": "0299ee9765bb0ffe4570db754a5dcede0ad53c048fff2d604459f6eff552f451"
+    },
+    "vendor/carbon/v2.67.0/inline-loading.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/inline-loading.min.js",
+      "sha256": "0c81a5ac152c727a7def5aceabecf88a80b1d25f153130a9bd6d69f4bb466c68"
+    },
+    "vendor/carbon/v2.67.0/link-Be-7GqPm.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/link-Be-7GqPm.js",
+      "sha256": "734cf4099fe08922719cd187313cda50e7e4bf3e7ad8cf5ee6c02611adac533e"
+    },
+    "vendor/carbon/v2.67.0/link.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/link.min.js",
+      "sha256": "bb51f06b2c26b90c4b49d8adbadda1af3cf5b2382a50b6856dc283c8c9a8cde1"
+    },
+    "vendor/carbon/v2.67.0/loading-C0wAxH9J.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/loading-C0wAxH9J.js",
+      "sha256": "17fc2091353726fbfcbef54577558a3775b0ef85d8ff7aa065694d164a4e2ea2"
+    },
+    "vendor/carbon/v2.67.0/loading-icon-DeiLxhUy.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/loading-icon-DeiLxhUy.js",
+      "sha256": "fff77c4fd0364114dbe5a55ff6c3f430930cc2807fa85d8ad561cf1a9b03afac"
+    },
+    "vendor/carbon/v2.67.0/menu.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/menu.min.js",
+      "sha256": "030e4c9ef162102a9838bab8c5c91e880851ec230b54ac2f7a46554fd9fc8fec"
+    },
+    "vendor/carbon/v2.67.0/modal-footer-DJ0he4nZ.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/modal-footer-DJ0he4nZ.js",
+      "sha256": "6ebcda40444892ad33cebc5bf733e61f48c9df415e7010757754576ef72b4680"
+    },
+    "vendor/carbon/v2.67.0/modal.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/modal.min.js",
+      "sha256": "8873eb98bdf5e1bd9ca9227b45536123a1da2bf69110cebb9006defa77f663c5"
+    },
+    "vendor/carbon/v2.67.0/notification.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/notification.min.js",
+      "sha256": "0a52e4bb09724f2b10ea8717bca0bc5af4765046aaf1fca9566c2cd27a157ebb"
+    },
+    "vendor/carbon/v2.67.0/number-input-skeleton-Bb0aG1aa.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/number-input-skeleton-Bb0aG1aa.js",
+      "sha256": "f213953afa1d2265146bf7cc9b4f8f66c5b3746de9bb5bf71619b67431f7782b"
+    },
+    "vendor/carbon/v2.67.0/number-input.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/number-input.min.js",
+      "sha256": "ca05fc78bff9078f4c8c8645d0891e5fbb6c0ad8396988c0dd72faafffe7ee53"
+    },
+    "vendor/carbon/v2.67.0/on-DEY8hdnf.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/on-DEY8hdnf.js",
+      "sha256": "ab2af57f8589fadb17e749e43a31a4810389561c7db1b38acba195312c18cf64"
+    },
+    "vendor/carbon/v2.67.0/overflow-menu.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/overflow-menu.min.js",
+      "sha256": "5416927c486e25c301f8e965bae786f292f951e28fbd8f54f09a1bc8337f25f2"
+    },
+    "vendor/carbon/v2.67.0/password-input-DNar-dPQ.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/password-input-DNar-dPQ.js",
+      "sha256": "15fe9414570b6abe4df7f0130da6679c82d1d63815ec4d4625bb8b27fd1cd4f6"
+    },
+    "vendor/carbon/v2.67.0/password-input.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/password-input.min.js",
+      "sha256": "ff1aef305f4b901d5f37381dd7a17f497c19055fc7330c83f2b531666b813954"
+    },
+    "vendor/carbon/v2.67.0/plex.css": {
+      "source": "https://1.www.s81c.com/common/carbon-for-ibm-dotcom/tag/v1/latest/plex.css",
+      "sha256": "28fa231596141c14ebbee4eee67ce2e9ef0463d560dc47ccd241b14df8fd4f3a"
+    },
+    "vendor/carbon/v2.67.0/popover-content-Bnza9J5D.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/popover-content-Bnza9J5D.js",
+      "sha256": "5f34b8395f474735074f74409b419c8da1a07d4b5c0ef7e73e9e3dad49658eb1"
+    },
+    "vendor/carbon/v2.67.0/popover.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/popover.min.js",
+      "sha256": "47ad33c045d1d2fe9731bc2ab7e54263cdd9c3786e634a0e5b874ec8d6ef1c22"
+    },
+    "vendor/carbon/v2.67.0/progress-bar.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/progress-bar.min.js",
+      "sha256": "2c723b8ea68879035f1e8668f45276b9f434669279ced38f9d59f2857176577f"
+    },
+    "vendor/carbon/v2.67.0/provide-i9oiki9s.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/provide-i9oiki9s.js",
+      "sha256": "c6cd818a05e72f2aabb3c1bd7464a690020e2567fc2823e2e6e42ab7976a1ba1"
+    },
+    "vendor/carbon/v2.67.0/query-BCEhJtix.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/query-BCEhJtix.js",
+      "sha256": "af78dc03d1b698ef92bbb835ce9dae7ffd4f4244fd3380697d063e2c918ffc57"
+    },
+    "vendor/carbon/v2.67.0/query-all-Du0dVoCp.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/query-all-Du0dVoCp.js",
+      "sha256": "70f9e73b633d6b3a07d2b6210d24e6ec155577761c269f751e3ea99d143d9585"
+    },
+    "vendor/carbon/v2.67.0/radio-button.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/radio-button.min.js",
+      "sha256": "daac3373564785b620d1abfacb6d39c535d0de1f0b0fe4c2f77c6e4b6883917a"
+    },
+    "vendor/carbon/v2.67.0/radio-group-manager-B9_GkotU.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/radio-group-manager-B9_GkotU.js",
+      "sha256": "8368c9f69200e9a2732d9e3adf9ccdc3bb11983606f06f45c501fd6961675edc"
+    },
+    "vendor/carbon/v2.67.0/search-DaMPMctb.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/search-DaMPMctb.js",
+      "sha256": "cae04dc93d4b82a7485b5a9d71141e01ad4eba5babc2b04504284af2a5e1eda6"
+    },
+    "vendor/carbon/v2.67.0/search-skeleton-CWGt0k0F.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/search-skeleton-CWGt0k0F.js",
+      "sha256": "8382905d4a6a9ee82cc7830c020ce1bc50ad398e8ebedbb33971712a8e4b14c2"
+    },
+    "vendor/carbon/v2.67.0/search.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/search.min.js",
+      "sha256": "e136c2eb79d2b8d0cf15b40d730a2e52872532be3a2cdcf81f23c8af5121e188"
+    },
+    "vendor/carbon/v2.67.0/select-D6zpDa6N.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/select-D6zpDa6N.js",
+      "sha256": "bc6519cc39a944a0913b8d55eb67dbe43ac91f4ce910f465bf20b62240b09776"
+    },
+    "vendor/carbon/v2.67.0/select-item-C2K-JsYh.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/select-item-C2K-JsYh.js",
+      "sha256": "f2d1f1d7d36ec2b1fe0b72092058ec188e841faa32bcbb99d0dcce2994b2e70b"
+    },
+    "vendor/carbon/v2.67.0/select-skeleton-de9EcfQh.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/select-skeleton-de9EcfQh.js",
+      "sha256": "593d48466ddb98781c9c868bb309b152d5b4b04789ccc20231a4719e36fac47a"
+    },
+    "vendor/carbon/v2.67.0/select.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/select.min.js",
+      "sha256": "166b715c0481ec776c65c1eb4e8d0c4966bc24c6d010beb1bfbebbd0dcad733c"
+    },
+    "vendor/carbon/v2.67.0/settings-CZDgQBsm.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/settings-CZDgQBsm.js",
+      "sha256": "43c7177e8f2a0ad77d4590886e7ece6016eb52fcf6dda4d56bfc82ab6f7a3697"
+    },
+    "vendor/carbon/v2.67.0/skeleton-text-CrK9TzKU.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/skeleton-text-CrK9TzKU.js",
+      "sha256": "9eafcbb0c830b384d195c4bb102fad4baeb2de659cda611fea48af99c4914e47"
+    },
+    "vendor/carbon/v2.67.0/tabs.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/tabs.min.js",
+      "sha256": "1fbcb428107b0c16596e8512674b6a55f99665e2fe0d1223d983b7c6f9f369a0"
+    },
+    "vendor/carbon/v2.67.0/tag.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/tag.min.js",
+      "sha256": "5773a8fe68eafe52b00923fd09e9d722bcd440d2ea61f37149fa45b36a1f4574"
+    },
+    "vendor/carbon/v2.67.0/text-input-Bv2-AycR.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/text-input-Bv2-AycR.js",
+      "sha256": "bfd5bdf36ee52356426ff03ee77b49b98cff5e690a2986b1658e1eaa54013587"
+    },
+    "vendor/carbon/v2.67.0/text-input-skeleton-CQpGy2al.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/text-input-skeleton-CQpGy2al.js",
+      "sha256": "a3f5050742a446caed306b912c5eb41d270fa37d4bbc92ac8dc700cb3bbe860a"
+    },
+    "vendor/carbon/v2.67.0/text-input.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/text-input.min.js",
+      "sha256": "108d0624c053afcc70d28fe05edb6fce9bd1505af62cf044e0c6ad8839e9ec35"
+    },
+    "vendor/carbon/v2.67.0/textarea-skeleton-C38ACdtp.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/textarea-skeleton-C38ACdtp.js",
+      "sha256": "ba041a1552076c3ac9eb0899a7693873ffad84da17a0059273c6963745ed18d7"
+    },
+    "vendor/carbon/v2.67.0/textarea.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/textarea.min.js",
+      "sha256": "5e938db5dae3e3e9e6d4656cdec291d863ee5ce5c260146a1ec85556a90502f4"
+    },
+    "vendor/carbon/v2.67.0/themes.css": {
+      "source": "https://1.www.s81c.com/common/carbon-for-ibm-dotcom/tag/v1/latest/themes.css",
+      "sha256": "5db12f760f864a95abcd3349a9959e79201e9c79a74e69b5c665a629c1475915"
+    },
+    "vendor/carbon/v2.67.0/tile.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/tile.min.js",
+      "sha256": "98922dc50ecc111ebb00744c7b682c9d1529f10e20e367b8921fc21192142b2c"
+    },
+    "vendor/carbon/v2.67.0/toggle.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/toggle.min.js",
+      "sha256": "ee78bbaa107516dd0d3fd5af81ee219603cbc08167fa6d78b478664ca46e7088"
+    },
+    "vendor/carbon/v2.67.0/tooltip-DRAfD1--.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/tooltip-DRAfD1--.js",
+      "sha256": "c683843b9107a356e5c65897ffd2334ebb8a5eb61483473a7b67deb66b17e28e"
+    },
+    "vendor/carbon/v2.67.0/tooltip-content-rNRk9d--.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/tooltip-content-rNRk9d--.js",
+      "sha256": "d5e06b467daae5bd6fb68e9d01040297f03bafec630a2c98f68c5527513ca261"
+    },
+    "vendor/carbon/v2.67.0/tooltip.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/tooltip.min.js",
+      "sha256": "195133edcb53404118960684c59ae4077e548a6f01d8470f1fcc849e7fe20819"
+    },
+    "vendor/carbon/v2.67.0/ui-shell.min.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/ui-shell.min.js",
+      "sha256": "4112888bb8647afb09c620f598326460d272bfece065b0805a4d28af07daf682"
+    },
+    "vendor/carbon/v2.67.0/unsafe-html-D1jXFENo.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/unsafe-html-D1jXFENo.js",
+      "sha256": "ce5141a044455e3f9a05fbf8a662af55f48ddd15422b7c90eea5a71491ef8573"
+    },
+    "vendor/carbon/v2.67.0/validity-BDV5C8ri.js": {
+      "source": "https://1.www.s81c.com/common/carbon/web-components/version/v2.67.0/validity-BDV5C8ri.js",
+      "sha256": "7c63d874adaac2fe14617a1846b5ece722a8c37cb7ddea7614c29705907cee9d"
+    }
+  }
+}

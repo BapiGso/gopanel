@@ -19,9 +19,9 @@ var (
 
 func Index(c *echo.Context) error {
 	termMutex.Lock()
-	terms := make([]*Term, 0, len(activeTerms))
-	for _, t := range activeTerms {
-		terms = append(terms, t)
+	terms := make([]terminalView, 0, len(activeTerms))
+	for _, terminal := range activeTerms {
+		terms = append(terms, terminal.view())
 	}
 	termMutex.Unlock()
 	return c.Render(http.StatusOK, "term.template", terms)

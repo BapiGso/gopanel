@@ -1,173 +1,35 @@
-{{template "header.template"}}
-
-<div class="text-base-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="frpPanel">
-
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-            <h3 class="text-2xl font-bold tracking-tight flex items-center">
-                <i class="ri-arrow-left-right-line text-primary mr-3"></i>FRP Manager
-            </h3>
-            <p class="text-sm opacity-60 mt-1 ml-9">Manage Fast Reverse Proxy Server & Client</p>
-        </div>
-
-        <div role="tablist" class="tabs tabs-boxed">
-            <a role="tab" class="tab gap-2" :class="currentTab === 'frps' && 'tab-active'" @click="switchTab('frps')">
-                <i class="ri-server-line"></i>Server
-            </a>
-            <a role="tab" class="tab gap-2" :class="currentTab === 'frpc' && 'tab-active'" @click="switchTab('frpc')">
-                <i class="ri-links-line"></i>Client
-            </a>
-        </div>
+{{template "header.template" .}}
+<script type="module" src="/assets/vendor/carbon/v2.67.0/tabs.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/toggle.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/tag.min.js"></script>
+<script type="module" src="/assets/vendor/carbon/v2.67.0/link.min.js"></script>
+<script defer src="/assets/js/ace.js"></script>
+<script defer src="/assets/js/mode-toml.js"></script>
+<script defer src="/assets/js/pages/frp.js"></script>
+<section class="page" x-data="frpPage" data-page="{{.Page}}">
+    {{template "page-header.template" .}}
+    <cds-tabs x-cds-prop:value="currentTab" @cds-tabs-selected="switchTab($event.detail.item.value)">
+        <cds-tab id="frps-tab" value="frps" target="frps-panel">Server (frps)</cds-tab>
+        <cds-tab id="frpc-tab" value="frpc" target="frpc-panel">Client (frpc)</cds-tab>
+    </cds-tabs>
+    <div class="toolbar">
+        <cds-button size="md" kind="ghost" :disabled="busy" @click="manage('start')">Start</cds-button>
+        <cds-button size="md" kind="ghost" :disabled="busy" @click="manage('reload')">Reload</cds-button>
+        <cds-button size="md" kind="ghost" :disabled="busy" @click="manage('stop')">Stop</cds-button>
+        <cds-toggle hidelabel label-text="Autostart" label-a="Autostart on" label-b="Autostart off" :disabled="busy" x-cds-prop:toggled="currentStatus.autostart" @cds-toggle-changed="autostart($event.target.toggled)"></cds-toggle>
+        <span x-show="currentStatus.pending_changes" class="cds--type-label-01 muted">Saved changes not applied</span>
     </div>
-
-    <div class="surface rounded-2xl px-6 py-4 mb-6 flex flex-wrap items-center justify-between gap-4">
-        <button @click="manageService('reload')" class="btn btn-primary group">
-            <i class="ri-play-circle-line text-lg group-hover:scale-110 transition-transform"></i>
-            <span x-text="'Apply ' + (currentTab === 'frps' ? 'Server' : 'Client')"></span>
-        </button>
-
-        <label class="flex items-center gap-3 cursor-pointer">
-            <div class="flex flex-col items-end">
-                <span class="eyebrow">Boot on Start</span>
-                <span class="text-[11px] font-bold" :class="isEnabled ? 'text-success' : 'opacity-50'"
-                      x-text="isEnabled ? 'ENABLED' : 'DISABLED'"></span>
-            </div>
-            <input type="checkbox" class="toggle toggle-success" :checked="isEnabled" @change="manageService('enable')">
-        </label>
-    </div>
-
-    <div class="rounded-2xl p-5 mb-6 bg-info/10 border border-info/20">
-        <div class="flex items-start gap-3">
-            <i class="ri-information-fill text-info text-xl mt-0.5"></i>
-            <div>
-                <h5 class="text-sm font-bold mb-1" x-text="'About ' + (currentTab === 'frps' ? 'FRPS' : 'FRPC')"></h5>
-                <div class="text-sm opacity-80">
-                    <span x-show="currentTab === 'frps'">This acts as the <strong>Server</strong>. Public IPs connect here.</span>
-                    <span x-show="currentTab === 'frpc'">This acts as the <strong>Client</strong>. It connects to a remote server to expose local ports.</span>
-                    <span class="block mt-1 opacity-70 text-xs">Saving updates the config file only. Apply validates it and replaces the running service.</span>
-                </div>
-            </div>
+    <cds-inline-notification low-contrast x-show="currentStatus.last_error" x-cloak kind="error" title="Service error" :subtitle="currentStatus.last_error" hide-close-button></cds-inline-notification>
+    <p class="muted" x-text="currentTab === 'frps' ? 'The server accepts incoming connections on its public address.' : 'The client connects to a remote server to expose local ports.'"></p>
+    <div class="editor-frame">
+        <div class="toolbar">
+            <h2 class="editor-title cds--type-code-02" x-text="currentTab + '.toml'"></h2>
+            <cds-button size="md" kind="ghost" :disabled="busy" @click="reloadDocument()">Read saved file</cds-button>
+            <cds-button size="md" :disabled="busy" @click="save()">Save configuration<span slot="icon">{{icon "save" 16}}</span></cds-button>
         </div>
+        <section id="frps-panel" role="tabpanel" aria-labelledby="frps-tab" x-show="currentTab === 'frps'"><div class="editor" x-ref="frpsEditor" aria-label="FRPS TOML editor"></div></section>
+        <section id="frpc-panel" role="tabpanel" aria-labelledby="frpc-tab" x-show="currentTab === 'frpc'" x-cloak><div class="editor" x-ref="frpcEditor" aria-label="FRPC TOML editor"></div></section>
     </div>
-
-    <div class="card surface overflow-hidden flex flex-col h-[calc(100vh-400px)] min-h-[500px]">
-        <div class="row px-6 py-3 border-b border-base-300 bg-base-200/40">
-            <div class="flex items-center gap-2">
-                <i class="ri-file-settings-line opacity-50"></i>
-                <span class="text-sm font-semibold font-mono" x-text="currentTab + '.toml'"></span>
-            </div>
-            <div class="flex items-center gap-4 text-xs">
-                <a :href="'https://github.com/fatedier/frp/blob/dev/conf/' + currentTab + '_full_example.toml'" target="_blank"
-                   class="link link-hover text-primary font-medium flex items-center">
-                    <i class="ri-book-read-line mr-1"></i>Example
-                </a>
-                <button @click="saveConfig" class="btn btn-primary btn-sm">
-                    <i class="ri-save-3-line"></i>Save Config
-                </button>
-            </div>
-        </div>
-
-        <div class="relative flex-1 w-full bg-[#272822]">
-            <div id="editor-frps" class="absolute inset-0 w-full h-full text-base" x-show="currentTab === 'frps'"></div>
-            <div id="editor-frpc" class="absolute inset-0 w-full h-full text-base" x-show="currentTab === 'frpc'"></div>
-        </div>
-    </div>
-
-</div>
-
-<script type="text/javascript" src="/assets/js/ace.js"></script>
-
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('frpPanel', () => ({
-            currentTab: 'frps', // 'frps' or 'frpc'
-            // Config content and status from Go template
-            configs: {
-                frps: {{.frpsConfig}},
-                frpc: {{.frpcConfig}}
-            },
-            status: {
-                frps: {{.frpsEnable}},
-                frpc: {{.frpcEnable}}
-            },
-            revisions: {frps: '{{.frpsRevision}}', frpc: '{{.frpcRevision}}'},
-            settingsRevision: '{{.settingsRevision}}',
-            editors: {},
-
-            init() {
-                // Initialize both editors
-                this.initEditor('frps', this.configs.frps);
-                this.initEditor('frpc', this.configs.frpc);
-
-                // Add save shortcut
-                document.addEventListener('keydown', (e) => {
-                    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                        e.preventDefault();
-                        this.saveConfig();
-                    }
-                });
-            },
-
-            initEditor(type, content) {
-                const el = document.getElementById('editor-' + type);
-                const editor = ace.edit(el);
-                editor.setTheme("ace/theme/monokai");
-                editor.session.setMode("ace/mode/toml");
-                editor.setOptions({
-                    fontSize: "14px",
-                    showPrintMargin: false,
-                    showGutter: true,
-                    highlightActiveLine: true,
-                    wrap: true,
-                    fontFamily: "'JetBrains Mono', 'Fira Code', monospace"
-                });
-                editor.setValue(content, -1);
-                this.editors[type] = editor;
-            },
-
-            get isEnabled() {
-                return this.status[this.currentTab];
-            },
-
-            switchTab(tab) {
-                this.currentTab = tab;
-                // Fix ACE editor rendering issue when switching tabs (hidden divs have size 0)
-                this.$nextTick(() => {
-                    this.editors[tab].resize();
-                    this.editors[tab].renderer.updateFull();
-                });
-            },
-
-            async saveConfig() {
-                const content = this.editors[this.currentTab].getValue();
-                try {
-                    const result = await panelAPI(`/frp/${this.currentTab}/config`, {
-                        method: 'PUT',
-                        body: {content, revision: this.revisions[this.currentTab]},
-                    });
-                    this.revisions[this.currentTab] = result.revision;
-                    alert('Configuration saved. Apply it to reload the service.');
-                } catch (error) {
-                    alert('Failed to save: ' + error.message);
-                }
-            },
-
-            async manageService(action) {
-                const type = this.currentTab;
-                try {
-                    const result = action === 'enable'
-                        ? await panelAPI(`/frp/${type}/settings`, {method: 'PATCH', body: {autostart: !this.status[type], revision: this.settingsRevision}})
-                        : await panelAPI(`/frp/${type}/${action}`, {method: 'POST'});
-                    this.status[type] = result.autostart;
-                    this.settingsRevision = result.settings_revision;
-                    alert(action === 'enable' ? 'Autostart saved' : 'Service start accepted. Check status for startup errors.');
-                    if (action !== 'enable') location.reload();
-                } catch (error) {
-                    alert('Operation failed: ' + error.message);
-                }
-            }
-        }))
-    })
-</script>
-
-{{template "footer.template"}}
+    <p class="muted">Saving validates the configuration without applying it. Reload replaces the embedded service. Status reflects its service loop, not remote connectivity readiness.</p>
+</section>
+{{template "footer.template" .}}

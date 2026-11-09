@@ -1,28 +1,61 @@
-{{define "observatory.head"}}
-<!DOCTYPE html>
-<html lang="zh-CN" data-theme="business">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="dark light">
-    <title>{{.title}}</title>
-    <link rel="icon" href="/assets/img/avatar.webp">
-    <link rel="stylesheet" href="/assets/vendor/jsvectormap/jsvectormap.min.css">
-    <link rel="stylesheet" href="/assets/css/observatory.min.css">
-    <script src="/assets/vendor/jsvectormap/jsvectormap.min.js" defer></script>
-    <script src="/assets/vendor/jsvectormap/world.js" defer></script>
-    <script src="/assets/js/observatory.js" defer></script>
-    <script src="/assets/js/alpine.min.js" defer></script>
-</head>
-<body class="min-h-screen bg-base-100 text-base-content antialiased" x-data="observatory">
-<script type="application/json" id="observatory-bootstrap">{{.bootstrap}}</script>
-{{end}}
-
-{{define "observatory.footer"}}
-<footer class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-10 text-xs text-base-content/40 sm:px-8">
-    <div class="flex items-center gap-2"><span class="text-success">◈</span><span>GoPanel Observatory · 只读监控</span></div>
-    <div class="flex flex-wrap gap-4"><span>Tailwind + daisyUI</span><span>OpenTelemetry Host</span><span>jsVectorMap</span><kbd class="kbd kbd-xs">Ctrl K</kbd></div>
-</footer>
-</body>
-</html>
+{{define "observatory.content"}}
+{{template "page-header.template" .}}
+<cds-inline-notification low-contrast x-show="error" x-cloak kind="warning" title="采样暂不可用" :subtitle="error" hide-close-button></cds-inline-notification>
+<cds-inline-notification low-contrast x-show="overview.cluster.coordination === 'manual' &amp;&amp; overview.cluster.degraded" x-cloak kind="warning" title="部分探针失联" subtitle="请检查汇总机到探针的网络、9555 端口和共享监控密钥；列表保留最近一次有效采样。" hide-close-button></cds-inline-notification>
+<section class="summary-grid cds--row" aria-label="监控概况">
+    <div class="cds--col-sm-2 cds--col-md-2 cds--col-lg-4"><cds-tile><h2 class="cds--type-heading-compact-01">服务器总数</h2><p class="summary-value cds--type-heading-06" x-text="loading ? '—' : overview.total"></p><p class="cds--type-label-01 muted">只读探针视图</p></cds-tile></div>
+    <div class="cds--col-sm-2 cds--col-md-2 cds--col-lg-4"><cds-tile><h2 class="cds--type-heading-compact-01">在线服务器</h2><p class="summary-value cds--type-heading-06" x-text="loading ? '—' : overview.online"></p><p class="cds--type-label-01 muted">可用最新采样</p></cds-tile></div>
+    <div class="cds--col-sm-2 cds--col-md-2 cds--col-lg-4"><cds-tile><h2 class="cds--type-heading-compact-01">离线服务器</h2><p class="summary-value cds--type-heading-06" x-text="loading ? '—' : overview.offline"></p><p class="cds--type-label-01 muted">保留最后一次有效采样</p></cds-tile></div>
+    <div class="cds--col-sm-2 cds--col-md-2 cds--col-lg-4"><cds-tile><h2 class="cds--type-heading-compact-01">网络流量</h2><div class="network-kpi"><span class="summary-value cds--type-heading-06" x-text="rateParts(overview.upload_rate).amount"></span><span class="cds--type-label-01 muted" x-text="'上行 ' + rateParts(overview.upload_rate).unit"></span></div><div class="network-kpi"><span class="summary-value cds--type-heading-06" x-text="rateParts(overview.download_rate).amount"></span><span class="cds--type-label-01 muted" x-text="'下行 ' + rateParts(overview.download_rate).unit"></span></div><p class="cds--type-label-01 muted" x-text="'累计 ↑ ' + bytes(overview.upload_bytes) + ' · ↓ ' + bytes(overview.download_bytes)"></p></cds-tile></div>
+</section>
+<section class="cds--row" aria-label="节点状态与分布">
+    <div class="cds--col-sm-4 cds--col-md-8 cds--col-lg-6"><cds-tile><div class="card-heading"><h2 class="cds--type-heading-compact-01">节点状态</h2><span class="cds--type-label-01 muted">所有节点</span></div><div class="dashboard-chart"><div class="chart-host" x-ref="statusChart" aria-label="在线与离线节点环形图"></div></div><p class="cds--type-label-01 muted" x-show="chartError" x-text="chartError"></p></cds-tile></div>
+    <div class="cds--col-sm-4 cds--col-md-8 cds--col-lg-10" x-show="showMap"><cds-tile class="map-card"><div class="card-heading"><h2 class="cds--type-heading-compact-01">全球节点分布</h2><span class="cds--type-label-01 muted" x-text="visibleCountries + ' 个国家 / 区域'"></span></div><div id="world-map" x-ref="map" class="dashboard-map"></div><cds-inline-loading x-show="!mapReady" :status="mapError ? 'error' : 'active'" :assistive-text="mapError || '正在加载世界地图'" x-text="mapError || '正在加载世界地图'"></cds-inline-loading><div class="map-legend cds--type-label-01 muted"><span class="legend-item"><span class="legend-swatch"></span>在线区域</span><span class="legend-item"><span class="legend-swatch offline"></span>离线区域</span></div><p class="cds--type-label-01 muted">位置由节点配置提供，不查询外部 GeoIP</p></cds-tile></div>
+</section>
+<section class="section-stack" aria-label="节点筛选与列表">
+    <div class="toolbar monitor-filters">
+        <cds-search size="md" x-ref="search" label-text="搜索节点" placeholder="搜索节点 / 区域" x-cds-model="search"></cds-search>
+        <cds-select size="md" hide-label label-text="节点分组" aria-label="节点分组" x-cds-model="selectedTag"><cds-select-item value="All">全部节点</cds-select-item><template x-for="tag in tags.filter(value => value !== 'All')" :key="tag"><cds-select-item :value="tag" x-text="tag"></cds-select-item></template></cds-select>
+        <cds-select size="md" hide-label label-text="节点排序" aria-label="节点排序" x-cds-model="sort"><cds-select-item value="name">名称排序</cds-select-item><cds-select-item value="cpu">CPU 使用</cds-select-item><cds-select-item value="memory">内存使用</cds-select-item><cds-select-item value="traffic">实时流量</cds-select-item><cds-select-item value="online">在线优先</cds-select-item></cds-select>
+        <span class="cds--type-label-01 muted">Ctrl K 搜索</span>
+    </div>
+    <cds-dismissible-tag x-show="selectedCountry" :text="countryName(selectedCountry)" dismiss-tooltip="清除区域筛选" @cds-dismissible-tag-closed="clearCountry()"></cds-dismissible-tag>
+    <div class="metric-row cds--type-label-01 muted"><span x-text="filteredNodes.length + ' 台节点' + (selectedCountry ? ' · ' + countryName(selectedCountry) : '')"></span><span>打开详情查看最近历史</span></div>
+    <cds-inline-loading x-show="loading" status="active" assistive-text="等待真实采样">等待真实采样</cds-inline-loading>
+    <cds-tile x-show="!loading &amp;&amp; !filteredNodes.length"><h2 class="cds--type-heading-compact-02" x-text="overview.total ? '没有符合筛选条件的节点' : '等待第一台节点连接'"></h2><p class="cds--type-body-01 muted">这里只显示真实采样。汇总机读取 peers 中的探针；名称、分组和地理位置可在各节点的 gopanel_monitor.json 中选填。</p></cds-tile>
+    <div class="node-grid cds--row"><template x-for="node in pageNodes" :key="node.id"><div class="cds--col-sm-4 cds--col-md-8 cds--col-lg-8"><cds-tile>
+        <div class="node-heading"><div class="node-title"><span class="node-dot" :class="{'offline': !node.online}" aria-hidden="true"></span><h2 class="cds--type-heading-compact-02" x-text="node.name"></h2></div><div class="tag-list"><cds-tag size="sm" :type="node.online ? 'green' : 'red'" x-text="node.online ? '在线' : '离线'"></cds-tag><cds-button size="sm" kind="ghost" @click="openNode(node)" :aria-label="'查看 ' + node.name + ' 的详情'">详情<span slot="icon">{{icon "arrow--right" 16}}</span></cds-button></div></div>
+        <p class="cds--type-label-01 muted" x-text="[countryName(node.country), node.region, node.metrics.platform || '—', uptime(node.metrics.uptime_seconds)].filter(Boolean).join(' · ')"></p>
+        <div class="tag-list" x-show="node.tags.length"><template x-for="tag in node.tags" :key="tag"><cds-tag type="gray" size="sm" x-text="tag"></cds-tag></template></div>
+        <div class="metric-row cds--type-label-01 muted" x-show="node.price || node.expires_at"><span x-show="node.price" x-text="'价格: ' + node.price"></span><span x-show="node.expires_at" x-text="expiry(node.expires_at)"></span></div>
+        <div class="node-metric"><div class="metric-row cds--type-label-01"><span>CPU</span><span class="numeric" x-text="percent(node, 'cpu')"></span></div><cds-progress-bar size="sm" hide-label label="CPU" max="100" x-cds-prop:value="metricValue(node, 'cpu')" :status="level(node.metrics.cpu_percent)"></cds-progress-bar></div>
+        <div class="node-metric"><div class="metric-row cds--type-label-01"><span>内存</span><span class="numeric" x-text="percent(node, 'memory')"></span></div><cds-progress-bar size="sm" hide-label label="内存" max="100" x-cds-prop:value="metricValue(node, 'memory')" :status="level(node.metrics.memory_percent)"></cds-progress-bar></div>
+        <div class="node-metric"><div class="metric-row cds--type-label-01"><span>存储</span><span class="numeric" x-text="percent(node, 'disk')"></span></div><cds-progress-bar size="sm" hide-label label="存储" max="100" x-cds-prop:value="metricValue(node, 'disk')" :status="level(node.metrics.disk_percent)"></cds-progress-bar></div>
+        <div class="node-network"><div><p class="network-rate cds--type-body-compact-01">{{icon "arrow--up" 16}}<span x-text="node.online &amp;&amp; node.metrics.rate_available ? rate(node.metrics.upload_rate) : '—'"></span></p><p class="cds--type-label-01 muted" x-text="'总上传 ' + bytes(node.metrics.upload_bytes)"></p></div><div><p class="network-rate cds--type-body-compact-01">{{icon "arrow--down" 16}}<span x-text="node.online &amp;&amp; node.metrics.rate_available ? rate(node.metrics.download_rate) : '—'"></span></p><p class="cds--type-label-01 muted" x-text="'总下载 ' + bytes(node.metrics.download_bytes)"></p></div></div>
+    </cds-tile></div></template></div>
+</section>
+<nav x-show="pageCount > 1" class="toolbar" aria-label="节点分页"><span class="cds--type-label-01 muted">每页最多 <span x-text="pageSize"></span> 台 · 地图与统计包含所有节点</span><cds-button size="md" kind="ghost" :disabled="page === 1" @click="changePage(-1)">上一页</cds-button><span class="numeric" x-text="page + ' / ' + pageCount"></span><cds-button size="md" kind="ghost" :disabled="page === pageCount" @click="changePage(1)">下一页</cds-button></nav>
+<p x-show="overview.cluster.coordination === 'best_effort'" class="cds--type-label-01 muted">候选节点按配置顺序选择首个可达的汇总节点；网络分区可能产生多个只读视图，不承担任何管理选主或远程执行功能。</p>
+<p x-show="overview.cluster.coordination === 'manual'" class="cds--type-label-01 muted">汇总机由人工指定，主动读取配置中的探针 IP；探针接口只提供缓存指标，不提供系统配置或远程执行。</p>
+<cds-modal size="lg" x-ref="details" x-cds-prop:open="detailsOpen" @cds-modal-closed="closeDetails()">
+    <cds-modal-header><cds-modal-close-button></cds-modal-close-button><cds-modal-heading x-text="selectedNode?.name || '节点详情'"></cds-modal-heading></cds-modal-header>
+    <cds-modal-body><template x-if="selectedNode"><div class="section-stack">
+        <p class="cds--type-label-01 muted" x-text="[countryName(selectedNode.country), selectedNode.region, uptime(selectedNode.metrics.uptime_seconds), '最近上报 ' + timestamp(selectedNode.last_seen)].filter(Boolean).join(' · ')"></p>
+        <div class="details-grid">
+            <cds-tile><h3 class="cds--type-heading-compact-01">CPU</h3><p class="summary-value cds--type-heading-06" x-text="percent(selectedNode, 'cpu')"></p><p class="cds--type-label-01 muted" x-text="(selectedNode.metrics.cpu_cores || '—') + ' 核 · ' + (selectedNode.metrics.architecture || '—')"></p></cds-tile>
+            <cds-tile><h3 class="cds--type-heading-compact-01">内存</h3><p class="summary-value cds--type-heading-06" x-text="percent(selectedNode, 'memory')"></p><p class="cds--type-label-01 muted" x-text="bytes(selectedNode.metrics.memory_used) + ' / ' + bytes(selectedNode.metrics.memory_total)"></p></cds-tile>
+            <cds-tile><h3 class="cds--type-heading-compact-01">存储</h3><p class="summary-value cds--type-heading-06" x-text="percent(selectedNode, 'disk')"></p><p class="cds--type-label-01 muted" x-text="bytes(selectedNode.metrics.disk_used) + ' / ' + bytes(selectedNode.metrics.disk_total)"></p></cds-tile>
+            <cds-tile><h3 class="cds--type-heading-compact-01">节点状态</h3><cds-tag :type="selectedNode.online ? 'green' : 'red'" x-text="selectedNode.online ? '在线' : '失联 / 离线'"></cds-tag><p class="cds--type-code-01" x-text="selectedNode.id"></p></cds-tile>
+        </div>
+        <section class="section-stack"><h3 class="cds--type-heading-compact-02">最近采样 · 内存中的有限历史</h3><cds-inline-loading x-show="historyLoading" status="active" assistive-text="正在读取历史">正在读取历史</cds-inline-loading>
+            <div class="details-grid" x-show="!historyLoading &amp;&amp; history.length"><cds-tile><h3 class="cds--type-heading-compact-01">CPU 使用率</h3><div class="detail-chart"><div class="chart-host" x-ref="cpuHistory" aria-label="CPU 历史面积图"></div></div></cds-tile><cds-tile><h3 class="cds--type-heading-compact-01">内存使用率</h3><div class="detail-chart"><div class="chart-host" x-ref="memoryHistory" aria-label="内存历史面积图"></div></div></cds-tile></div>
+            <cds-tile x-show="!historyLoading &amp;&amp; history.length"><h3 class="cds--type-heading-compact-01">网络吞吐</h3><div class="detail-chart"><div class="chart-host" x-ref="networkHistory" aria-label="上传与下载历史折线图"></div></div></cds-tile>
+            <div x-show="!historyLoading &amp;&amp; history.length" class="table-scroll" role="region" aria-label="节点历史" tabindex="0"><cds-table size="sm"><cds-table-head><cds-table-header-row><cds-table-header-cell>时间</cds-table-header-cell><cds-table-header-cell>CPU</cds-table-header-cell><cds-table-header-cell>内存</cds-table-header-cell><cds-table-header-cell>上传</cds-table-header-cell><cds-table-header-cell>下载</cds-table-header-cell></cds-table-header-row></cds-table-head><cds-table-body><template x-for="(sample, index) in history" :key="index"><cds-table-row><cds-table-cell x-text="timestamp(sample.time)"></cds-table-cell><cds-table-cell x-text="(sample.cpu_percent || 0).toFixed(1) + '%'"></cds-table-cell><cds-table-cell x-text="(sample.memory_percent || 0).toFixed(1) + '%'"></cds-table-cell><cds-table-cell x-text="rate(sample.upload_rate)"></cds-table-cell><cds-table-cell x-text="rate(sample.download_rate)"></cds-table-cell></cds-table-row></template></cds-table-body></cds-table></div>
+            <p x-show="!historyLoading &amp;&amp; !history.length" class="cds--type-body-01 muted">暂无可用历史。</p>
+        </section>
+        <p class="cds--type-label-01 muted">公开页面不提供命令执行、系统配置、真实 IP、主机名、进程列表或磁盘路径。</p>
+    </div></template></cds-modal-body>
+    <cds-modal-footer><cds-modal-footer-button kind="secondary" @click="closeDetails()">关闭</cds-modal-footer-button></cds-modal-footer>
+</cds-modal>
+<footer class="monitor-footer cds--type-label-01">GoPanel Observatory · 只读监控 · OpenTelemetry Host · Carbon Charts · jsVectorMap</footer>
 {{end}}

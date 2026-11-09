@@ -1,133 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
-<head x-data>
-    <meta charset="utf-8">
-    <title x-text="localStorage.title||'GoPanel Dashboard'"></title>
-    <link rel="manifest" href="/manifest.webmanifest">
-    <script src="/assets/js/tailwind.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
-    <link rel="icon" type="image/jpg" href="/assets/img/avatar.webp" />
-    <script src="/assets/js/api.js" defer></script>
-    <script type="text/javascript" src="/assets/js/alpine.min.js" defer></script>
-    <script src="/assets/js/ui-theme.js"></script>
-
-
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker
-                .register('/sw.js') //Service Worker文件路径
-                .then(() => { console.log('Service Worker Registered'); });
-        }
-
-        // Dark mode toggle functionality
-        function toggleDarkMode() {
-            const html = document.documentElement;
-            const isDark = html.classList.contains('dark');
-            if (isDark) {
-                html.classList.remove('dark');
-                localStorage.setItem('darkMode', 'false');
-            } else {
-                html.classList.add('dark');
-                localStorage.setItem('darkMode', 'true');
-            }
-        }
-
-        // Initialize dark mode from localStorage
-        document.addEventListener('DOMContentLoaded', function() {
-            const darkMode = localStorage.getItem('darkMode');
-            if (darkMode === 'true' || (darkMode === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-            }
-        });
-    </script>
-
-    <!-- daisyUI：组件 CSS 层；主题随站点 .dark class 自动切换 -->
-    <link rel="stylesheet" href="/assets/css/daisyui.min.css">
-    <style>
-        /* 把 daisyUI 的 primary/secondary 覆盖成站点品牌色（紫 #943DA5 / 绿 #10B981），
-           使 btn-primary、badge-primary、text-primary 等组件自动上品牌色。须在 daisyUI 之后加载。 */
-        [data-theme="light"], [data-theme="dark"] {
-            --p: 52.016% 0.1755 320.77;  --pc: 98% 0.01 320;
-            --s: 69.587% 0.1491 162.48;  --sc: 98% 0.01 162;
-        }
-    </style>
-    <style type="text/tailwindcss">
-        /* 各页用 daisyUI 的 base/语义色即可自动适配明暗，不必再写 dark: 变体 */
-        @layer components {
-            .surface { background: oklch(var(--b1)); border: 1px solid oklch(var(--b3)); box-shadow: 0 1px 2px 0 rgb(0 0 0 / .05); }
-            .eyebrow { @apply text-xs font-bold uppercase tracking-wider opacity-60; }
-            .row     { @apply flex items-center justify-between gap-2; }
-        }
-    </style>
-    <script>
-        // 把 data-theme 同步到站点既有的 .dark class（toggleDarkMode 切换），供 daisyUI 主题用
-        (() => {
-            const root = document.documentElement;
-            const sync = () => root.dataset.theme = root.classList.contains('dark') ? 'dark' : 'light';
-            new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ['class'] });
-            sync();
-        })();
-    </script>
-</head>
-<body class="bg-gray-50 dark:bg-gray-900 min-h-screen" x-data="panel">
-    <div class="flex h-screen">
-        <!-- Sidebar -->
-        <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-colors duration-300"
-               x-data="{
-           menu: [
-               { name: 'monitor',   href: '/admin/monitor',   icon: 'ri-dashboard-3-line' },
-               { name: 'website',   href: '/admin/website',   icon: 'ri-earth-line' },
-               { name: 'file',      href: '/admin/file',      icon: 'ri-folder-3-line' },
-               { name: 'webdav',    href: '/admin/webdav',    icon: 'ri-cloud-windy-line' },
-               { name: 'docker',    href: '/admin/docker',    icon: 'ri-box-3-line' },
-               { name: 'frp',       href: '/admin/frp',       icon: 'ri-server-line' },
-               { name: 'headscale', href: '/admin/headscale', icon: 'ri-node-tree' },
-               { name: 'term',      href: '/admin/term',      icon: 'ri-terminal-box-line' },
-               { name: 'cron',      href: '/admin/cron',      icon: 'ri-alarm-line' },
-               { name: 'firewall',  href: '/admin/firewall',  icon: 'ri-shield-check-line' },
-               { name: 'security',  href: '/admin/security',  icon: 'ri-lock-2-line' }
-           ],
-           isActive(path) {
-               return window.location.pathname.startsWith(path);
-           }
-       }">
-
-            <!-- Sidebar Header -->
-            <div class="h-16 px-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between shrink-0">
-                <h2 class="font-['Pacifico'] text-2xl text-primary dark:text-purple-400 cursor-pointer hover:scale-105 transition-transform"
-                    @click="localStorage.title=prompt('New dashboard name', localStorage.title || 'GoPanel') || localStorage.title; location.reload()"
-                    x-text="localStorage.title||'GoPanel'"></h2>
-
-                <!-- Dark Mode Toggle -->
-                <button onclick="toggleDarkMode()"
-                        class="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors focus:outline-none">
-                    <i class="ri-sun-line dark:hidden text-lg"></i>
-                    <i class="ri-moon-line hidden dark:block text-lg"></i>
-                </button>
-            </div>
-
-            <!-- Navigation Menu -->
-            <nav class="flex-1 overflow-y-auto p-4 space-y-1 custom-scrollbar">
-                <template x-for="item in menu" :key="item.name">
-                    <a :href="item.href"
-                       class="flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 group"
-                       :class="isActive(item.href)
-                   ? 'bg-primary/10 text-primary dark:bg-purple-500/20 dark:text-purple-300 font-medium shadow-sm'
-                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-200'">
-
-                        <i :class="[item.icon, isActive(item.href) ? 'text-primary dark:text-purple-400' : 'text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300']"
-                           class="text-lg mr-3 transition-colors"></i>
-
-                        <span class="capitalize tracking-wide text-sm" x-text="item.name"></span>
-
-                        <!-- Active Indicator (Optional Dot) -->
-                        <div x-show="isActive(item.href)" class="ml-auto w-1.5 h-1.5 rounded-full bg-primary dark:bg-purple-400"></div>
-                    </a>
-                </template>
-            </nav>
-
-        </aside>
-        <section class="flex-1 overflow-y-auto p-8 bg-gray-50 dark:bg-gray-900">
+<html lang="{{.Language}}">
+{{template "document-head.template" .}}
+<body x-data="shellPage">
+    <cds-header aria-label="GoPanel" class="dds-theme-zone-g100">
+        <cds-header-menu-button button-label-active="Close navigation" button-label-inactive="Open navigation"
+                                x-cds-prop:active="navOpen" @cds-header-menu-button-toggled="navOpen = $event.detail.active"></cds-header-menu-button>
+        <cds-header-name href="/admin/monitor" prefix="">GoPanel</cds-header-name>
+        <div class="header-actions">
+            <cds-header-global-action button-label-active="Change color theme" button-label-inactive="Change color theme"
+                                      @click="$store.theme.toggle()">
+                <span slot="icon" x-show="$store.theme.current === 'g100'">{{icon "sun" 20}}</span>
+                <span slot="icon" x-show="$store.theme.current !== 'g100'">{{icon "moon" 20}}</span>
+            </cds-header-global-action>
+        </div>
+    </cds-header>
+    <cds-side-nav aria-label="Administration" class="dds-theme-zone-g100" collapse-mode="responsive" x-cds-prop:expanded="wide || navOpen"
+                  @click="if ($event.composedPath().some(element => element.classList?.contains('cds--side-nav__overlay'))) navOpen = false"
+                  @focusout="if (!wide &amp;&amp; !$el.contains($event.relatedTarget)) navOpen = false">
+        <cds-side-nav-items @click="navOpen = false">
+            <div class="nav-heading cds--type-heading-compact-01">Administration</div>
+            <cds-side-nav-divider></cds-side-nav-divider>
+            <cds-side-nav-link href="/admin/monitor" x-cds-prop:active="location.pathname === '/admin/monitor'">Monitor</cds-side-nav-link>
+            <cds-side-nav-divider></cds-side-nav-divider>
+            <cds-side-nav-link href="/admin/website" x-cds-prop:active="location.pathname === '/admin/website'">Website</cds-side-nav-link>
+            <cds-side-nav-link href="/admin/file" x-cds-prop:active="location.pathname === '/admin/file'">Files</cds-side-nav-link>
+            <cds-side-nav-link href="/admin/webdav" x-cds-prop:active="location.pathname === '/admin/webdav'">WebDAV</cds-side-nav-link>
+            <cds-side-nav-divider></cds-side-nav-divider>
+            <cds-side-nav-link href="/admin/term" x-cds-prop:active="location.pathname === '/admin/term'">Terminal</cds-side-nav-link>
+            <cds-side-nav-link href="/admin/cron" x-cds-prop:active="location.pathname === '/admin/cron'">Cron</cds-side-nav-link>
+            <cds-side-nav-link href="/admin/docker" x-cds-prop:active="location.pathname === '/admin/docker'">Docker</cds-side-nav-link>
+            <cds-side-nav-divider></cds-side-nav-divider>
+            <cds-side-nav-link href="/admin/frp" x-cds-prop:active="location.pathname === '/admin/frp'">FRP</cds-side-nav-link>
+            <cds-side-nav-link href="/admin/headscale" x-cds-prop:active="location.pathname === '/admin/headscale'">Headscale</cds-side-nav-link>
+            <cds-side-nav-link href="/admin/firewall" x-cds-prop:active="location.pathname === '/admin/firewall'">Firewall</cds-side-nav-link>
+            <cds-side-nav-divider></cds-side-nav-divider>
+            <cds-side-nav-link href="/admin/security" x-cds-prop:active="location.pathname === '/admin/security'">Security</cds-side-nav-link>
+        </cds-side-nav-items>
+    </cds-side-nav>
+    <main id="main-content" class="app-content cds--grid">
+        <div class="cds--row"><div class="cds--col-sm-4 cds--col-md-8 cds--col-lg-16">

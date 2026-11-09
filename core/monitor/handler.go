@@ -1,8 +1,6 @@
 package monitor
 
 import (
-	"encoding/json"
-	"html"
 	"net/http"
 
 	"github.com/labstack/echo/v5"
@@ -24,11 +22,7 @@ func (service *Service) page(ctx *echo.Context, public bool) error {
 	if public {
 		base = "/api/v1/public/monitor"
 	}
-	bootstrap, err := json.Marshal(map[string]any{"title": service.settings.Title, "api_base": base, "public": public})
-	if err != nil {
-		return err
-	}
 	return ctx.Render(http.StatusOK, "monitor.template", map[string]any{
-		"title": html.EscapeString(service.settings.Title), "bootstrap": string(bootstrap),
+		"title": service.settings.Title, "api_base": base, "public": public,
 	})
 }

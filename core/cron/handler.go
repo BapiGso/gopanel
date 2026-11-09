@@ -59,7 +59,11 @@ var (
 func Index(ctx *echo.Context) error {
 	schedulerMutex.Lock()
 	defer schedulerMutex.Unlock()
-	return ctx.Render(http.StatusOK, "cron.template", schedulerList)
+	jobs := make([]jobView, 0, len(schedulerList))
+	for jobIndex := range schedulerList {
+		jobs = append(jobs, view(&schedulerList[jobIndex]))
+	}
+	return ctx.Render(http.StatusOK, "cron.template", jobs)
 }
 
 func createTask(name, script string, definition gocron.JobDefinition) (task, error) {
