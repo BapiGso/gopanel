@@ -27,7 +27,7 @@ type task struct {
 }
 
 func (job *task) LastRun() string {
-	lastRun, _ := job.Scheduler.Jobs()[0].LastRun()
+	lastRun, _ := job.Scheduler.Jobs()[0].LastRunStartedAt()
 	if lastRun.IsZero() {
 		return ""
 	}
@@ -92,25 +92,6 @@ func commandTask(scriptPath string) gocron.Task {
 	})
 }
 
-func addCron(name, script string, definition gocron.JobDefinition) error {
-	schedulerMutex.Lock()
-	defer schedulerMutex.Unlock()
-	if findJob(name) >= 0 {
-		return httpapi.NewError(http.StatusConflict, "already_exists", "A job with this name already exists")
-	}
-	job, err := createTask(name, script, definition)
-	if err != nil {
-		return err
-	}
-	if _, err := persistCronScript(name, script); err != nil {
-		_ = job.Shutdown()
-		return err
-	}
-	schedulerList = append(schedulerList, job)
-	job.Start()
-	return nil
-}
-
 func findJob(name string) int {
 	return slices.IndexFunc(schedulerList, func(job task) bool { return job.Name() == name })
 }
@@ -147,22 +128,4 @@ func removeCronScript(name string) error {
 		return nil
 	}
 	return err
-}
-
-func getJobDefinition(frequency, atTime int) gocron.JobDefinition {
-	weekday := time.Weekday(atTime/(24*60)) % 7
-	day := atTime / (24 * 60)
-	hour := uint((atTime / 60) % 24)
-	minute := uint(atTime % 60)
-	switch frequency {
-	case 43199:
-		return gocron.MonthlyJob(1, gocron.NewDaysOfTheMonth(day), gocron.NewAtTimes(gocron.NewAtTime(hour, minute, 0)))
-	case 10079:
-		return gocron.WeeklyJob(1, gocron.NewWeekdays(weekday), gocron.NewAtTimes(gocron.NewAtTime(hour, minute, 0)))
-	case 1439:
-		return gocron.DailyJob(1, gocron.NewAtTimes(gocron.NewAtTime(hour, minute, 0)))
-	case 43200:
-		return gocron.DurationJob(time.Minute * time.Duration(atTime))
-	}
-	return nil
 }

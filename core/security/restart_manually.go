@@ -5,5 +5,5 @@ package security
 import "fmt"
 
 func restart() error {
-	return fmt.Errorf("Your operating system need manually reboot")
+	return fmt.Errorf("your operating system needs a manual reboot")
 }

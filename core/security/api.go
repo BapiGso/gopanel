@@ -9,6 +9,7 @@ import (
 
 	"gopanel/core/config"
 	"gopanel/core/httpapi"
+	"gopanel/core/passwords"
 )
 
 type settingsWrite struct {
@@ -82,7 +83,11 @@ func patchSettings(ctx *echo.Context, running config.PanelConfig) error {
 			settings.Panel.Username = *request.Username
 		}
 		if request.Password != nil {
-			settings.Panel.Password = *request.Password
+			hash, err := passwords.HashPassword(*request.Password)
+			if err != nil {
+				return err
+			}
+			settings.Panel.Password = hash
 		}
 		return nil
 	})
@@ -113,6 +118,7 @@ func restartPanel(ctx *echo.Context) error {
 	logger := ctx.Logger()
 	go func() {
 		time.Sleep(300 * time.Millisecond)
+		//nolint:staticcheck // non-Linux builds always return an error; Linux restarts cleanly
 		if err := restart(); err != nil {
 			logger.Error("panel restart failed", "error", err)
 		}

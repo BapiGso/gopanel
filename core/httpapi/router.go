@@ -190,13 +190,14 @@ func schemaFor(valueType reflect.Type) map[string]any {
 					if value, ok := strings.CutPrefix(constraint, bound.tag); ok {
 						if number, err := strconv.Atoi(value); err == nil {
 							keyword := bound.numeric
-							if property["type"] == "array" {
+							switch property["type"] {
+							case "array":
 								if bound.tag == "min=" {
 									keyword = "minItems"
 								} else {
 									keyword = "maxItems"
 								}
-							} else if property["type"] == "string" {
+							case "string":
 								keyword = bound.text
 							}
 							property[keyword] = number

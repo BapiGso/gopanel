@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"net"
+	"os"
 
 	"gopanel/core/config"
 	"gopanel/core/frp"
@@ -59,5 +60,17 @@ func printStartupInfo(settings config.PanelConfig) {
 			fmt.Printf("gopanel started on https://%s%s/%s\n", host, settings.Port, settings.Path)
 		}
 	}
-	fmt.Printf("Panel Port: %s\nPanel Path: %s\nPanel Username: %s\nPanel Password: %s\n", settings.Port, settings.Path, settings.Username, settings.Password)
+	fmt.Printf("Panel Port: %s\nPanel Path: %s\nPanel Username: %s\n", settings.Port, settings.Path, settings.Username)
+	if config.FreshCredentials() {
+		if password := config.TakeInitialPanelPassword(); password != "" && isTerminal(os.Stdout) {
+			fmt.Printf("Panel Password: %s\n", password)
+			return
+		}
+	}
+	fmt.Println("Panel Password: not shown (stored in gopanel_config.json)")
+}
+
+func isTerminal(file *os.File) bool {
+	info, err := file.Stat()
+	return err == nil && info.Mode()&os.ModeCharDevice != 0
 }

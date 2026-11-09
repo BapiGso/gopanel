@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"github.com/spf13/afero"
 )
 
 func TestNormalizeBasePathDefaultsToFilesystemRoot(t *testing.T) {
@@ -29,11 +27,21 @@ func TestNormalizeBasePathDefaultsToFilesystemRoot(t *testing.T) {
 	}
 }
 
-func TestLocalFileServiceReadEditable(t *testing.T) {
-	fs := afero.NewMemMapFs()
-	service := NewLocalFileService(fs, "/app")
+func newTestService(t *testing.T) (*LocalFileService, string) {
+	t.Helper()
+	root := t.TempDir()
+	service, err := NewLocalFileService(root)
+	if err != nil {
+		t.Fatalf("NewLocalFileService() error = %v", err)
+	}
+	t.Cleanup(func() { _ = service.Close() })
+	return service, root
+}
 
-	if err := afero.WriteFile(fs, "/app/note.txt", []byte("hello"), 0644); err != nil {
+func TestLocalFileServiceReadEditable(t *testing.T) {
+	service, root := newTestService(t)
+
+	if err := os.WriteFile(filepath.Join(root, "note.txt"), []byte("hello"), 0644); err != nil {
 		t.Fatalf("write file: %v", err)
 	}
 
@@ -47,8 +55,7 @@ func TestLocalFileServiceReadEditable(t *testing.T) {
 }
 
 func TestLocalFileServiceSaveUploadedFile(t *testing.T) {
-	fs := afero.NewMemMapFs()
-	service := NewLocalFileService(fs, "/app")
+	service, root := newTestService(t)
 
 	if err := service.CreateFolder("/uploads"); err != nil {
 		t.Fatalf("CreateFolder() error = %v", err)
@@ -57,7 +64,7 @@ func TestLocalFileServiceSaveUploadedFile(t *testing.T) {
 		t.Fatalf("SaveUploadedFile() error = %v", err)
 	}
 
-	data, err := afero.ReadFile(fs, "/app/uploads/a.txt")
+	data, err := os.ReadFile(filepath.Join(root, "uploads", "a.txt"))
 	if err != nil {
 		t.Fatalf("read uploaded file: %v", err)
 	}
@@ -67,8 +74,7 @@ func TestLocalFileServiceSaveUploadedFile(t *testing.T) {
 }
 
 func TestLocalFileServiceRejectsPathTraversal(t *testing.T) {
-	fs := afero.NewMemMapFs()
-	service := NewLocalFileService(fs, "/app")
+	service, _ := newTestService(t)
 
 	if _, err := service.ReadEditable("/../../etc/passwd"); !IsPathNotAllowed(err) {
 		t.Fatalf("ReadEditable() error = %v, want path not allowed", err)
@@ -81,9 +87,29 @@ func TestLocalFileServiceRejectsPathTraversal(t *testing.T) {
 	}
 }
 
+func TestLocalFileServiceRejectsSymlinkEscape(t *testing.T) {
+	root := t.TempDir()
+	outside := t.TempDir()
+	target := filepath.Join(outside, "secret.txt")
+	if err := os.WriteFile(target, []byte("secret"), 0644); err != nil {
+		t.Fatalf("write outside file: %v", err)
+	}
+	if err := os.Symlink(target, filepath.Join(root, "link")); err != nil {
+		t.Skipf("symlink unavailable: %v", err)
+	}
+
+	service, err := NewLocalFileService(root)
+	if err != nil {
+		t.Fatalf("NewLocalFileService() error = %v", err)
+	}
+	t.Cleanup(func() { _ = service.Close() })
+	if _, err := service.ReadEditable("/link"); err == nil {
+		t.Fatal("ReadEditable() should reject a symlink escaping the root")
+	}
+}
+
 func TestLocalFileServiceRefusesToDeleteRoot(t *testing.T) {
-	fs := afero.NewMemMapFs()
-	service := NewLocalFileService(fs, "/app")
+	service, _ := newTestService(t)
 
 	if err := service.CreateFolder("/nested"); err != nil {
 		t.Fatalf("CreateFolder() error = %v", err)

@@ -123,7 +123,7 @@ func writeJob(ctx *echo.Context, replace bool) error {
 	status := http.StatusOK
 	if replace {
 		original := &schedulerList[jobIndex]
-		_, err := original.Scheduler.Update(original.Jobs()[0].ID(), jobDefinition,
+		_, err := original.Update(original.Jobs()[0].ID(), jobDefinition,
 			commandTask(filepath.Join("data", "cron", request.Name+".sh")), gocron.WithName(request.Name))
 		_ = job.Shutdown()
 		if err != nil {

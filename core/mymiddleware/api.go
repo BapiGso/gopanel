@@ -1,7 +1,6 @@
 package mymiddleware
 
 import (
-	"crypto/sha256"
 	"crypto/subtle"
 	"net/http"
 
@@ -9,6 +8,7 @@ import (
 
 	"gopanel/core/config"
 	"gopanel/core/httpapi"
+	"gopanel/core/passwords"
 )
 
 func APIAuth(next echo.HandlerFunc) echo.HandlerFunc {
@@ -18,12 +18,9 @@ func APIAuth(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		username, password, ok := ctx.Request().BasicAuth()
 		settings := config.Snapshot().Panel
-		usernameHash := sha256.Sum256([]byte(username))
-		passwordHash := sha256.Sum256([]byte(password))
-		expectedUsername := sha256.Sum256([]byte(settings.Username))
-		expectedPassword := sha256.Sum256([]byte(settings.Password))
-		valid := subtle.ConstantTimeCompare(usernameHash[:], expectedUsername[:]) & subtle.ConstantTimeCompare(passwordHash[:], expectedPassword[:])
-		if ok && settings.Username != "" && settings.Password != "" && valid == 1 {
+		validUsername := subtle.ConstantTimeCompare([]byte(username), []byte(settings.Username))
+		if ok && settings.Username != "" && settings.Password != "" &&
+			validUsername == 1 && passwords.VerifyPassword(settings.Password, password) {
 			return next(ctx)
 		}
 		ctx.Response().Header().Set("WWW-Authenticate", `Basic realm="GoPanel API", charset="UTF-8"`)

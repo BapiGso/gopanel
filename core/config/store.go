@@ -17,6 +17,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 
+	"gopanel/core/passwords"
 	"gopanel/core/storage"
 )
 
@@ -46,6 +47,26 @@ type Store struct {
 }
 
 var global atomic.Pointer[Store]
+
+var freshCredentials atomic.Bool
+
+var initialPanelPasswordMu sync.Mutex
+var initialPanelPassword string
+
+// FreshCredentials reports whether the current process created the config file.
+func FreshCredentials() bool {
+	return freshCredentials.Load()
+}
+
+// TakeInitialPanelPassword returns the plaintext panel password generated when
+// the config file was first created. It is cleared after the first read.
+func TakeInitialPanelPassword() string {
+	initialPanelPasswordMu.Lock()
+	defer initialPanelPasswordMu.Unlock()
+	password := initialPanelPassword
+	initialPanelPassword = ""
+	return password
+}
 
 var validate = func() *validator.Validate {
 	checker := validator.New()
@@ -126,6 +147,12 @@ func Open(path string) (*Store, error) {
 		if err != nil {
 			return nil, err
 		}
+		plaintextPassword := initial.Panel.Password
+		hash, err := passwords.HashPassword(plaintextPassword)
+		if err != nil {
+			return nil, err
+		}
+		initial.Panel.Password = hash
 		content, err := encode(initial)
 		if err != nil {
 			return nil, err
@@ -133,8 +160,14 @@ func Open(path string) (*Store, error) {
 		if err := file.Ensure(content); err != nil {
 			return nil, err
 		}
+		freshCredentials.Store(true)
+		initialPanelPasswordMu.Lock()
+		initialPanelPassword = plaintextPassword
+		initialPanelPasswordMu.Unlock()
 	} else if err != nil {
 		return nil, err
+	} else {
+		freshCredentials.Store(false)
 	}
 	store := &Store{file: file}
 	if _, err := store.Read(); err != nil {

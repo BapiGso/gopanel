@@ -7,6 +7,7 @@ Manage your server from the browser. One small Go binary, one install command, n
 ![License](https://img.shields.io/github/license/BapiGso/gopanel?style=flat-square)
 ![Release](https://img.shields.io/github/v/release/BapiGso/gopanel?style=flat-square)
 ![Last Commit](https://img.shields.io/github/last-commit/BapiGso/gopanel?style=flat-square)
+![Lint](https://img.shields.io/github/actions/workflow/status/BapiGso/gopanel/lint.yaml?branch=master&style=flat-square&label=Lint)
 ![Stars](https://img.shields.io/github/stars/BapiGso/gopanel?style=social)
 
 > Entertainment project. Do not use in production.
@@ -21,17 +22,9 @@ Manage your server from the browser. One small Go binary, one install command, n
 ## Install
 
 ```sh
-script=$(mktemp) &&
-curl -fL https://raw.githubusercontent.com/BapiGso/gopanel/master/shell/install_gopanel.sh -o "$script" &&
-sh "$script"
-```
-
-No curl? Use wget:
-
-```sh
-script=$(mktemp) &&
-wget -O "$script" https://raw.githubusercontent.com/BapiGso/gopanel/master/shell/install_gopanel.sh &&
-sh "$script"
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/BapiGso/gopanel/master/shell/install_gopanel.sh)"
+# without curl:
+sh -c "$(wget -qO- https://raw.githubusercontent.com/BapiGso/gopanel/master/shell/install_gopanel.sh)"
 ```
 
 Run the same command again to update. Your settings and data in `/opt/gopanel` are kept.
@@ -42,9 +35,9 @@ Run the same command again to update. Your settings and data in `/opt/gopanel` a
 <summary><strong>Uninstall</strong></summary>
 
 ```sh
-script=$(mktemp) &&
-curl -fL https://raw.githubusercontent.com/BapiGso/gopanel/master/shell/uninstall_gopanel.sh -o "$script" &&
-sh "$script"
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/BapiGso/gopanel/master/shell/uninstall_gopanel.sh)"
+# without curl:
+sh -c "$(wget -qO- https://raw.githubusercontent.com/BapiGso/gopanel/master/shell/uninstall_gopanel.sh)"
 ```
 
 Settings and data are kept by default, and interactive runs ask before deleting `/opt/gopanel`. To delete it without a prompt, run `sh "$script" --purge`.

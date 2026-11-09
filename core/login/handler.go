@@ -1,12 +1,10 @@
 package login
 
 import (
-	"crypto/sha256"
-	"crypto/subtle"
-
 	"github.com/labstack/echo/v5"
 	"gopanel/core/config"
 	"gopanel/core/mymiddleware"
+	"gopanel/core/passwords"
 )
 
 func Login(c *echo.Context) error {
@@ -25,7 +23,7 @@ func Login(c *echo.Context) error {
 			return err
 		}
 		settings := config.Snapshot().Panel
-		if credentialsMatch(req.Username, req.Password, settings.Username, settings.Password) {
+		if req.Username == settings.Username && passwords.VerifyPassword(settings.Password, req.Password) {
 			if err := mymiddleware.SessionManager.RenewToken(c.Request().Context()); err != nil {
 				return err
 			}
@@ -35,14 +33,4 @@ func Login(c *echo.Context) error {
 		return echo.ErrUnauthorized
 	}
 	return echo.ErrMethodNotAllowed
-}
-
-func credentialsMatch(username, password, expectedUsername, expectedPassword string) bool {
-	userHash := sha256.Sum256([]byte(username))
-	expectedUserHash := sha256.Sum256([]byte(expectedUsername))
-	passwordHash := sha256.Sum256([]byte(password))
-	expectedPasswordHash := sha256.Sum256([]byte(expectedPassword))
-	userMatch := subtle.ConstantTimeCompare(userHash[:], expectedUserHash[:])
-	passwordMatch := subtle.ConstantTimeCompare(passwordHash[:], expectedPasswordHash[:])
-	return userMatch&passwordMatch == 1
 }

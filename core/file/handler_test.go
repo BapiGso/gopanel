@@ -1,19 +1,32 @@
 package file
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
 	"github.com/labstack/echo/v5"
-	"github.com/spf13/afero"
 )
 
+func newTestHandler(t *testing.T) (*Handler, string) {
+	t.Helper()
+	root := t.TempDir()
+	handler, err := NewHandler(root)
+	if err != nil {
+		t.Fatalf("NewHandler() error = %v", err)
+	}
+	t.Cleanup(func() { _ = handler.service.Close() })
+	return handler, root
+}
+
 func TestHandlerRejectsTraversalInRead(t *testing.T) {
-	fs := afero.NewMemMapFs()
-	handler := NewHandler(fs, "/app")
+	handler, _ := newTestHandler(t)
 	e := echo.New()
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/files/../../etc/passwd", nil)
@@ -30,14 +43,10 @@ func TestHandlerRejectsTraversalInRead(t *testing.T) {
 }
 
 func TestHandlerFallsBackToRootWhenCookiePathIsInvalid(t *testing.T) {
-	fs := afero.NewMemMapFs()
-	if err := fs.MkdirAll("/app", 0755); err != nil {
-		t.Fatalf("MkdirAll() error = %v", err)
-	}
-	if err := afero.WriteFile(fs, "/readme.txt", []byte("ok"), 0644); err != nil {
+	handler, root := newTestHandler(t)
+	if err := os.WriteFile(filepath.Join(root, "readme.txt"), []byte("ok"), 0644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
-	handler := NewHandler(fs, "/app")
 	e := echo.New()
 	e.Renderer = testRenderer{}
 
@@ -63,14 +72,11 @@ func TestHandlerFallsBackToRootWhenCookiePathIsInvalid(t *testing.T) {
 }
 
 func TestHandlerSupportsChmodMode(t *testing.T) {
-	fs := afero.NewMemMapFs()
-	if err := fs.MkdirAll("/app", 0755); err != nil {
-		t.Fatalf("MkdirAll() error = %v", err)
-	}
-	if err := afero.WriteFile(fs, "/app/note.txt", []byte("ok"), 0644); err != nil {
+	handler, root := newTestHandler(t)
+	note := filepath.Join(root, "note.txt")
+	if err := os.WriteFile(note, []byte("ok"), 0644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
-	handler := NewHandler(fs, "/app")
 	e := echo.New()
 
 	req := httptest.NewRequest(http.MethodPatch, "/api/v1/files/note.txt", strings.NewReader(`{"permissions":"0600"}`))
@@ -81,15 +87,16 @@ func TestHandlerSupportsChmodMode(t *testing.T) {
 	if err := handler.patchEntry(c); err != nil {
 		t.Fatalf("patchEntry() error = %v", err)
 	}
-	if !strings.Contains(rec.Body.String(), `"permissions":"0600"`) {
-		t.Fatalf("patchEntry() body = %q, want permissions in data", rec.Body.String())
-	}
-	info, err := fs.Stat("/app/note.txt")
+	info, err := os.Stat(note)
 	if err != nil {
 		t.Fatalf("Stat() error = %v", err)
 	}
-	if got := info.Mode().Perm(); got != 0600 {
-		t.Fatalf("file mode = %v, want 0600", got)
+	if runtime.GOOS != "windows" && info.Mode().Perm() != 0600 {
+		t.Fatalf("file mode = %v, want 0600", info.Mode().Perm())
+	}
+	final := fmt.Sprintf("%04o", info.Mode().Perm())
+	if !strings.Contains(rec.Body.String(), `"permissions":"`+final+`"`) {
+		t.Fatalf("patchEntry() body = %q, want permissions %s in data", rec.Body.String(), final)
 	}
 }
 

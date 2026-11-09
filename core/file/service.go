@@ -4,30 +4,36 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
-	pathpkg "path"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/labstack/echo/v5"
-	"github.com/spf13/afero"
 )
 
 var ErrPathNotAllowed = echo.NewHTTPError(403, "path is outside the allowed root")
 
+// LocalFileService confines all operations to a directory tree using os.Root.
+// Traversal and symlink escapes are rejected by the os package and the kernel.
 type LocalFileService struct {
-	fs       afero.Fs
-	basePath string
+	root *os.Root
 }
 
-func NewLocalFileService(fs afero.Fs, basePath string) *LocalFileService {
-	root := normalizeBasePath(basePath)
-	return &LocalFileService{
-		fs:       afero.NewBasePathFs(fs, root),
-		basePath: root,
+func NewLocalFileService(basePath string) (*LocalFileService, error) {
+	root, err := os.OpenRoot(normalizeBasePath(basePath))
+	if err != nil {
+		return nil, err
 	}
+	return &LocalFileService{root: root}, nil
+}
+
+// Close releases the root directory handle held by the service.
+func (s *LocalFileService) Close() error {
+	return s.root.Close()
 }
 
 func (s *LocalFileService) ReadEditable(path string) (string, error) {
@@ -36,15 +42,15 @@ func (s *LocalFileService) ReadEditable(path string) (string, error) {
 		return "", err
 	}
 
-	file, err := s.fs.Stat(allowedPath)
+	info, err := s.root.Stat(allowedPath)
 	if err != nil {
 		return "", err
 	}
-	if file.Size() > 2*1024*1024 {
-		return "", echo.NewHTTPError(400, fmt.Sprintf("file too big %d", file.Size()))
+	if info.Size() > 2*1024*1024 {
+		return "", echo.NewHTTPError(400, fmt.Sprintf("file too big %d", info.Size()))
 	}
 
-	data, err := afero.ReadFile(s.fs, allowedPath)
+	data, err := s.root.ReadFile(allowedPath)
 	if err != nil {
 		return "", err
 	}
@@ -54,12 +60,12 @@ func (s *LocalFileService) ReadEditable(path string) (string, error) {
 	return string(data), nil
 }
 
-func (s *LocalFileService) Open(path string) (afero.File, error) {
+func (s *LocalFileService) Open(path string) (*os.File, error) {
 	allowedPath, err := s.resolve(path)
 	if err != nil {
 		return nil, err
 	}
-	return s.fs.Open(allowedPath)
+	return s.root.Open(allowedPath)
 }
 
 func (s *LocalFileService) SaveUploadedFile(dir, filename string, src io.Reader) error {
@@ -70,12 +76,12 @@ func (s *LocalFileService) SaveUploadedFile(dir, filename string, src io.Reader)
 	if err != nil {
 		return err
 	}
-	allowedPath, err := s.resolve(pathpkg.Join(allowedDir, filename))
+	allowedPath, err := s.resolve(filepath.Join(allowedDir, filename))
 	if err != nil {
 		return err
 	}
 
-	dst, err := s.fs.OpenFile(allowedPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	dst, err := s.root.OpenFile(allowedPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
@@ -94,7 +100,7 @@ func (s *LocalFileService) Rename(path, next string) error {
 	if err != nil {
 		return err
 	}
-	return s.fs.Rename(currentPath, nextPath)
+	return s.root.Rename(currentPath, nextPath)
 }
 
 func (s *LocalFileService) Chmod(path, permText string) error {
@@ -106,7 +112,7 @@ func (s *LocalFileService) Chmod(path, permText string) error {
 	if err != nil {
 		return err
 	}
-	return s.fs.Chmod(allowedPath, os.FileMode(perm))
+	return s.root.Chmod(allowedPath, os.FileMode(perm))
 }
 
 func (s *LocalFileService) WriteFile(path string, data []byte) error {
@@ -114,7 +120,7 @@ func (s *LocalFileService) WriteFile(path string, data []byte) error {
 	if err != nil {
 		return err
 	}
-	return afero.WriteFile(s.fs, allowedPath, data, 0644)
+	return s.root.WriteFile(allowedPath, data, 0644)
 }
 
 func (s *LocalFileService) CreateFile(path string) error {
@@ -122,7 +128,7 @@ func (s *LocalFileService) CreateFile(path string) error {
 	if err != nil {
 		return err
 	}
-	file, err := s.fs.OpenFile(allowedPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
+	file, err := s.root.OpenFile(allowedPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
@@ -134,7 +140,7 @@ func (s *LocalFileService) CreateFolder(path string) error {
 	if err != nil {
 		return err
 	}
-	return s.fs.MkdirAll(allowedPath, 0755)
+	return s.root.MkdirAll(allowedPath, 0755)
 }
 
 func (s *LocalFileService) RemoveAll(path string) error {
@@ -145,7 +151,7 @@ func (s *LocalFileService) RemoveAll(path string) error {
 	if allowedPath == "." {
 		return echo.NewHTTPError(400, "refusing to delete the file root")
 	}
-	return s.fs.RemoveAll(allowedPath)
+	return s.root.RemoveAll(allowedPath)
 }
 
 func (s *LocalFileService) ReadDir(path string) ([]os.FileInfo, error) {
@@ -153,7 +159,19 @@ func (s *LocalFileService) ReadDir(path string) ([]os.FileInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	return afero.ReadDir(s.fs, allowedPath)
+	entries, err := fs.ReadDir(s.root.FS(), allowedPath)
+	if err != nil {
+		return nil, err
+	}
+	infos := make([]os.FileInfo, 0, len(entries))
+	for _, entry := range entries {
+		info, err := entry.Info()
+		if err != nil {
+			return nil, err
+		}
+		infos = append(infos, info)
+	}
+	return infos, nil
 }
 
 func (s *LocalFileService) Stat(path string) (os.FileInfo, error) {
@@ -161,24 +179,40 @@ func (s *LocalFileService) Stat(path string) (os.FileInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	return s.fs.Stat(allowedPath)
+	return s.root.Stat(allowedPath)
 }
 
 func (s *LocalFileService) Root() string {
 	return "/"
 }
 
-func (s *LocalFileService) resolve(path string) (string, error) {
-	if hasTraversal(path) {
+// resolve normalizes a logical path to a root-relative path. os.Root applies
+// the final containment check, so this only needs to reject obvious escapes.
+func (s *LocalFileService) resolve(requested string) (string, error) {
+	if requested == "" || strings.IndexByte(requested, 0) >= 0 {
 		return "", ErrPathNotAllowed
 	}
 
-	cleanPath := normalizeRequestPath(path)
-	relPath := strings.TrimPrefix(cleanPath, "/")
+	slashPath := strings.ReplaceAll(requested, "\\", "/")
+	if hasTraversalSegment(slashPath) {
+		return "", ErrPathNotAllowed
+	}
+
+	cleaned := path.Clean("/" + slashPath)
+	relPath := strings.TrimPrefix(cleaned, "/")
 	if relPath == "" {
 		return ".", nil
 	}
 	return relPath, nil
+}
+
+func hasTraversalSegment(path string) bool {
+	for _, segment := range strings.Split(path, "/") {
+		if segment == ".." {
+			return true
+		}
+	}
+	return false
 }
 
 func normalizeBasePath(path string) string {
@@ -195,27 +229,6 @@ func filesystemRoot() string {
 		}
 	}
 	return string(os.PathSeparator)
-}
-
-func normalizeRequestPath(pathValue string) string {
-	cleaned := strings.ReplaceAll(pathValue, "\\", "/")
-	if cleaned == "" {
-		return "/"
-	}
-	if !strings.HasPrefix(cleaned, "/") {
-		cleaned = "/" + cleaned
-	}
-	return pathpkg.Clean(cleaned)
-}
-
-func hasTraversal(pathValue string) bool {
-	pathValue = strings.ReplaceAll(pathValue, "\\", "/")
-	for _, segment := range strings.Split(pathValue, "/") {
-		if segment == ".." {
-			return true
-		}
-	}
-	return false
 }
 
 func IsPathNotAllowed(err error) bool {

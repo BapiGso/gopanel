@@ -9,6 +9,7 @@ import (
 	"sync"
 	"testing"
 
+	"gopanel/core/passwords"
 	"gopanel/core/storage"
 )
 
@@ -91,6 +92,33 @@ func TestOpenRejectsInvalidDocumentsWithoutOverwritingThem(t *testing.T) {
 				t.Fatal("opening invalid config overwrote it")
 			}
 		})
+	}
+}
+
+func TestOpenCreatesFreshBcryptCredentials(t *testing.T) {
+	path := filepath.Join(t.TempDir(), FileName)
+	if _, err := Open(path); err != nil {
+		t.Fatal(err)
+	}
+	if !FreshCredentials() {
+		t.Fatal("first Open should mark credentials as fresh")
+	}
+	plain := TakeInitialPanelPassword()
+	if plain == "" {
+		t.Fatal("expected a plaintext password for one-time display")
+	}
+	saved := readConfigFileForTest(t, path)
+	if saved.Panel.Password == plain {
+		t.Fatal("panel password must not be stored in plaintext")
+	}
+	if !passwords.VerifyPassword(saved.Panel.Password, plain) {
+		t.Fatal("stored panel password does not verify against the generated plaintext")
+	}
+	if _, err := Open(path); err != nil {
+		t.Fatal(err)
+	}
+	if FreshCredentials() {
+		t.Fatal("reopening an existing config must not refresh credentials")
 	}
 }
 

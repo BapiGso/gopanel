@@ -9,19 +9,28 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v5"
-	"github.com/spf13/afero"
 )
 
 type Handler struct {
 	service *LocalFileService
 }
 
-var defaultHandler = NewHandler(afero.NewOsFs(), filesystemRoot())
+var defaultHandler = mustNewHandler(filesystemRoot())
 
-func NewHandler(fs afero.Fs, basePath string) *Handler {
-	return &Handler{
-		service: NewLocalFileService(fs, basePath),
+func NewHandler(basePath string) (*Handler, error) {
+	service, err := NewLocalFileService(basePath)
+	if err != nil {
+		return nil, err
 	}
+	return &Handler{service: service}, nil
+}
+
+func mustNewHandler(basePath string) *Handler {
+	handler, err := NewHandler(basePath)
+	if err != nil {
+		panic(err)
+	}
+	return handler
 }
 
 func DefaultHandler() *Handler {

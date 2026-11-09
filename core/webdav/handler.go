@@ -32,12 +32,12 @@ func FileSystem() echo.HandlerFunc {
 		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 		username, password, ok := r.BasicAuth()
 		if !ok {
-			http.Error(w, "Not authorized", 401)
+			http.Error(w, "Not authorized", http.StatusUnauthorized)
 			return
 		}
 		settings := config.Snapshot().WebDAV
 		if username != settings.Username || password != settings.Password {
-			http.Error(w, "Not authorized", 401)
+			http.Error(w, "Not authorized", http.StatusUnauthorized)
 			return
 		}
 		if !settings.Enable {

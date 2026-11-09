@@ -1,0 +1,12 @@
+version: "2"
+
+linters:
+  default: standard
+  disable:
+    # The codebase intentionally defers Close/Remove calls whose errors are
+    # not actionable at the call site; errcheck would produce only noise here.
+    - errcheck
+  settings:
+    govet:
+      disable:
+        - inline

@@ -30,40 +30,6 @@ type release struct {
 	} `json:"assets"`
 }
 
-func getLatestReleaseDate() (time.Time, string, error) {
-	if rel, found, err := selfupdate.DetectLatest(repoSlug); err == nil && found && rel.PublishedAt != nil && rel.AssetURL != "" {
-		return rel.PublishedAt.UTC(), rel.AssetURL, nil
-	}
-
-	url := fmt.Sprintf("https://api.github.com/repos/%s/releases/latest", repoSlug)
-	resp, err := (&http.Client{Timeout: 15 * time.Second}).Get(url)
-	if err != nil {
-		return time.Time{}, "", err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return time.Time{}, "", fmt.Errorf("github api returned %d", resp.StatusCode)
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return time.Time{}, "", err
-	}
-
-	var rel release
-	if err := json.Unmarshal(body, &rel); err != nil {
-		return time.Time{}, "", err
-	}
-
-	downloadURL, err := pickReleaseAssetURL(rel.Assets)
-	if err != nil {
-		return time.Time{}, "", err
-	}
-
-	return rel.PublishedAt, downloadURL, nil
-}
-
 func updateBinaryIfNeeded() error {
 	currentVersion, ok := currentVersion()
 	if !ok {
