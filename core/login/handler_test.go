@@ -1,15 +1,41 @@
 package login
 
-import "testing"
+import (
+	"testing"
 
-func TestCredentialsMatchChecksBothFixedLengthHashes(t *testing.T) {
+	"gopanel/core/passwords"
+)
+
+func TestCredentialsVerifyAgainstStoredHash(t *testing.T) {
+	stored, err := passwords.HashPassword("long-password")
+	if err != nil {
+		t.Fatal(err)
+	}
 	for _, example := range []struct {
+		name     string
 		username string
 		password string
 		matches  bool
-	}{{"administrator", "long-password", true}, {"administrator", "wrong-password", false}, {"wrong", "long-password", false}, {"", "", false}, {"administrator-extra", "long-password", false}, {"administrator", "long-password-extra", false}, {"administrator", "", false}} {
-		if actual := credentialsMatch(example.username, example.password, "administrator", "long-password"); actual != example.matches {
-			t.Errorf("credential match = %t, want %t", actual, example.matches)
+	}{
+		{"ok", "administrator", "long-password", true},
+		{"wrong password", "administrator", "wrong-password", false},
+		{"wrong username", "wrong", "long-password", false},
+		{"empty both", "", "", false},
+		{"extra username", "administrator-extra", "long-password", false},
+		{"extra password", "administrator", "long-password-extra", false},
+	} {
+		actual := example.username == "administrator" && passwords.VerifyPassword(stored, example.password)
+		if actual != example.matches {
+			t.Errorf("%s: credential match = %t, want %t", example.name, actual, example.matches)
 		}
+	}
+}
+
+func TestCredentialsLegacyPlaintextFallback(t *testing.T) {
+	if !passwords.VerifyPassword("long-password", "long-password") {
+		t.Fatal("legacy plaintext credential should still match")
+	}
+	if passwords.VerifyPassword("long-password", "wrong-password") {
+		t.Fatal("legacy plaintext credential matched a wrong password")
 	}
 }
