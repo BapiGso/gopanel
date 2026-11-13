@@ -74,7 +74,7 @@ func getLatestReleaseVersion() (semver.Version, string, error) {
 	if err != nil {
 		return semver.Version{}, "", err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return semver.Version{}, "", fmt.Errorf("github api returned %d", resp.StatusCode)

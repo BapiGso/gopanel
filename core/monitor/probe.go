@@ -109,7 +109,7 @@ func (service *Service) stopProbeServer() {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	if err := service.probeServer.Shutdown(ctx); err != nil {
-		service.probeServer.Close()
+		_ = service.probeServer.Close()
 	}
 }
 
@@ -176,7 +176,7 @@ func (service *Service) pull(ctx context.Context, address string) (Report, error
 	if err != nil {
 		return Report{}, err
 	}
-	defer response.Body.Close()
+	defer func() { _ = response.Body.Close() }()
 	if response.StatusCode != http.StatusOK {
 		return Report{}, fmt.Errorf("probe returned HTTP %d", response.StatusCode)
 	}

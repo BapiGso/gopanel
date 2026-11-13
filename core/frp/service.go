@@ -62,7 +62,7 @@ func temporaryConfiguration(content string) (string, func(), error) {
 	}
 	cleanup := func() { _ = os.Remove(temporary.Name()) }
 	if _, err := temporary.WriteString(content); err != nil {
-		temporary.Close()
+		_ = temporary.Close()
 		cleanup()
 		return "", nil, err
 	}

@@ -66,7 +66,6 @@ func start(ctx *echo.Context) error {
 			return httpapi.NewError(http.StatusUnprocessableEntity, "start_failed", err.Error())
 		}
 	}
-	hsApp = app
 	hsRunning = true
 	hsError = ""
 	stunSrv = standaloneSTUN
@@ -75,7 +74,6 @@ func start(ctx *echo.Context) error {
 		hsMutex.Lock()
 		defer hsMutex.Unlock()
 		hsRunning = false
-		hsApp = nil
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			hsError = err.Error()
 		}

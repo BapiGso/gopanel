@@ -17,7 +17,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/juanfont/headscale/hscontrol"
 	"github.com/juanfont/headscale/hscontrol/types"
 	"github.com/labstack/echo/v5"
 	"tailscale.com/net/stun"
@@ -27,7 +26,6 @@ import (
 // ================= 全局变量区 =================
 // 必须放在函数外面，否则每次请求进来都是新的，无法管理状态
 var (
-	hsApp     *hscontrol.Headscale  // Headscale 实例
 	hsRunning bool                  // 运行状态标记
 	hsMutex   sync.Mutex            // 线程锁，防止同时点击启动炸掉
 	hsError   string                // 记录启动时的报错信息

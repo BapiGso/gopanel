@@ -440,11 +440,15 @@ func TestHeadscaleStartAndConnect(t *testing.T) {
 	// 切换到 /tmp 避免 WSL 的 /mnt/c 不支持 Unix socket
 	origDir, _ := os.Getwd()
 	testDir := "/tmp/headscale_test_" + fmt.Sprint(os.Getpid())
-	os.MkdirAll(testDir, 0755)
-	os.Chdir(testDir)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir(testDir); err != nil {
+		t.Fatal(err)
+	}
 	defer func() {
-		os.Chdir(origDir)
-		os.RemoveAll(testDir)
+		_ = os.Chdir(origDir)
+		_ = os.RemoveAll(testDir)
 	}()
 
 	// 准备表单数据（启用内嵌 DERP）
@@ -507,7 +511,7 @@ func TestHeadscaleStartAndConnect(t *testing.T) {
 			t.Logf("Attempt %d: connection failed: %v", i+1, err)
 			continue
 		}
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		t.Logf("HTTP response status: %d", resp.StatusCode)
 		connected = true
 		break

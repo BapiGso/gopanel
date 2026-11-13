@@ -57,5 +57,5 @@
     </div></template></cds-modal-body>
     <cds-modal-footer><cds-modal-footer-button kind="secondary" @click="closeDetails()">关闭</cds-modal-footer-button></cds-modal-footer>
 </cds-modal>
-<footer class="monitor-footer cds--type-label-01">GoPanel Observatory · 只读监控 · OpenTelemetry Host · Carbon Charts · jsVectorMap</footer>
+<footer class="monitor-footer cds--type-label-01">GoPanel Observatory · 只读监控 · gopsutil · Carbon Charts · jsVectorMap</footer>
 {{end}}

@@ -138,7 +138,7 @@ func testPullProbe(t *testing.T, identity string) (*Service, *httptest.Server) {
 	}
 	service.sample(context.Background())
 	server := httptest.NewServer(service.probeRoutes())
-	t.Cleanup(func() { server.Close(); service.Close(context.Background()) })
+	t.Cleanup(func() { server.Close(); _ = service.Close(context.Background()) })
 	return service, server
 }
 
@@ -152,7 +152,7 @@ func testPullMaster(t *testing.T, addresses ...string) *Service {
 		t.Fatal(err)
 	}
 	service.sample(context.Background())
-	t.Cleanup(func() { service.Close(context.Background()) })
+	t.Cleanup(func() { _ = service.Close(context.Background()) })
 	return service
 }
 
@@ -224,7 +224,7 @@ func TestProbeReadEndpointRequiresFreshIdentityAndHasNoAdministration(t *testing
 			t.Fatal(err)
 		}
 		body, _ := io.ReadAll(response.Body)
-		response.Body.Close()
+		_ = response.Body.Close()
 		if response.StatusCode != example.want {
 			t.Fatalf("%s %s = %d, want %d: %s", example.method, example.path, response.StatusCode, example.want, body)
 		}
@@ -261,7 +261,7 @@ func TestMasterRejectsTamperingReplayAndOversizedResponses(t *testing.T) {
 				if mode == "tampered" {
 					content = append(content, ' ')
 				}
-				writer.Write(content)
+				_, _ = writer.Write(content)
 			}))
 			defer server.Close()
 			master := testPullMaster(t, server.URL)
@@ -327,7 +327,7 @@ func TestPullCancellationAndProbeListenerShutdown(t *testing.T) {
 		t.Fatal(err)
 	}
 	address := listener.Addr().String()
-	listener.Close()
+	_ = listener.Close()
 	configuration := DefaultConfig()
 	configuration.Role, configuration.Key, configuration.Listen = "probe", strings.Repeat("k", 32), address
 	collector := &fakeCollector{}
@@ -335,7 +335,7 @@ func TestPullCancellationAndProbeListenerShutdown(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { probe.Close(context.Background()) })
+	t.Cleanup(func() { _ = probe.Close(context.Background()) })
 	if err := probe.Start(context.Background()); err != nil {
 		t.Fatal(err)
 	}
@@ -350,7 +350,7 @@ func TestPullCancellationAndProbeListenerShutdown(t *testing.T) {
 	}
 	connection, err := net.DialTimeout("tcp", address, 200*time.Millisecond)
 	if err == nil {
-		connection.Close()
+		_ = connection.Close()
 		t.Fatal("stopped probe retained its HTTP listener")
 	}
 }

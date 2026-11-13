@@ -97,46 +97,46 @@ func NewTerm(opt TermOption) (*Term, error) {
 
 	session, err := client.NewSession()
 	if err != nil {
-		client.Close()
+		_ = client.Close()
 		return nil, err
 	}
 
 	stdin, err := session.StdinPipe()
 	if err != nil {
-		session.Close()
-		client.Close()
+		_ = session.Close()
+		_ = client.Close()
 		return nil, err
 	}
 
 	stdout, err := session.StdoutPipe()
 	if err != nil {
-		stdin.Close()
-		session.Close()
-		client.Close()
+		_ = stdin.Close()
+		_ = session.Close()
+		_ = client.Close()
 		return nil, err
 	}
 
 	stderr, err := session.StderrPipe()
 	if err != nil {
-		stdin.Close()
-		session.Close()
-		client.Close()
+		_ = stdin.Close()
+		_ = session.Close()
+		_ = client.Close()
 		return nil, err
 	}
 
 	if err := session.RequestPty("xterm", opt.Rows, opt.Cols, ssh.TerminalModes{
 		ssh.ECHO: 1,
 	}); err != nil {
-		stdin.Close()
-		session.Close()
-		client.Close()
+		_ = stdin.Close()
+		_ = session.Close()
+		_ = client.Close()
 		return nil, err
 	}
 
 	if err := session.Shell(); err != nil {
-		stdin.Close()
-		session.Close()
-		client.Close()
+		_ = stdin.Close()
+		_ = session.Close()
+		_ = client.Close()
 		return nil, err
 	}
 
@@ -155,9 +155,9 @@ func NewTerm(opt TermOption) (*Term, error) {
 
 func (t *Term) Close() {
 	t.closeOnce.Do(func() {
-		t.Stdin.Close()
-		t.session.Close()
-		t.client.Close()
+		_ = t.Stdin.Close()
+		_ = t.session.Close()
+		_ = t.client.Close()
 	})
 }
 
@@ -212,12 +212,12 @@ func hostKeyCallback() (ssh.HostKeyCallback, error) {
 			if ferr != nil {
 				return ferr
 			}
-			defer f.Close()
 			line := knownhosts.Line([]string{knownhosts.Normalize(hostname)}, key)
-			if _, ferr = fmt.Fprintln(f, line); ferr != nil {
-				return ferr
+			_, ferr = fmt.Fprintln(f, line)
+			if closeErr := f.Close(); ferr == nil {
+				ferr = closeErr
 			}
-			return nil
+			return ferr
 		}
 
 		// Key mismatch — possible MITM, reject

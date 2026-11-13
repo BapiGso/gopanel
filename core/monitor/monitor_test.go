@@ -122,7 +122,7 @@ func TestRegistryRejectsOldBootsAndReturnsIndependentViews(t *testing.T) {
 }
 
 func TestCountersUseElapsedTimeAndHandleResets(t *testing.T) {
-	previous := hostCounters{cpuTotal: 100, cpuIdle: 80, cpuKnown: true, memoryKnown: true, memoryUsed: 256, memoryRatio: .25, upload: 1000, download: 2000, networkKnown: true}
+	previous := hostCounters{cpuTotal: 100, cpuIdle: 80, cpuKnown: true, memoryKnown: true, memoryUsed: 256, memoryTotal: 1024, upload: 1000, download: 2000, networkKnown: true}
 	current := previous
 	current.cpuTotal, current.cpuIdle = 110, 85
 	current.upload, current.download = 1400, 3000
@@ -142,12 +142,9 @@ func TestCountersUseElapsedTimeAndHandleResets(t *testing.T) {
 	}
 }
 
-func TestHostCollectorUsesOpenTelemetryAndSanitizedMetrics(t *testing.T) {
-	collector, err := NewCollector(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer collector.Close(context.Background())
+func TestHostCollectorUsesGopsutilAndSanitizedMetrics(t *testing.T) {
+	collector := NewCollector(nil)
+	defer func() { _ = collector.Close(context.Background()) }()
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	metrics, err := collector.Collect(ctx)
@@ -155,7 +152,7 @@ func TestHostCollectorUsesOpenTelemetryAndSanitizedMetrics(t *testing.T) {
 		t.Logf("partial platform metrics: %v", err)
 	}
 	if metrics.MemoryTotal == 0 || metrics.MemoryUsed > metrics.MemoryTotal || metrics.CPUCores < 1 || metrics.Architecture == "" {
-		t.Fatalf("OpenTelemetry host data was not decoded: %+v", metrics)
+		t.Fatalf("host metrics were not collected: %+v", metrics)
 	}
 	encoded, err := json.Marshal(metrics)
 	if err != nil {
@@ -211,7 +208,9 @@ func TestReadsDoNotResampleAndClosingStopsCollection(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	service.Start(context.Background())
+	if err := service.Start(context.Background()); err != nil {
+		t.Fatal(err)
+	}
 	deadline := time.Now().Add(time.Second)
 	for collector.calls.Load() == 0 && time.Now().Before(deadline) {
 		time.Sleep(time.Millisecond)
@@ -246,7 +245,7 @@ func testCandidate(t *testing.T, id string, addresses []string) (*Service, *http
 	}
 	service.RegisterAPI(httpapi.NewRouter(server.Group(httpapi.Prefix)), server)
 	listener.Start()
-	t.Cleanup(func() { listener.Close(); service.Close(context.Background()) })
+	t.Cleanup(func() { listener.Close(); _ = service.Close(context.Background()) })
 	return service, listener
 }
 
@@ -262,8 +261,10 @@ func TestAuthenticatedProbeFanoutWarmsMultipleCandidates(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	probe.Start(context.Background())
-	t.Cleanup(func() { probe.Close(context.Background()) })
+	if err := probe.Start(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = probe.Close(context.Background()) })
 	deadline := time.Now().Add(4 * time.Second)
 	for time.Now().Before(deadline) {
 		_, firstHas := first.registry.Node(configuration.NodeID, time.Now())
@@ -310,7 +311,7 @@ func TestIngestRequiresSeparateCredentialsAndRejectsCommands(t *testing.T) {
 			t.Fatal(err)
 		}
 		body, _ := io.ReadAll(response.Body)
-		response.Body.Close()
+		_ = response.Body.Close()
 		if response.StatusCode != example.want {
 			t.Fatalf("ingest = %d %s, want %d", response.StatusCode, body, example.want)
 		}
@@ -322,7 +323,7 @@ func TestIngestRequiresSeparateCredentialsAndRejectsCommands(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer response.Body.Close()
+	defer func() { _ = response.Body.Close() }()
 	body, _ := io.ReadAll(response.Body)
 	if response.StatusCode != http.StatusOK || strings.Contains(string(body), strings.Repeat("k", 32)) || strings.Contains(string(body), server.URL) {
 		t.Fatal("public response is unavailable or exposes credentials / candidate URLs")
@@ -344,7 +345,7 @@ func TestStreamCancellationReleasesViewerSlot(t *testing.T) {
 		t.Fatal(err)
 	}
 	cancel()
-	response.Body.Close()
+	_ = response.Body.Close()
 	deadline := time.Now().Add(time.Second)
 	for len(service.streams) != 0 && time.Now().Before(deadline) {
 		time.Sleep(time.Millisecond)

@@ -240,7 +240,7 @@ func (handler *Handler) download(ctx *echo.Context) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	ctx.Response().Header().Set(echo.HeaderContentDisposition, mime.FormatMediaType("attachment", map[string]string{"filename": path.Base(requestedPath)}))
 	return ctx.Stream(http.StatusOK, "application/octet-stream", file)
 }
@@ -258,7 +258,7 @@ func (handler *Handler) upload(ctx *echo.Context) error {
 		}
 		return httpapi.NewError(http.StatusBadRequest, "invalid_upload", err.Error())
 	}
-	defer ctx.Request().MultipartForm.RemoveAll()
+	defer func() { _ = ctx.Request().MultipartForm.RemoveAll() }()
 	headers := ctx.Request().MultipartForm.File["files"]
 	if len(headers) == 0 {
 		return httpapi.NewError(http.StatusUnprocessableEntity, "validation_failed", "At least one file is required")
@@ -271,7 +271,7 @@ func (handler *Handler) upload(ctx *echo.Context) error {
 			return err
 		}
 		err = handler.service.SaveUploadedFile(directory, header.Filename, file)
-		file.Close()
+		_ = file.Close()
 		if err != nil {
 			return err
 		}

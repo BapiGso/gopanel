@@ -87,7 +87,7 @@ func TestHTTPStopsTheSameEmbeddedCaddyInstance(t *testing.T) {
 		t.Fatal(err)
 	}
 	address := listener.Addr().String()
-	listener.Close()
+	_ = listener.Close()
 	server := testWebsiteAPI(t, "{\nadmin off\nauto_https off\n}\nhttp://"+address+"\nrespond panel-instance\n")
 	t.Cleanup(func() { _ = caddyStop() })
 	response := httptest.NewRecorder()
@@ -100,7 +100,7 @@ func TestHTTPStopsTheSameEmbeddedCaddyInstance(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	served.Body.Close()
+	_ = served.Body.Close()
 	response = httptest.NewRecorder()
 	server.ServeHTTP(response, httptest.NewRequest(http.MethodPost, "/api/v1/caddy/stop", nil))
 	if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"state":"stopped"`) {
@@ -108,7 +108,7 @@ func TestHTTPStopsTheSameEmbeddedCaddyInstance(t *testing.T) {
 	}
 	connection, err := net.DialTimeout("tcp", address, 500*time.Millisecond)
 	if err == nil {
-		connection.Close()
+		_ = connection.Close()
 		t.Fatal("HTTP stop did not release the embedded Caddy listener")
 	}
 }

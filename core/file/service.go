@@ -85,9 +85,11 @@ func (s *LocalFileService) SaveUploadedFile(dir, filename string, src io.Reader)
 	if err != nil {
 		return err
 	}
-	defer dst.Close()
 
 	_, err = io.Copy(dst, src)
+	if closeErr := dst.Close(); err == nil {
+		err = closeErr
+	}
 	return err
 }
 

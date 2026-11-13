@@ -100,7 +100,7 @@ func LinkTermDataHandler(c *echo.Context) error {
 			delete(activeTerms, term.Id)
 			termMutex.Unlock()
 			term.Close()
-			ws.Close()
+			_ = ws.Close()
 		}()
 		c.Logger().Info("linking term", "id", term.Id)
 		go func() {
@@ -109,7 +109,7 @@ func LinkTermDataHandler(c *echo.Context) error {
 				n, err := term.Stdout.Read(b[:])
 				if err != nil {
 					if !errors.Is(err, io.EOF) {
-						websocket.Message.Send(ws,
+						_ = websocket.Message.Send(ws,
 							fmt.Sprintf("\nError: %s", err.Error()))
 						c.Logger().Error(err.Error())
 					}
@@ -118,7 +118,7 @@ func LinkTermDataHandler(c *echo.Context) error {
 				if n == 0 {
 					continue
 				}
-				websocket.Message.Send(ws, string(b[:n]))
+				_ = websocket.Message.Send(ws, string(b[:n]))
 			}
 		}()
 
@@ -128,7 +128,7 @@ func LinkTermDataHandler(c *echo.Context) error {
 				n, err := term.Stderr.Read(b[:])
 				if err != nil {
 					if !errors.Is(err, io.EOF) {
-						websocket.Message.Send(ws,
+						_ = websocket.Message.Send(ws,
 							fmt.Sprintf("\nError: %s", err.Error()))
 						c.Logger().Error(err.Error())
 					}
@@ -137,7 +137,7 @@ func LinkTermDataHandler(c *echo.Context) error {
 				if n == 0 {
 					continue
 				}
-				websocket.Message.Send(ws, string(b[:n]))
+				_ = websocket.Message.Send(ws, string(b[:n]))
 			}
 		}()
 

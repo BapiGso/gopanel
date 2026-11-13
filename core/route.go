@@ -45,7 +45,7 @@ func (c *Core) Route() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	if err := c.monitoring.Start(ctx); err != nil {
-		c.monitoring.Close(context.Background())
+		_ = c.monitoring.Close(context.Background())
 		c.e.Logger.Error("failed to start monitoring", "error", err)
 		return
 	}

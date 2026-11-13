@@ -32,7 +32,7 @@ func TestPublicMonitorDoesNotGrantPanelOrProbePermissions(t *testing.T) {
 		t.Fatal(err)
 	}
 	panel := New()
-	t.Cleanup(func() { panel.monitoring.Close(context.Background()) })
+	t.Cleanup(func() { _ = panel.monitoring.Close(context.Background()) })
 	panel.setupRoutes()
 	report := monitor.Report{
 		Node:   monitor.Node{ID: "external-probe-123", Name: "Public alias", Country: "DE", Tags: []string{"Relay"}},
@@ -96,7 +96,7 @@ func TestManualMonitorIdentityDoesNotGrantPanelPermissions(t *testing.T) {
 	if panel.startupError != nil {
 		t.Fatal(panel.startupError)
 	}
-	t.Cleanup(func() { panel.monitoring.Close(context.Background()) })
+	t.Cleanup(func() { _ = panel.monitoring.Close(context.Background()) })
 	panel.setupRoutes()
 	for _, path := range []string{"/api/v1/public/monitor/nodes", "/api/v1/public/monitor/config", "/api/v1/public/monitor/cluster", "/status/monitor"} {
 		response := httptest.NewRecorder()

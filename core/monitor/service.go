@@ -72,17 +72,13 @@ func NewService(settings Config, collector Collector, logger *slog.Logger) (*Ser
 		logger = slog.Default()
 	}
 	if collector == nil {
-		var err error
-		collector, err = NewCollector(settings.Interfaces)
-		if err != nil {
-			return nil, err
-		}
+		collector = NewCollector(settings.Interfaces)
 	}
 	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS12}
 	if settings.CAFile != "" {
 		content, err := os.ReadFile(settings.CAFile)
 		if err != nil {
-			collector.Close(context.Background())
+			_ = collector.Close(context.Background())
 			return nil, fmt.Errorf("read monitor CA certificate: %w", err)
 		}
 		roots, err := x509.SystemCertPool()
@@ -90,7 +86,7 @@ func NewService(settings Config, collector Collector, logger *slog.Logger) (*Ser
 			roots = x509.NewCertPool()
 		}
 		if !roots.AppendCertsFromPEM(content) {
-			collector.Close(context.Background())
+			_ = collector.Close(context.Background())
 			return nil, fmt.Errorf("monitor ca_file does not contain PEM certificates")
 		}
 		tlsConfig.RootCAs = roots
@@ -160,7 +156,7 @@ func (service *Service) Close(ctx context.Context) error {
 func (service *Service) run(ctx context.Context) {
 	defer close(service.done)
 	defer service.client.CloseIdleConnections()
-	defer service.collector.Close(context.Background())
+	defer func() { _ = service.collector.Close(context.Background()) }()
 	defer service.stopProbeServer()
 	var reporters sync.WaitGroup
 	if service.settings.Role == "master" {
@@ -255,7 +251,7 @@ func (service *Service) send(ctx context.Context, address string, content []byte
 	if err != nil {
 		return peerReply{}, err
 	}
-	defer response.Body.Close()
+	defer func() { _ = response.Body.Close() }()
 	if response.StatusCode != http.StatusOK {
 		return peerReply{}, fmt.Errorf("candidate rejected report: HTTP %d", response.StatusCode)
 	}

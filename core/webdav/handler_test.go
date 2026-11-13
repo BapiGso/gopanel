@@ -27,7 +27,9 @@ func TestFileSystemRejectsUnauthenticatedRequests(t *testing.T) {
 	req := httptest.NewRequest("PROPFIND", "/webdav/", nil)
 	rec := httptest.NewRecorder()
 
-	FileSystem()(e.NewContext(req, rec))
+	if err := FileSystem()(e.NewContext(req, rec)); err != nil {
+		t.Fatal(err)
+	}
 
 	if rec.Code != http.StatusUnauthorized {
 		t.Fatalf("status = %d, want %d", rec.Code, http.StatusUnauthorized)
@@ -51,7 +53,9 @@ func TestFileSystemRejectsInvalidCredentials(t *testing.T) {
 	req.Header.Set("Authorization", basicAuth("davuser", "wrongpass"))
 	rec := httptest.NewRecorder()
 
-	FileSystem()(e.NewContext(req, rec))
+	if err := FileSystem()(e.NewContext(req, rec)); err != nil {
+		t.Fatal(err)
+	}
 
 	if rec.Code != http.StatusUnauthorized {
 		t.Fatalf("status = %d, want %d", rec.Code, http.StatusUnauthorized)
@@ -73,7 +77,9 @@ func TestFileSystemAllowsAuthenticatedPropfindWhenEnabled(t *testing.T) {
 	req.Header.Set("Depth", "0")
 	rec := httptest.NewRecorder()
 
-	FileSystem()(e.NewContext(req, rec))
+	if err := FileSystem()(e.NewContext(req, rec)); err != nil {
+		t.Fatal(err)
+	}
 
 	if rec.Code != http.StatusMultiStatus {
 		t.Fatalf("status = %d, want %d", rec.Code, http.StatusMultiStatus)
@@ -94,7 +100,9 @@ func TestFileSystemRejectsWhenDisabled(t *testing.T) {
 	req.Header.Set("Authorization", basicAuth("davuser", "davpass"))
 	rec := httptest.NewRecorder()
 
-	FileSystem()(e.NewContext(req, rec))
+	if err := FileSystem()(e.NewContext(req, rec)); err != nil {
+		t.Fatal(err)
+	}
 
 	if rec.Code != http.StatusForbidden {
 		t.Fatalf("status = %d, want %d", rec.Code, http.StatusForbidden)

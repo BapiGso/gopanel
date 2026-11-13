@@ -22,7 +22,7 @@ func TestAtomicWriteLockedWindowsFilePreservesOriginal(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer windows.CloseHandle(handle)
+	defer func() { _ = windows.CloseHandle(handle) }()
 	if err := AtomicWrite(path, []byte("replacement")); err == nil {
 		t.Fatal("replacing a file without delete sharing should fail")
 	}

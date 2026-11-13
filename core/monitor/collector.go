@@ -8,75 +8,54 @@ import (
 	"slices"
 	"time"
 
+	"github.com/shirou/gopsutil/v4/cpu"
 	"github.com/shirou/gopsutil/v4/disk"
 	"github.com/shirou/gopsutil/v4/host"
+	"github.com/shirou/gopsutil/v4/mem"
 	gopsnet "github.com/shirou/gopsutil/v4/net"
-	otelhost "go.opentelemetry.io/contrib/instrumentation/host"
-	"go.opentelemetry.io/otel/attribute"
-	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
-	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 )
 
 type hostCounters struct {
-	cpuTotal        float64
-	cpuIdle         float64
-	cpuKnown        bool
-	memoryUsed      uint64
-	memoryFree      uint64
-	memoryRatio     float64
-	memoryFreeRatio float64
-	memoryKnown     bool
-	upload          uint64
-	download        uint64
-	networkKnown    bool
+	cpuTotal     float64
+	cpuIdle      float64
+	cpuKnown     bool
+	memoryTotal  uint64
+	memoryUsed   uint64
+	memoryKnown  bool
+	upload       uint64
+	download     uint64
+	networkKnown bool
 }
 
 type HostCollector struct {
-	reader     *sdkmetric.ManualReader
-	provider   *sdkmetric.MeterProvider
 	interfaces []string
 	platform   string
 	previous   hostCounters
 	previousAt time.Time
 }
 
-func NewCollector(interfaces []string) (*HostCollector, error) {
-	reader := sdkmetric.NewManualReader()
-	provider := sdkmetric.NewMeterProvider(sdkmetric.WithReader(reader))
-	if err := otelhost.Start(otelhost.WithMeterProvider(provider)); err != nil {
-		provider.Shutdown(context.Background())
-		return nil, err
-	}
+func NewCollector(interfaces []string) *HostCollector {
 	platform, _, _, _ := host.PlatformInformationWithContext(context.Background())
-	return &HostCollector{reader: reader, provider: provider, interfaces: append([]string{}, interfaces...), platform: platform}, nil
+	return &HostCollector{interfaces: append([]string{}, interfaces...), platform: platform}
 }
 
-func (collector *HostCollector) Close(ctx context.Context) error {
-	return collector.provider.Shutdown(ctx)
+// Close is a no-op. The collector holds no background resources, but Service
+// still closes it through the Collector interface.
+func (collector *HostCollector) Close(context.Context) error {
+	return nil
 }
 
 func (collector *HostCollector) Collect(ctx context.Context) (Metrics, error) {
-	var data metricdata.ResourceMetrics
+	var counters hostCounters
 	var failures []error
-	if err := collector.reader.Collect(ctx, &data); err != nil {
+	if err := readCPU(ctx, &counters); err != nil {
 		failures = append(failures, err)
 	}
-	counters := decodeHostCounters(data)
-	if len(collector.interfaces) != 0 {
-		interfaces, err := gopsnet.IOCountersWithContext(ctx, true)
-		counters.networkKnown = false
-		counters.upload, counters.download = 0, 0
-		if err != nil {
-			failures = append(failures, err)
-		} else {
-			for _, network := range interfaces {
-				if slices.Contains(collector.interfaces, network.Name) {
-					counters.upload += network.BytesSent
-					counters.download += network.BytesRecv
-					counters.networkKnown = true
-				}
-			}
-		}
+	if err := readMemory(ctx, &counters); err != nil {
+		failures = append(failures, err)
+	}
+	if err := readNetwork(ctx, collector.interfaces, &counters); err != nil {
+		failures = append(failures, err)
 	}
 	now := time.Now()
 	metrics := countersToMetrics(counters, collector.previous, now.Sub(collector.previousAt), !collector.previousAt.IsZero())
@@ -113,82 +92,67 @@ func (collector *HostCollector) Collect(ctx context.Context) (Metrics, error) {
 	return metrics, errors.Join(failures...)
 }
 
-func decodeHostCounters(data metricdata.ResourceMetrics) hostCounters {
-	var counters hostCounters
-	for _, scope := range data.ScopeMetrics {
-		if scope.Scope.Name != otelhost.ScopeName {
-			continue
-		}
-		for _, measurement := range scope.Metrics {
-			switch measurement.Name {
-			case "system.cpu.time":
-				if total, ok := measurement.Data.(metricdata.Sum[float64]); ok {
-					for _, point := range total.DataPoints {
-						counters.cpuTotal += point.Value
-						if attributeText(point.Attributes, "cpu.mode") == "idle" {
-							counters.cpuIdle += point.Value
-						}
-					}
-					counters.cpuKnown = len(total.DataPoints) != 0
-				}
-			case "system.memory.usage":
-				if usage, ok := measurement.Data.(metricdata.Sum[int64]); ok {
-					for _, point := range usage.DataPoints {
-						if point.Value >= 0 {
-							switch attributeText(point.Attributes, "system.memory.state") {
-							case "used":
-								counters.memoryUsed = uint64(point.Value)
-							case "free":
-								counters.memoryFree = uint64(point.Value)
-							}
-						}
-					}
-				}
-			case "system.memory.utilization":
-				if utilization, ok := measurement.Data.(metricdata.Gauge[float64]); ok {
-					for _, point := range utilization.DataPoints {
-						switch attributeText(point.Attributes, "system.memory.state") {
-						case "used":
-							counters.memoryRatio = point.Value
-						case "free":
-							counters.memoryFreeRatio = point.Value
-						}
-					}
-					counters.memoryKnown = len(utilization.DataPoints) != 0
-				}
-			case "system.network.io":
-				if network, ok := measurement.Data.(metricdata.Sum[int64]); ok {
-					for _, point := range network.DataPoints {
-						if point.Value >= 0 {
-							switch attributeText(point.Attributes, "network.io.direction") {
-							case "transmit":
-								counters.upload += uint64(point.Value)
-							case "receive":
-								counters.download += uint64(point.Value)
-							}
-						}
-					}
-					counters.networkKnown = len(network.DataPoints) != 0
-				}
-			}
-		}
+func readCPU(ctx context.Context, counters *hostCounters) error {
+	times, err := cpu.TimesWithContext(ctx, false)
+	if err != nil {
+		return err
 	}
-	return counters
+	if len(times) != 1 {
+		return errors.New("host CPU usage: incorrect summary count")
+	}
+	// Nice, iowait, interrupt, softirq, steal and guest time are grouped as
+	// "other", matching the earlier OpenTelemetry host figures so CPU percentages stay comparable.
+	hostTime := times[0]
+	other := hostTime.Nice + hostTime.Iowait + hostTime.Irq + hostTime.Softirq + hostTime.Steal + hostTime.Guest + hostTime.GuestNice
+	counters.cpuTotal = hostTime.User + hostTime.System + other + hostTime.Idle
+	counters.cpuIdle = hostTime.Idle
+	counters.cpuKnown = true
+	return nil
 }
 
-func attributeText(attributes attribute.Set, key string) string {
-	value, _ := attributes.Value(attribute.Key(key))
-	return value.AsString()
+func readMemory(ctx context.Context, counters *hostCounters) error {
+	stats, err := mem.VirtualMemoryWithContext(ctx)
+	if err != nil {
+		return err
+	}
+	counters.memoryTotal, counters.memoryUsed = stats.Total, stats.Used
+	counters.memoryKnown = true
+	return nil
+}
+
+func readNetwork(ctx context.Context, interfaces []string, counters *hostCounters) error {
+	if len(interfaces) == 0 {
+		stats, err := gopsnet.IOCountersWithContext(ctx, false)
+		if err != nil {
+			return err
+		}
+		if len(stats) != 1 {
+			return errors.New("host network usage: incorrect summary count")
+		}
+		counters.upload, counters.download = stats[0].BytesSent, stats[0].BytesRecv
+		counters.networkKnown = true
+		return nil
+	}
+	stats, err := gopsnet.IOCountersWithContext(ctx, true)
+	if err != nil {
+		return err
+	}
+	for _, network := range stats {
+		if slices.Contains(interfaces, network.Name) {
+			counters.upload += network.BytesSent
+			counters.download += network.BytesRecv
+			counters.networkKnown = true
+		}
+	}
+	return nil
 }
 
 func countersToMetrics(current, previous hostCounters, elapsed time.Duration, hasPrevious bool) Metrics {
 	metrics := Metrics{UploadBytes: current.upload, DownloadBytes: current.download, MemoryUsed: current.memoryUsed, UnavailableFields: []string{}}
 	if current.memoryKnown {
-		metrics.MemoryPercent = boundedPercent(current.memoryRatio * 100)
-		if current.memoryRatio > 0 {
-			metrics.MemoryTotal = uint64(math.Round(float64(current.memoryUsed) / current.memoryRatio))
-		} else if current.memoryFreeRatio > 0 {
-			metrics.MemoryTotal = uint64(math.Round(float64(current.memoryFree) / current.memoryFreeRatio))
+		metrics.MemoryTotal = current.memoryTotal
+		if current.memoryTotal > 0 {
+			metrics.MemoryPercent = boundedPercent(float64(current.memoryUsed) / float64(current.memoryTotal) * 100)
 		}
 	} else {
 		metrics.UnavailableFields = append(metrics.UnavailableFields, "memory")
